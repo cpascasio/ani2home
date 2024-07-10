@@ -1,7 +1,7 @@
 
 const HomePage = () => {
   return (
-    <div>
+    <div className="flex ">
       HOMEPAGE
     </div>
   );
