@@ -1,15 +1,19 @@
 const Header = () => {
     return (
-        <div className="bg-black flex flex-row gap-6 p-3">
+        <div className="bg-white flex flex-row gap-8 p-3 px-20">
             <div className="p-3">Logo</div>
-            <a className="p-3">Home</a>
-            <a className="p-3">About Us</a>
-            <a className="p-3">Contact Us</a>
+            <div id="headerLinks" className=" flex gap-8 items-center">
+                <a className="p-3">Home</a>
+                <a className="p-3">About Us</a>
+                <a className="p-3">Contact Us</a>
+            </div>            
             <form className="flex-1">
-                <input className="w-9/12 rounded-full py-3 px-5" type="text"/>
+                <input id="searchHeaderForm" className="w-4/5 rounded-full py-3 px-5" type="text" placeholder="Vegetables, Fruits, Meat..."/>
             </form>
-            <button id="cartHeaderBtn"></button>
-            <button id="profileHeaderBtn"></button>
+            <div className="flex gap-6 h-100">
+                <div id="cartHeaderBtn" className="h-10 w-10 my-auto"></div>
+                <div id="profileHeaderBtn" className="h-10 w-10 my-auto"></div>
+            </div>            
         </div>
     );
   };
