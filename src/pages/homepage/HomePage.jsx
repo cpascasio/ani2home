@@ -1,7 +1,8 @@
-
+import Header from 'C:/xampp/htdocs/ani2home/src/components/Header.jsx'
 const HomePage = () => {
   return (
-    <div className="flex ">
+    <div className='w-full'>
+      <Header />
       HOMEPAGE
     </div>
   );
