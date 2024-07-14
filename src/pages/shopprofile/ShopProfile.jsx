@@ -11,26 +11,26 @@ const ShopProfile = () => {
         <div className="shopPart1">
 
           <div className="shopLogo">
-            <img src="images\FarmShop1.jpg" alt="Shop Logo" />
+            <img src="../src/images/FarmShop1.jpg" alt="Shop Logo" />
           </div>
 
           <div className="shopStats">
             <div className="shopFollowersIcon">
-              <img src="images\FollowersIcon.png" alt="Followers" />
+              <img src="../src/images/FollowersIcon.png" alt="Followers" />
             </div>
             <div className="shopFollowersCount">
               Followers: insert numbers here
             </div>
 
             <div className="shopRatingsIcon">
-              <img src="images\RatingsIcon.png" alt="Ratings" />
+              <img src="../src/images/RatingsIcon.png" alt="Ratings" />
             </div>
             <div className="shopRatingsCount">
                 Rating: 4.4 (1,304)
             </div>
 
             <div className="shopProductsIcon">
-              <img src="images\ProductsIcon.png" alt="Products" />
+              <img src="../src/images/ProductsIcon.png" alt="Products" />
             </div>
             <div className="shopProductsCount">
                 Products: 67
