@@ -1,43 +1,67 @@
 import React from 'react';
-import {useState} from "react"
+import './shopprofile.css';
 
 const ShopProfile = () => {
-  const [count, setCount] = useState(0);
-
-  const incrementCounter = () => {
-    setCount(count + 1);
-  };
-
-
-
-
+  
   return (
-    <nav className="navbar">
-      <div className="logo">
+    // insert navbar here
+    <div className="shopBanner">
+      <div className="shopLeftBox">
+        {/* include to shopPart1: Logo, Followers, Ratings, Products */}
+        <div className="shopPart1">
+
+          <div className="shopLogo">
+            <img src="FarmShop1.jpg" alt="Shop Logo" />
+          </div>
+
+          <div className="shopStats">
+            <div className="shopFollowersIcon">
+            </div>
+            <div className="shopFollowersCount">
+              Followers: insert numbers here
+            </div>
+
+            <div className="shopRatingsIcon">
+            </div>
+            <div className="shopRatingsCount">
+                Rating: 4.4 (1,304)
+            </div>
+
+            <div className="shopProductsIcon">
+            </div>
+            <div className="shopProductsCount">
+                Products: 67
+            </div>  
+          </div> {/* end of shopStats */}
+
+        </div> {/*end of shopPart1 */}
+
+        <div className="shopPart2">
+          <div className="shopTitle">
+            Pogi Farms
+          </div>
+          <div className="shopLocation">
+            Dasmarinas, Cavite
+          </div>
+          <div className="shopDescription">
+            Real eyes realize real lies. You miss the opportunities you don’t take.
+          </div>
+          <div className="shopButtons">
+            follow and write a review
+          </div>
+        </div> {/*end of shopPart2 */}
+
+      </div> {/*end of shopLeftBox */}
 
 
-      <p>Count: {count}</p>
-      <button onClick={incrementCounter}>Increment</button>
-      <a href="/">
-          <img src="images/Ani2Home Logo.png" alt="Ani2Home Logo" />
-        </a>
+      <div className="shopRightBox">
+        <div className="shopButtons">
+            View Seller Button here
+          </div>
       </div>
-      <div className="nav-items">
-        <ul>
-          <li><a href="/">Home</a></li>
-          <li><a href="/about">About Us</a></li>
-          <li><a href="/contact">Contact Us</a></li>
-        </ul>
-      </div>
-      <div className="search-bar">
-        <input type="text" placeholder="Search..." />
-        <button type="submit">Search</button>
-      </div>
-      <div className="user-nav">
-        <a href="/cart">asd</a>
-        <a href="/profile">asd</a>
-      </div>
-    </nav>
+
+    </div> /*end of shopBanner */
+
   );
 };
 
