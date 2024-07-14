@@ -1,7 +1,7 @@
 const Header = () => {
     return (
-        <div className="bg-white flex flex-row gap-8 p-3 px-20">
-            <div className="p-3">Logo</div>
+        <div className="bg-white flex flex-row gap-8 p-3 px-20 drop-shadow-md top-0 sticky">
+            <div className="p-3 text-black">Logo</div>
             <div id="headerLinks" className=" flex gap-8 items-center">
                 <a className="p-3">Home</a>
                 <a className="p-3">About Us</a>
