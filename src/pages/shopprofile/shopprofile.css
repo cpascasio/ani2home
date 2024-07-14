@@ -1,22 +1,22 @@
 .shopBanner {
     display: flex;
     width: 100%;
-    height: 400px;
+    max-height: 330px;
+    
 }
   
 .shopLeftBox {
     flex: 1;
     display: flex;
-    justify-content: center;
-    background: linear-gradient(to right, #0B472D, rgba(144, 238, 144, 0)); 
     padding-left: 3%;
     padding-top: 2%;
     padding-bottom: 2%;
+    background: linear-gradient(to right, #0B472D 60%, rgba(144, 238, 144, 0));
 }
   
 .shopRightBox {
     flex: 1;
-    background: url('../src/images/FarmShop1.jpg') no-repeat center center;
+    background: url('../src/assets/FarmCover.jpg') no-repeat center center;
     background-size: cover;
 }
 
@@ -36,7 +36,7 @@
 }
 
 .shopStats {
-    margin-top: 10px;
+    margin-top: 5%;
 }
 
 .shopStatItem {
@@ -58,11 +58,32 @@
 }
 
 .shopPart1 {
-    flex: 1;
-    width: 80%;
+    flex: 0 0 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    font-family: 'Inter'; /* not sure about the font */
 }
 
 .shopPart2 {
-    flex: 1;
-    padding-left: 3%; 
+    flex: 0 0 70%;
+    padding-left: 3%;
+    padding-right: 3%;
+    display: flex;
+    flex-direction: column;
+    color: white;
+    font-family: 'Inter'; /* not sure about the font */
+    align-items: flex-start;
+}
+
+.shopStatItem {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.shopStatsContainer {
+    display: flex;
+    align-items: center;
 }
