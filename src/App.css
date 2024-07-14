@@ -66,15 +66,29 @@ div#profileHeaderBtn:hover {
   color: #737373;
 }
 
-#headerLinks a {
+#headerLinks a, #footer a {
   color: #737373;
 }
 
-#headerLinks a:hover {
-  color: #737373;
+#headerLinks a:hover, #footer a:hover {
   text-decoration: underline;
 }
 
 form:focus {
   border: none !important;
+}
+
+#footer {
+  background-color: #D9D9D9;
+  color: #737373;
+}
+
+#footer a {
+  display:grid;
+  font-weight: normal;
+}
+
+#footerLogo {
+  background: url('../src/assets/icons8-user-96 (1).png');
+  background-size: cover;
 }
