@@ -1,10 +1,11 @@
-
+import Header from '../../components/Header.jsx'
+import Footer from '../../components/Footer.jsx'
 const HomePage = () => {
   return (
-    <div className="flex w-full h-full items-center justify-center border-2">
-      <div>
+    <div className='w-full'>
+      <Header />
       HOMEPAGE
-        </div>
+      <Footer />
     </div>
   );
 };
