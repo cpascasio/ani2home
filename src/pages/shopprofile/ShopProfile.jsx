@@ -11,7 +11,7 @@ const ShopProfile = () => {
         <div className="shopPart1">
 
           <div className="shopLogo">
-            <img src="FarmShop1.jpg" alt="Shop Logo" />
+            <img src="images\FarmShop1.jpg" alt="Shop Logo" />
           </div>
 
           <div className="shopStats">

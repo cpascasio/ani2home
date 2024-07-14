@@ -1,12 +1,15 @@
 .shopBanner {
     display: flex;
     height: 300px;
-    margin: 5%
+    width: 100%;
 }
   
 .shopLeftBox {
     flex: 1;
+    display: flex;
+    align-items: center;
     background: linear-gradient(to right, #0B472D, rgba(144, 238, 144, 0)); 
+    padding-left: 3%;
 }
   
 .shopRightBox {
@@ -15,9 +18,15 @@
     background-size: cover;
 }
 
+.shopLogo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .shopLogo img {
-    width: 50px;
-    height: 50px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     object-fit: cover;
 }
@@ -42,4 +51,13 @@
 .shopRatingsCount,
 .shopProductsCount {
     margin: 0;
+}
+
+.shopPart1 {
+    flex: 1;
+}
+
+.shopPart2 {
+    flex: 1;
+    padding-left: 3%; 
 }
