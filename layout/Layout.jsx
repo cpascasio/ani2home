@@ -7,9 +7,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 const Layout = () => {
   return (
     <Router>
-      <div>
         <PageRouter />
-      </div>
     </Router>
   );
 };
