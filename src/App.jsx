@@ -6,11 +6,11 @@ function App() {
 
   return (
     <>
-    <div className="w-full h-screen">
+    <div className="flex w-full h-screen">
       <Layout />
     </div>
     </>
   )
 }
 
-export default App
+export default App;
