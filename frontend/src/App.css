@@ -92,3 +92,11 @@
     background: url('../src/assets/Ani2Home Logo.png');
     background-size: cover;
   }
+
+  .logoHome {
+    display: flex;
+    gap: 8;
+    align-items: center;
+    height: 50px;
+    width: 50px;
+  }
