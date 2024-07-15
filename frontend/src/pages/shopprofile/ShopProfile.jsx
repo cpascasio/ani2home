@@ -19,7 +19,7 @@ const ShopProfile = () => {
                                 <div className="mr-2">
                                     <img src="../src/assets/FollowersIcon.png" alt="Followers" />
                                 </div>
-                                <div>
+                                <div className="text-left">
                                     <strong>Followers:</strong> 1,203
                                 </div>
                             </div>
@@ -27,7 +27,7 @@ const ShopProfile = () => {
                                 <div className="mr-2">
                                     <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
                                 </div>
-                                <div>
+                                <div className="text-left">
                                     <strong>Rating:</strong> 4.4 (1,304)
                                 </div>
                             </div>
@@ -35,25 +35,27 @@ const ShopProfile = () => {
                                 <div className="mr-2">
                                     <img src="../src/assets/ProductsIcon.png" alt="Products" />
                                 </div>
-                                <div>
+                                <div className="text-left">
                                     <strong>Products:</strong> 67
                                 </div>
                             </div>
                         </div>
                     </div> {/*end of box for logo and stats */}
-                    <div className="flex flex-col pl-[3%] pr-[3%] text-white items-start"> {/*Name, Location, Bio, Buttons */}
+                    <div className="flex flex-col flex-1 pl-[4%] pr-[4%] text-white items-start"> {/*Name, Location, Bio, Buttons */}
                         <h1 className="text-2xl font-bold mb-2">
                             Pogi Farms
                         </h1>
                         <div className="italic mb-2">
                             Dasmarinas, Cavite
                         </div>
-                        <div className="mb-4">
-                            Real eyes realize real lies. You miss the opportunities you don’t take.
+                        <div className="mb-4 text-left">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
                         </div>
-                        <div>
-                            follow and write a review button here
-                        </div>
+                        <button class="rounded border-2 border-white p-2 px-5 w-full">
+                            Follow+
+                        </button>
                     </div> {/*end of name etc of user profile */}
                 </div> {/*banner left side end*/}
                 <div className="flex flex-1 bg-cover bg-center" style={{ backgroundImage: `url(${FarmCover1})` }}> {/*banner right side */}
