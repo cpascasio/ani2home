@@ -16,7 +16,7 @@
   
 .shopRightBox {
     flex: 1;
-    background: url('../src/assets/FarmCover.jpg') no-repeat center center;
+    background: url('../src/assets/FarmCover1.jpg') no-repeat center center;
     background-size: cover;
 }
 
