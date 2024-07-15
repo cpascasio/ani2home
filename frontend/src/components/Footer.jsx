@@ -1,6 +1,6 @@
 const Footer = () => {
     return (
-        <div id="footer" className="w-full h-full flex py-20 justify-center gap-52">
+        <div id="footer" className="w-full h-auto flex py-20 justify-center gap-52">
             <div className="flex-col">
                 <b>Contact</b>
                 <p>email@dlsu.edu.ph</p>

@@ -42,22 +42,22 @@
   }
   
   div#cartHeaderBtn {
-    background: url('../src/assets/icons8-cart-100.png');
+    background: url('../src/assets/white cart.png');
     background-size: cover;
   }
   
   div#cartHeaderBtn:hover {
-    background: url('../src/assets/icons8-cart-100 (1).png');
+    background: url('../src/assets/green cart.png');
     background-size: cover;
   }
   
   div#profileHeaderBtn {
-    background: url('../src/assets/icons8-user-96.png');
+    background: url('../src/assets/white user.png');
     background-size: cover;
   }
   
   div#profileHeaderBtn:hover {
-    background: url('../src/assets/icons8-user-96 (1).png');
+    background: url('../src/assets/green user.png');
     background-size: cover;
   }
   
@@ -89,6 +89,6 @@
   }
   
   #footerLogo {
-    background: url('../src/assets/icons8-user-96 (1).png');
+    background: url('../src/assets/Ani2Home Logo.png');
     background-size: cover;
   }
