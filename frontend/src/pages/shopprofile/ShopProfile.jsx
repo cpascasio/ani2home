@@ -42,16 +42,17 @@ const ShopProfile = () => {
                         </div>
                     </div> {/*end of box for logo and stats */}
                     <div className="flex flex-col flex-1 pl-[4%] pr-[4%] text-white items-start"> {/*Name, Location, Bio, Buttons */}
-                        <h1 className="text-2xl font-bold mb-2">
+                        <h1 className="text-2xl font-bold mb-0">
                             Pogi Farms
                         </h1>
-                        <div className="italic mb-2">
+                        <div className="italic mb-4">
                             Dasmarinas, Cavite
                         </div>
-                        <div className="mb-4 text-left">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
-                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                        <div className="mb-4 text-left"> {/*CHARACTERS MAXIMUM: 439 */}
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doxeee ands eiusmod tempor incididunt ut 
+                        labore et dolore magna aliqua.Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut 
+                        aliquip ex ea commodo co.Duis aute irure dolor in reprehenderit in voluptate velita esse cillum dolore eu 
+                        fugiat nulla pariatur. Excepteur sint occaecatellicid cupidatat non proident what is loooove.Maybe this
                         </div>
                         <button class="rounded border-2 border-white p-2 px-5 w-full">
                             Follow+
@@ -59,10 +60,11 @@ const ShopProfile = () => {
                     </div> {/*end of name etc of user profile */}
                 </div> {/*banner left side end*/}
                 <div className="flex flex-1"> {/*banner right side */}
-                    <div className="p-4">
-                        View Seller Button here
-                    </div> {/*banner right side end*/}
-                </div>
+                    {/* should insert cover photo here --> use FarmCover1.jpg */}
+                    <button className="absolute bottom-0 right-0 bg-blue-500 text-white rounded px-5 py-2 mb-2 mr-6">
+                        View Seller
+                    </button>
+                </div> {/*banner right side end*/}
             </div> {/*banner end*/}
             <Footer />
         </div>
