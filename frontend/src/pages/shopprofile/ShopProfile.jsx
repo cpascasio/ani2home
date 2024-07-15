@@ -8,8 +8,8 @@ const ShopProfile = () => {
     return (
         <div className="w-full">
             <Header />
-             <div className="flex w-full h-auto"> {/*banner */}
-                <div className="flex flex-1 pl-[3%] pt-[2%] pb-[2%] bg-gradient-to-r from-green-900 via-green-900 to-transparent"> {/*banner left side */}
+             <div className="flex w-full h-auto bg-gradient-to-r from-green-900"> {/*banner */}
+                <div className="flex flex-1 pl-[3%] pt-[2%] pb-[2%]"> {/*banner left side */}
                     <div className="flex flex-col items-center text-white"> {/*box for logo and stats*/}
                         <div className="flex justify-center items-center mb-4"> {/*logo */}
                             <img src="../src/assets/FarmShop1.jpg" alt="Shop Logo" className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
@@ -58,7 +58,7 @@ const ShopProfile = () => {
                         </button>
                     </div> {/*end of name etc of user profile */}
                 </div> {/*banner left side end*/}
-                <div className="flex flex-1 bg-cover bg-center" style={{ backgroundImage: `url(${FarmCover1})` }}> {/*banner right side */}
+                <div className="flex flex-1"> {/*banner right side */}
                     <div className="p-4">
                         View Seller Button here
                     </div> {/*banner right side end*/}
