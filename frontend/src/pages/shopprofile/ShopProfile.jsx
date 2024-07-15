@@ -8,14 +8,14 @@ const ShopProfile = () => {
     return (
         <div className="w-full">
             <Header />
-            <div className="flex w-full max-h-[330px]">
-                <div className="flex flex-1 pl-[3%] pt-[2%] pb-[2%] bg-gradient-to-r from-green-900 via-green-900 to-transparent">
-                    <div className="flex flex-col items-center text-white">
-                        <div className="flex justify-center items-center mb-4">
+             <div className="flex w-full h-auto"> {/*banner */}
+                <div className="flex flex-1 pl-[3%] pt-[2%] pb-[2%] bg-gradient-to-r from-green-900 via-green-900 to-transparent"> {/*banner left side */}
+                    <div className="flex flex-col items-center text-white"> {/*box for logo and stats*/}
+                        <div className="flex justify-center items-center mb-4"> {/*logo */}
                             <img src="../src/assets/FarmShop1.jpg" alt="Shop Logo" className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
                         </div>
-                        <div className="mt-[5%]">
-                            <div className="flex items-center mb-2">
+                        <div className="mt-[5%]"> {/*stats box */}
+                            <div className="flex items-center mb-2"> {/*followers */}
                                 <div className="mr-2">
                                     <img src="../src/assets/FollowersIcon.png" alt="Followers" />
                                 </div>
@@ -23,7 +23,7 @@ const ShopProfile = () => {
                                     <strong>Followers:</strong> 1,203
                                 </div>
                             </div>
-                            <div className="flex items-center mb-2">
+                            <div className="flex items-center mb-2"> {/*ratings */}
                                 <div className="mr-2">
                                     <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
                                 </div>
@@ -31,7 +31,7 @@ const ShopProfile = () => {
                                     <strong>Rating:</strong> 4.4 (1,304)
                                 </div>
                             </div>
-                            <div className="flex items-center mb-2">
+                            <div className="flex items-center mb-2"> {/*products */}
                                 <div className="mr-2">
                                     <img src="../src/assets/ProductsIcon.png" alt="Products" />
                                 </div>
@@ -40,8 +40,8 @@ const ShopProfile = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="flex flex-col pl-[3%] pr-[3%] text-white items-start">
+                    </div> {/*end of box for logo and stats */}
+                    <div className="flex flex-col pl-[3%] pr-[3%] text-white items-start"> {/*Name, Location, Bio, Buttons */}
                         <h1 className="text-2xl font-bold mb-2">
                             Pogi Farms
                         </h1>
@@ -54,14 +54,14 @@ const ShopProfile = () => {
                         <div>
                             follow and write a review button here
                         </div>
-                    </div>
-                </div>
-                <div className="flex flex-1 bg-cover bg-center" style={{ backgroundImage: `url(${FarmCover1})` }}>
+                    </div> {/*end of name etc of user profile */}
+                </div> {/*banner left side end*/}
+                <div className="flex flex-1 bg-cover bg-center" style={{ backgroundImage: `url(${FarmCover1})` }}> {/*banner right side */}
                     <div className="p-4">
                         View Seller Button here
-                    </div>
+                    </div> {/*banner right side end*/}
                 </div>
-            </div>
+            </div> {/*banner end*/}
             <Footer />
         </div>
     );
