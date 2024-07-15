@@ -1,6 +1,6 @@
 const Header = () => {
     return (
-        <div className="bg-white flex flex-row gap-8 p-3 px-20 drop-shadow-md top-0 sticky">
+        <div className="bg-white flex flex-row gap-8 p-3 px-20 drop-shadow-md top-0 sticky z-20">
             <div className="p-3 text-black h-16 w-16 my-auto">
             <   img src="../src/assets/logoHeader.png" alt="Ani2Home" />
             </div>

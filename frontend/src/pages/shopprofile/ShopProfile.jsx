@@ -19,7 +19,7 @@ const ShopProfile = () => {
                                 <div className="mr-2">
                                     <img src="../src/assets/FollowersIcon.png" alt="Followers" />
                                 </div>
-                                <div className="text-left">
+                                <div className="text-left font-inter">
                                     <strong>Followers:</strong> 1,203
                                 </div>
                             </div>
@@ -27,7 +27,7 @@ const ShopProfile = () => {
                                 <div className="mr-2">
                                     <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
                                 </div>
-                                <div className="text-left">
+                                <div className="text-left font-inter">
                                     <strong>Rating:</strong> 4.4 (1,304)
                                 </div>
                             </div>
@@ -35,37 +35,50 @@ const ShopProfile = () => {
                                 <div className="mr-2">
                                     <img src="../src/assets/ProductsIcon.png" alt="Products" />
                                 </div>
-                                <div className="text-left">
+                                <div className="text-left font-inter">
                                     <strong>Products:</strong> 67
                                 </div>
                             </div>
                         </div>
                     </div> {/*end of box for logo and stats */}
                     <div className="flex flex-col flex-1 pl-[4%] pr-[4%] text-white items-start"> {/*Name, Location, Bio, Buttons */}
-                        <h1 className="text-2xl font-bold mb-0">
+                        <h1 className="text-2xl font-bold font-inter mb-0">
                             Pogi Farms
                         </h1>
-                        <div className="italic mb-4">
+                        <div className="italic mb-4 font-inter">
                             Dasmarinas, Cavite
                         </div>
-                        <div className="mb-4 text-left"> {/*CHARACTERS MAXIMUM: 439 */}
+                        <div className="mb-6 text-left font-inter"> {/*CHARACTERS MAXIMUM: 439 */}
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doxeee ands eiusmod tempor incididunt ut 
                         labore et dolore magna aliqua.Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut 
                         aliquip ex ea commodo co.Duis aute irure dolor in reprehenderit in voluptate velita esse cillum dolore eu 
                         fugiat nulla pariatur. Excepteur sint occaecatellicid cupidatat non proident what is loooove.Maybe this
                         </div>
-                        <button class="rounded border-2 border-white p-2 px-5 w-full">
+                        <button class="rounded border-2 border-white p-2 px-5 w-full font-inter">
                             Follow+
                         </button>
                     </div> {/*end of name etc of user profile */}
                 </div> {/*banner left side end*/}
-                <div className="flex flex-1"> {/*banner right side */}
+                <div className="flex flex-1 w-full"> {/*banner right side */}
                     {/* should insert cover photo here --> use FarmCover1.jpg */}
-                    <button className="absolute bottom-0 right-0 bg-blue-500 text-white rounded px-5 py-2 mb-2 mr-6">
+                    {/* <button className="bg-blue-500 text-white font-inter rounded mb-10 mr-10 px-5 pb-5">    
                         View Seller
-                    </button>
+                    </button> */}
+                    <div class="absolute bottom-0 right-0 mb-4 mr-4">
+                        <button class="bg-blue-500 text-white font-inter font-bold rounded px-4 py-2">
+                            View Seller
+                        </button>
+                    </div>
                 </div> {/*banner right side end*/}
             </div> {/*banner end*/}
+
+            {/* ----- start of body ----- */} 
+            <div className="px-40 bg-gray-200"> {/*main container for body*/}
+                <div className="font-inter font-bold text-sm text-gray-600 text-left pt-5">
+                    BEST SELLERS
+                </div>
+
+            </div>
             <Footer />
         </div>
     );
