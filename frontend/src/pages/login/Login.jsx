@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { auth, provider } from "../../config/firebase-config"; // Adjust the path as necessary
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
 import Sample from "./Sample";
 
 const Login = () => {
@@ -25,7 +25,6 @@ const Login = () => {
     , []);
 
 
-
   const handleLogin = async () => {
     try {
       const response = await axios.post("http://localhost:5000/api/auth/login", {
@@ -42,6 +41,48 @@ const Login = () => {
       console.error(error);
     }
   };
+
+  const handleLogout = () => {
+    setAuthenticated(false);
+    window.localStorage.removeItem('authenticated');
+};
+
+const handleEmailLogin = async (email, password) => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    // User is signed in
+    // You can access the user object via userCredential.user
+    console.log(userCredential.user);
+    // Update authenticated state or perform other actions
+    setAuthenticated(true);
+    window.localStorage.setItem('authenticated', 'true');
+    // Optionally, get the token as you did in the useEffect
+    const tokenResult = await userCredential.user.getIdTokenResult();
+    setToken(tokenResult.token);
+  } catch (error) {
+    // Handle Errors here.
+    console.error(error.message);
+    // Optionally, update UI to reflect the error
+  }
+};
+
+const handleEmailSignUp = async (email, password) => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    // User account created & signed in
+    console.log(userCredential.user);
+    // Update authenticated state or perform other actions
+    setAuthenticated(true);
+    window.localStorage.setItem('authenticated', 'true');
+    // Optionally, get the token as you did in the useEffect
+    const tokenResult = await userCredential.user.getIdTokenResult();
+    setToken(tokenResult.token);
+  } catch (error) {
+    // Handle Errors here.
+    console.error(error.message);
+    // Optionally, update UI to reflect the error
+  }
+};
 
   const handleGoogleLogin = async () => {
     try {
@@ -86,7 +127,7 @@ const Login = () => {
     authenticated ? (
         <div>
             <h1>Authenticated</h1>
-            <button onClick={() => setAuthenticated(false)}>Logout</button>
+            <button onClick={handleLogout}>Logout</button>
             <Sample token={token} />
         </div>
     ) : (
