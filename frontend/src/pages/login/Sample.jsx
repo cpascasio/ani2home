@@ -9,7 +9,7 @@ const Sample = ({ token }) => {
   }, [token]);
 
   const fetchData = async () => {
-    const res = await axios.get("http://localhost:5000/", {
+    const res = await axios.get("http://localhost:5000/api/users/6YwA9WF8erkimG4CcjEZ", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
