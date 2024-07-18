@@ -88,8 +88,8 @@ const MyProfile = () => {
                                 <h2 className="text-lg font-bold text-gray-600">Personal Information</h2> 
                                 <button className="relative overflow-hidden flex">          {/* edit button */}
                                     <span className="absolute inset-0 opacity-0 hover:opacity-100"></span>
-                                    <img src="../../src/assets/edit button.png" alt="Edit" className="w-4 h-4 mr-2" />
-                                    <img src="../../src/assets/edit button hover.png" alt="Edit" className="w-4 h-4 mr-2 opacity-0 hover:opacity-100  absolute inset-0" />
+                                    <img src="../../src/assets/edit button.png" alt="Edit" className="w-6 h-6 mr-2" />
+                                    <img src="../../src/assets/edit button hover.png" alt="Edit" className="w-6 h-6 mr-2 opacity-0 hover:opacity-100  absolute inset-0" />
                                 </button>
                             </div>
 
