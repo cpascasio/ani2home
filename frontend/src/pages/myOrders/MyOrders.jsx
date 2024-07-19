@@ -85,13 +85,13 @@ const MyOrders = () => {
                         <div className="text-lg font-bold mb-2 text-left text-gray-600 pb-5">My Orders</div>
 
                         {/* ----- where every item starts ------- */}
-                        <div className="bg-white shadow-md cursor-pointer mb-8"> {/* white background and clickable */}
+                        <button className="bg-white shadow-md cursor-pointer mb-8"> {/* white background and clickable */}
                           <div className="flex"> {/* flex container with padding */}
 
                             <div className="flex-shrink-0 w-auto pr-5"> {/* for product image */}
                               <img src="../../src/assets/carrot.png" alt="Product Image" className="w-40 h-auto object-cover" /> {/* product image */}
                             </div>
-                            <div className="flex-1 pt-5 text-left"> {/* product details */}
+                            <div className="flex-1 pt-4 text-left"> {/* product details */}
                               <div className="text-base font-bold mb-2 text-left text-gray-600">Carrots</div> 
                               <div className="text-gray-500 text-sm line-clamp-2">Fresh Carrot 18 inch harvested last night 800mg Lorem ipsum dolor sit amet, consectetur adipiscing elit</div> {/* added limit to only two lines. will show ... if more than} */}
                               <div className="text-gray-500 text-sm pt-8 italic">Out for Delivery</div> 
@@ -108,7 +108,7 @@ const MyOrders = () => {
                                 </button>
                               </div>
                           </div>
-                        </div>
+                        </button>
                         {/* ----- where every item ends ------- */}
 
                         {/* ----- FOR MULTIPLE ITEMS ON ONE ORDER AND WITH ESTIMATED DELIVERY DATE ------- */}
@@ -119,7 +119,7 @@ const MyOrders = () => {
                               <div className="flex-shrink-0 w-auto pr-5"> {/* for product image */}
                                 <img src="../../src/assets/carrot.png" alt="Product Image" className="w-40 h-auto object-cover" /> {/* product image */}
                               </div>
-                              <div className="flex-1 pt-5 text-left"> {/* product details */}
+                              <div className="flex-1 pt-4 text-left"> {/* product details */}
                                 <div className="text-base font-bold mb-2 text-gray-600">Carrots</div> 
                                 <div className="text-gray-500 text-sm line-clamp-2">Fresh Carrot 18 inch harvested last night 800mg Lorem ipsum dolor sit amet, consectetur adipiscing elit</div> {/* added limit to only two lines; will show ... if more than */}
                                 <div className="flex items-center space-x-4 pt-8"> {/* container for "Seller to Pack" with expected delivery date */}
@@ -148,7 +148,7 @@ const MyOrders = () => {
                               <div className="flex-shrink-0 w-auto pr-5"> {/* for product image */}
                                 <img src="../../src/assets/onion.png" alt="Product Image" className="w-40 h-auto object-cover" /> {/* product image */}
                               </div>
-                              <div className="flex-1 pt-5 text-left"> {/* product details */}
+                              <div className="flex-1 pt-4 text-left"> {/* product details */}
                                 <div className="text-base font-bold mb-2 text-gray-600">Onions</div> 
                                 <div className="text-gray-500 text-sm line-clamp-2">Fresh Onions 18 inch harvested last night 800mg Lorem ipsum dolor sit amet, consectetur adipiscing elit</div> {/* added limit to only two lines; will show ... if more than */}
                                 <div className="flex items-center space-x-4 pt-8"> {/* container for "Seller to Pack" with expected delivery date */}
