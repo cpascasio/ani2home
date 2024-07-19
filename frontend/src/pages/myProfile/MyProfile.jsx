@@ -140,11 +140,52 @@ const MyProfile = () => {
                             <div className="w-1/4 mt-8"> {/* Account Settings Section  */}
                             <h2 className="text-lg font-bold text-gray-600 text-left pb-5">Account Settings</h2>
                                 <ul className="space-y-4 text-left pl-8 pb-2">
+
+                                    {/* ------------- Change Password ------------ */}
                                     <li>
-                                        <button onClick="openModal('changePassword')" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
-                                            Change Password
+                                        <button className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out"
+                                                onClick={() => document.getElementById('modal_ChangePass').showModal()}>Change Password
                                         </button>
+                                        <dialog id="modal_ChangePass" className="modal">
+                                            <div className="modal-box w-11/12 max-w-lg p-6 bg-white shadow-lg rounded-md">
+                                                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                                                        onClick={() => document.getElementById('modal_ChangePass').close()}>✕
+                                                </button>
+                                                <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Change Password</h3>
+                                                <form method="dialog" className="space-y-4">
+                                                    <div className="flex flex-col">
+                                                        <label htmlFor="oldPassword" className="text-sm font-medium text-gray-600">Old Password</label>
+                                                        <input type="password" id="oldPassword" name="oldPassword"
+                                                            className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <label htmlFor="newPassword" className="text-sm font-medium text-gray-600">New Password</label>
+                                                        <input type="password" id="newPassword" name="newPassword"
+                                                            className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-600">Confirm Password</label>
+                                                        <input type="password" id="confirmPassword" name="confirmPassword"
+                                                            className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                    </div>
+                                                    <div className="flex justify-end space-x-2">
+                                                        <button type="button"
+                                                                className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none px-4"
+                                                                onClick={() => document.getElementById('modal_ChangePass').close()}>Cancel
+                                                        </button>
+                                                        <button type="submit"
+                                                                className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
+                                                                onClick={() => console.log('Save logic here')}>Save
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </dialog>
                                     </li>
+
+
+
+
                                     <li>
                                         <button onClick="openModal('deleteShop')" className="text-gray-600 hover:text-red-500 hover:font-bold transition duration-800 ease-in-out">
                                             Delete Shop
