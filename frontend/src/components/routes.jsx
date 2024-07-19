@@ -5,7 +5,6 @@ import Products from "../pages/products/Products";
 import ShopProfile from "../pages/shopprofile/ShopProfile";
 import MyProfile from "../pages/myProfile/MyProfile";
 import MyOrders from "../pages/myOrders/MyOrders";
-import MyArticles from "../pages/myArticles/MyArticles";
 import MyShop from "../pages/myShop/MyShop";
 
 
@@ -17,7 +16,6 @@ const routes = [
     { path: "/shopProfile", element: <ShopProfile />, name: "ShopProfile" },
     { path: "/myProfile", element: <MyProfile />, name: "MyProfile" },
     { path: "/myOrders", element: <MyOrders />, name: "MyOrders" },
-    { path: "/myArticles", element: <MyArticles />, name: "MyArticles" },
     { path: "/myShop", element: <MyShop />, name: "MyShop" }
     
 ];
