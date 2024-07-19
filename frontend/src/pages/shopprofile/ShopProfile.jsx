@@ -214,63 +214,82 @@ const ShopProfile = () => {
                         </div>
                     </div>
                     <div className="flex flex-col ml-6 w-full"> {/* Flex column for sorting and boxes */}
-                        <div className="w-[1010px] h-[55px] bg-[#0B472D] flex items-center pl-4 mb-4"> {/* rectangle */}
-                            <span className="text-white text-2xl font-inter mx-2">Sort by</span>
-                            <div
-                                className={getButtonClassName('default')}
-                                onClick={() => setSelectedButton('default')}
-                            >
-                                Default
-                            </div>
-                            <div
-                                className={getButtonClassName('topSales')}
-                                onClick={() => setSelectedButton('topSales')}
-                            >
-                                Top Sales
-                            </div>
-                            <div
-                                className={getButtonClassName('topRated')}
-                                onClick={() => setSelectedButton('topRated')}
-                            >
-                                Top Rated
-                            </div>
-                            <div className="flex-1 flex items-center justify-end"> {/* Container for the search bar */}
-                                <form className="flex items-center">
-                                    <input
-                                        className="w-[286px] h-[30px] bg-white rounded-full px-4 mr-3"
-                                        type="text"
-                                        placeholder="Vegetables, Fruits, Meat..."
-                                        style={{ fontSize: '11px' }} // Inline style for placeholder text size
-                                    />
-                                    <div className="flex items-center ml-4">
-                                        <span className="text-white font-inter text-[18px] mr-2" style={{ minWidth: '100px' }}>
-                                            {isAscending ? 'Ascending' : 'Descending'}
-                                        </span>
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault(); // Prevent the default form submission
-                                                setIsAscending(!isAscending);
-                                            }}
-                                            className="flex items-center p-1"
-                                        >
-                                            <img
-                                                src={isAscending ? SortUp : SortDown}
-                                                alt={isAscending ? 'Sort Ascending' : 'Sort Descending'}
-                                                className="w-8 h-8 mr-4"
-                                            />
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div> {/* rectangle end */}
-                        <div className="flex justify-between w-[1010px]"> {/* Container for white boxes */}
-                            {[...Array(5)].map((_, index) => ( /* Create 5 white boxes */
-                                <div key={index} className="w-[178px] h-[284px] bg-white border-2 border-gray-300"> {/* white box */}
-                                </div>
-                            ))}
+    <div className="w-[1010px] h-[55px] bg-[#0B472D] flex items-center pl-4 mb-4"> {/* rectangle */}
+        <span className="text-white text-2xl font-inter mx-2">Sort by</span>
+        <div
+            className={getButtonClassName('default')}
+            onClick={() => setSelectedButton('default')}
+        >
+            Default
+        </div>
+        <div
+            className={getButtonClassName('topSales')}
+            onClick={() => setSelectedButton('topSales')}
+        >
+            Top Sales
+        </div>
+        <div
+            className={getButtonClassName('topRated')}
+            onClick={() => setSelectedButton('topRated')}
+        >
+            Top Rated
+        </div>
+        <div className="flex-1 flex items-center justify-end"> {/* Container for the search bar */}
+            <form className="flex items-center">
+                <input
+                    className="w-[286px] h-[30px] bg-white rounded-full px-4 mr-3"
+                    type="text"
+                    placeholder="Vegetables, Fruits, Meat..."
+                    style={{ fontSize: '11px' }} // Inline style for placeholder text size
+                />
+                <div className="flex items-center ml-4">
+                    <span className="text-white font-inter text-[18px] mr-2" style={{ minWidth: '100px' }}>
+                        {isAscending ? 'Ascending' : 'Descending'}
+                    </span>
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault(); // Prevent the default form submission
+                            setIsAscending(!isAscending);
+                        }}
+                        className="flex items-center p-1"
+                    >
+                        <img
+                            src={isAscending ? SortUp : SortDown}
+                            alt={isAscending ? 'Sort Ascending' : 'Sort Descending'}
+                            className="w-8 h-8 mr-4"
+                        />
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div> {/* rectangle end */}
+    <div className="overflow-y-auto max-h-[calc(2*284px+16px)]"> {/* Scrollable container with max height */}
+        {[...Array(3)].map((_, rowIndex) => ( /* Create 2 rows of boxes */
+            <div key={rowIndex} className="w-[1010px] flex justify-between mb-4"> {/* Container for white boxes */}
+                {[...Array(5)].map((_, boxIndex) => ( /* Create 5 white boxes per row */
+                    <div key={boxIndex} className="w-[178px] h-[284px] bg-white flex flex-col items-center border-2 border-gray-300"> {/* white box */}
+                        <img src={Carrot} alt="Carrot" className="w-[178px] h-[178px] object-cover mb-2" />
+                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[13px] font-inter text-[#737373] text-left mt-[-10px]"> {/* description text box */}
+                            Fresh Carrot 18 inch harvested la...
+                        </div>
+                        <div className="p-2 pb-1 pl-5 pr-3 w-full text-[11px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
+                            ₱695.00
+                        </div>
+                        <div className="flex items-center justify-start w-full pl-4 mt-[-px]"> {/* star ratings */}
+                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
+                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
+                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
+                            <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4 mx-0.1" />
+                            <img src={Star} alt="Star" className="w-4 h-4 mx-0.1" />
+                            <div className="text-[8px] font-inter text-[#737373] ml-1 mt-1">4.5k sold</div>
                         </div>
                     </div>
-                    {/* Product cards section */}
+                ))}
+            </div>
+        ))}
+    </div>
+</div>
+
                 </div> {/* main container end */}
 
             </div>
