@@ -104,7 +104,7 @@ const ShopProfile = () => {
                 <div className="mt-4 flex justify-between"> {/* container for white boxes */}
                     <div className="w-[244px] h-[364px] bg-white flex flex-col items-center"> {/* white box */}
                         <img src={Carrot} alt="Carrot" className="w-[244px] h-[244px] object-cover mb-2" />
-                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
+                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] line-clamp-2 font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
                             Fresh Carrot 18 inch harvested last night 800mg sale emeru...
                         </div>
                         <div className="p-2 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
@@ -121,7 +121,7 @@ const ShopProfile = () => {
                     </div>
                     <div className="w-[244px] h-[364px] bg-white flex flex-col items-center"> {/* white box */}
                         <img src={Cabbage} alt="Cabbage" className="w-[244px] h-[244px] object-cover mb-2" />
-                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
+                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] line-clamp-2 font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
                             Fresh Carrot 18 inch harvested last night 800mg sale emeru...
                         </div>
                         <div className="p-2 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
@@ -138,7 +138,7 @@ const ShopProfile = () => {
                     </div>
                     <div className="w-[244px] h-[364px] bg-white flex flex-col items-center"> {/* white box */}
                         <img src={Onion} alt="Onion" className="w-[244px] h-[244px] object-cover mb-2" />
-                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
+                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] line-clamp-2 font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
                             Fresh Carrot 18 inch harvested last night 800mg sale emeru...
                         </div>
                         <div className="p-2 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
@@ -158,7 +158,7 @@ const ShopProfile = () => {
                         <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
                             Fresh Carrot 18 inch harvested last night 800mg sale emeru...
                         </div>
-                        <div className="p-2 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
+                        <div className="p-2 pb-1 pl-5 pr-3 w-full text-[15px] line-clamp-2 font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
                             ₱695.00
                         </div>
                         <div className="flex items-center justify-start w-full pl-4 mt-[-px]"> {/* star ratings */}
@@ -269,8 +269,8 @@ const ShopProfile = () => {
                 {[...Array(5)].map((_, boxIndex) => ( /* Create 5 white boxes per row */
                     <div key={boxIndex} className="w-[178px] h-[284px] bg-white flex flex-col items-center border-2 border-gray-300"> {/* white box */}
                         <img src={Carrot} alt="Carrot" className="w-[178px] h-[178px] object-cover mb-2" />
-                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[13px] font-inter text-[#737373] text-left mt-[-10px]"> {/* description text box */}
-                            Fresh Carrot 18 inch harvested la...
+                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[13px] line-clamp-2 font-inter text-[#737373] text-left mt-[-10px]"> {/* description text box */}
+                        Fresh Carrot 18 inch harvested last night 800mg sale emeru
                         </div>
                         <div className="p-2 pb-1 pl-5 pr-3 w-full text-[11px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
                             ₱695.00
