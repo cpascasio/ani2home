@@ -152,26 +152,43 @@ const ShopProfile = () => {
                 </div>
                 {/* End of best sellers */}
 
+                <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-10">
+                    ALL PRODUCTS
+                </div>
                 {/* Categories Section */}
-                <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-5 flex items-center">
-                    <img src={HorizontalLines} alt="Horizontal Lines" className="w-[20px] h-[20px] mr-2" />
-                    Categories
+                <div className="flex mt-7">
+                    <div className="w-[200px]">
+                        <div className="flex items-center text-gray-600 mb-3">
+                            <img src={HorizontalLines} alt="Categories Icon" className="w-[20px] h-[20px]" />
+                            <span className="text-[18px] font-inter font-bold pl-2">Categories</span>
+                        </div>
+                        <div className="flex flex-col text-left mx-3">
+                            <a href="#category1" className="text-[16px] font-bold text-gray-800 mb-3 hover:underline">All</a>
+                            <a href="#category2" className="text-[16px] text-gray-800 mb-3 hover:underline">Vegetables</a>
+                            <a href="#category3" className="text-[16px] text-gray-800 mb-3 hover:underline">Meat</a>
+                            <a href="#category4" className="text-[16px] text-gray-800 mb-3 hover:underline">Fruits</a>
+                        </div>
+                    </div>
+                    <div className="w-[1010px] h-[55px] bg-[#0B472D] flex items-center pl-4"> {/* rectangle */}
+                        <span className="text-white text-2xl font-inter">Sort by</span>
+                        <div className="bg-[#67B045] text-[12px] text-white font-inter rounded px-4 py-2 ml-4 w-[85px] h-[32px] flex items-center justify-center"> {/* button */}
+                            <button className="w-full h-full flex items-center justify-center text-white">
+                                Default
+                            </button>
+                        </div>
+                        <div className="bg-[#FFFFFF] text-[12px] text-white font-inter rounded px-4 py-2 ml-4 w-[85px] h-[32px] flex items-center justify-center"> {/* button */}
+                            <button className="w-full h-full flex items-center justify-center text-[#1E1E1E]">
+                                Top Sales
+                            </button>
+                        </div>
+                        <div className="bg-[#FFFFFF] text-[12px] text-white font-inter rounded px-4 py-2 ml-4 w-[86px] h-[32px] flex items-center justify-center"> {/* button */}
+                            <button className="w-full h-full flex items-center justify-center text-[#1E1E1E]">
+                                Top Rated
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div className="flex flex-col items-start pl-5 pt-2">
-                    <a href="#" className="text-[18px] font-inter text-[#737373] hover:text-[#E11919] transition-colors duration-300">
-                        Carrots
-                    </a>
-                    <a href="#" className="text-[18px] font-inter text-[#737373] hover:text-[#E11919] transition-colors duration-300">
-                        Cabbage
-                    </a>
-                    <a href="#" className="text-[18px] font-inter text-[#737373] hover:text-[#E11919] transition-colors duration-300">
-                        Onion
-                    </a>
-                    <a href="#" className="text-[18px] font-inter text-[#737373] hover:text-[#E11919] transition-colors duration-300">
-                        Garlic
-                    </a>
-                </div>
-                {/* End of categories */}
+                {/* End of Categories and Rectangle */}
             </div>
             <Footer />
         </div>
