@@ -6,7 +6,6 @@ const userRouters = require('./controllers/users'); // Import the user routes
 const app = express();
 
 
-
 app.use(cors()); // Use CORS module
 
 const port = process.env.PORT || 5000;
@@ -15,10 +14,13 @@ const port = process.env.PORT || 5000;
 const apiRouter = express.Router();
 
 // Apply middleware specific to API routes
-apiRouter.use(middleware.decodeToken); // checks if the user is authorized by checking the token
+//apiRouter.use(middleware.decodeToken); // checks if the user is authorized by checking the token
 
 // Mount the user routes to the API router
 apiRouter.use('/users', userRouters); // Use the user routes
+
+// Middleware to parse JSON bodies
+app.use(express.json());
 
 // Mount the API router to the app
 app.use('/api', apiRouter);

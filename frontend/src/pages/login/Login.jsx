@@ -25,6 +25,10 @@ const Login = () => {
     , []);
 
 
+    useEffect(() => {
+      console.log("AUTHENTICATED? " + window.localStorage.getItem('authenticated'));
+  }, []);
+
   const handleLogin = async () => {
     try {
       const response = await axios.post("http://localhost:5000/api/auth/login", {
@@ -45,6 +49,7 @@ const Login = () => {
   const handleLogout = () => {
     setAuthenticated(false);
     window.localStorage.removeItem('authenticated');
+    auth.signOut();
 };
 
 const handleEmailLogin = async (email, password) => {

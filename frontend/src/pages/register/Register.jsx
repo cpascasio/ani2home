@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from '../../config/firebase-config'; // Adjust the import path as necessary
 
 const Register = () => {
+    const [authenticated, setAuthenticated] = useState(false || window.localStorage.getItem('authenticated') === 'true');
+  const [token, setToken] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
+
+
+    useEffect(() => {
+        console.log("AUTHENTICATED? " + window.localStorage.getItem('authenticated'));
+    }, []);
+
 
     const handleEmailSignUp = async (email, password) => {
         if (password !== confirmPassword) {
@@ -17,10 +25,10 @@ const Register = () => {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             console.log(userCredential.user);
             // Update authenticated state or perform other actions
-            // setAuthenticated(true);
-            // window.localStorage.setItem('authenticated', 'true');
-            // const tokenResult = await userCredential.user.getIdTokenResult();
-            // setToken(tokenResult.token);
+            setAuthenticated(true);
+            window.localStorage.setItem('authenticated', 'true');
+            const tokenResult = await userCredential.user.getIdTokenResult();
+            setToken(tokenResult.token);
         } catch (error) {
             console.error(error.message);
             setError(error.message);
