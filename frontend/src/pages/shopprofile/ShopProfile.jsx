@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../components/Header.jsx';
 import Footer from '../../components/Footer.jsx';
 import './shopprofile.css';
@@ -11,15 +11,28 @@ import StarFilled from '../../assets/StarFilled.png';
 import StarHalfEmpty from '../../assets/StarHalfEmpty.png';
 import Star from '../../assets/Star.png';
 import HorizontalLines from '../../assets/horizontallines.png';
+import SortUp from '../../assets/SortUp.png'; // Assuming you have these images
+import SortDown from '../../assets/SortDown.png'; // Assuming you have these images
 
 const ShopProfile = () => {
     const [selectedButton, setSelectedButton] = useState('default');
+    const [isAscending, setIsAscending] = useState(true); // State for sorting direction
+    const [selectedCategory, setSelectedCategory] = useState('All'); // State for selected category
 
     const getButtonClassName = (buttonType) => {
-        return `text-[12px] font-inter rounded px-4 py-2 ml-4 w-[85px] h-[32px] flex items-center justify-center cursor-pointer transition-colors duration-300 ${
+        return `text-[12px] font-inter rounded px-4 py-2 ml-4 w-[86px] h-[32px] flex items-center justify-center cursor-pointer transition-colors duration-300 ${
             selectedButton === buttonType ? 'bg-[#67B045] text-white' : 'bg-white text-[#1E1E1E]'
         }`;
     };
+
+    const handleCategoryClick = (category) => {
+        setSelectedCategory(category);
+    };
+
+    useEffect(() => {
+        // Redirect to the category section when the component mounts
+        window.location.hash = '#category1'; // Modified line: Automatically add '#category1' to the URL
+    }, []);
 
     return (
         <div className="w-full">
@@ -170,37 +183,93 @@ const ShopProfile = () => {
                             <span className="text-[18px] font-inter font-bold pl-2">Categories</span>
                         </div>
                         <div className="flex flex-col text-left mx-3">
-                            <a href="#category1" className="text-[16px] font-bold text-gray-800 mb-3 hover:underline">All</a>
-                            <a href="#category2" className="text-[16px] text-gray-800 mb-3 hover:underline">Vegetables</a>
-                            <a href="#category3" className="text-[16px] text-gray-800 mb-3 hover:underline">Meat</a>
-                            <a href="#category4" className="text-[16px] text-gray-800 mb-3 hover:underline">Fruits</a>
+                            <a
+                                href="#category1"
+                                className={`text-[16px] ${selectedCategory === 'All' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:underline`}
+                                onClick={() => handleCategoryClick('All')}
+                            >
+                                All
+                            </a>
+                            <a
+                                href="#category2"
+                                className={`text-[16px] ${selectedCategory === 'Vegetables' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:underline`}
+                                onClick={() => handleCategoryClick('Vegetables')}
+                            >
+                                Vegetables
+                            </a>
+                            <a
+                                href="#category3"
+                                className={`text-[16px] ${selectedCategory === 'Meat' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:underline`}
+                                onClick={() => handleCategoryClick('Meat')}
+                            >
+                                Meat
+                            </a>
+                            <a
+                                href="#category4"
+                                className={`text-[16px] ${selectedCategory === 'Fruits' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:underline`}
+                                onClick={() => handleCategoryClick('Fruits')}
+                            >
+                                Fruits
+                            </a>
                         </div>
                     </div>
-                <div className="mt-6"> {/* Sort by section */}
-                    <div className="w-[1010px] h-[55px] bg-[#0B472D] flex items-center pl-4"> {/* rectangle */}
-                        <span className="text-white text-2xl font-inter">Sort by</span>
-                        <div
-                            className={getButtonClassName('default')}
-                            onClick={() => setSelectedButton('default')}
-                        >
-                            Default
+                    <div className="flex flex-col ml-6 w-full"> {/* Flex column for sorting and boxes */}
+                        <div className="w-[1010px] h-[55px] bg-[#0B472D] flex items-center pl-4 mb-4"> {/* rectangle */}
+                            <span className="text-white text-2xl font-inter mx-2">Sort by</span>
+                            <div
+                                className={getButtonClassName('default')}
+                                onClick={() => setSelectedButton('default')}
+                            >
+                                Default
+                            </div>
+                            <div
+                                className={getButtonClassName('topSales')}
+                                onClick={() => setSelectedButton('topSales')}
+                            >
+                                Top Sales
+                            </div>
+                            <div
+                                className={getButtonClassName('topRated')}
+                                onClick={() => setSelectedButton('topRated')}
+                            >
+                                Top Rated
+                            </div>
+                            <div className="flex-1 flex items-center justify-end"> {/* Container for the search bar */}
+                                <form className="flex items-center">
+                                    <input
+                                        className="w-[286px] h-[30px] bg-white rounded-full px-4 mr-3"
+                                        type="text"
+                                        placeholder="Vegetables, Fruits, Meat..."
+                                        style={{ fontSize: '11px' }} // Inline style for placeholder text size
+                                    />
+                                    <div className="flex items-center ml-4">
+                                        <span className="text-white font-inter text-[18px] mr-2" style={{ minWidth: '100px' }}>
+                                            {isAscending ? 'Ascending' : 'Descending'}
+                                        </span>
+                                        <button
+                                            onClick={() => setIsAscending(!isAscending)}
+                                            className="flex items-center p-1"
+                                        >
+                                            <img
+                                                src={isAscending ? SortUp : SortDown}
+                                                alt={isAscending ? 'Sort Ascending' : 'Sort Descending'}
+                                                className="w-8 h-8 mr-4"
+                                            />
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div> {/* rectangle end */}
+                        <div className="flex justify-between w-[1010px]"> {/* Container for white boxes */}
+                            {[...Array(5)].map((_, index) => ( /* Create 5 white boxes */
+                                <div key={index} className="w-[178px] h-[284px] bg-white border-2 border-gray-300"> {/* white box */}
+                                </div>
+                            ))}
                         </div>
-                        <div
-                            className={getButtonClassName('topSales')}
-                            onClick={() => setSelectedButton('topSales')}
-                        >
-                            Top Sales
-                        </div>
-                        <div
-                            className={getButtonClassName('topRated')}
-                            onClick={() => setSelectedButton('topRated')}
-                        >
-                            Top Rated
-                        </div>
-                    </div> {/* rectangle end */}
-                </div>
-                {/* Product cards section */}
+                    </div>
+                    {/* Product cards section */}
                 </div> {/* main container end */}
+
             </div>
             <Footer />
         </div>
