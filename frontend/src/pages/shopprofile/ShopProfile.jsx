@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '../../components/Header.jsx';
 import Footer from '../../components/Footer.jsx';
 import './shopprofile.css';
@@ -13,6 +13,14 @@ import Star from '../../assets/Star.png';
 import HorizontalLines from '../../assets/horizontallines.png';
 
 const ShopProfile = () => {
+    const [selectedButton, setSelectedButton] = useState('default');
+
+    const getButtonClassName = (buttonType) => {
+        return `text-[12px] font-inter rounded px-4 py-2 ml-4 w-[85px] h-[32px] flex items-center justify-center cursor-pointer transition-colors duration-300 ${
+            selectedButton === buttonType ? 'bg-[#67B045] text-white' : 'bg-white text-[#1E1E1E]'
+        }`;
+    };
+
     return (
         <div className="w-full">
             <Header />
@@ -118,7 +126,7 @@ const ShopProfile = () => {
                     <div className="w-[244px] h-[364px] bg-white flex flex-col items-center"> {/* white box */}
                         <img src={Onion} alt="Onion" className="w-[244px] h-[244px] object-cover mb-2" />
                         <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
-                            Fresh Onion 18 inch harvested last night 800mg sale emeru...
+                            Fresh Carrot 18 inch harvested last night 800mg sale emeru...
                         </div>
                         <div className="p-2 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
                             ₱695.00
@@ -129,13 +137,13 @@ const ShopProfile = () => {
                             <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
                             <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4 mx-0.1" />
                             <img src={Star} alt="Star" className="w-4 h-4 mx-0.1" />
-                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">2.1k sold</div>
+                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">1.1k sold</div>
                         </div>
                     </div>
                     <div className="w-[244px] h-[364px] bg-white flex flex-col items-center"> {/* white box */}
                         <img src={Garlic} alt="Garlic" className="w-[244px] h-[244px] object-cover mb-2" />
                         <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
-                            Fresh Garlic 18 inch harvested last night 800mg sale emeru...
+                            Fresh Carrot 18 inch harvested last night 800mg sale emeru...
                         </div>
                         <div className="p-2 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
                             ₱695.00
@@ -146,11 +154,10 @@ const ShopProfile = () => {
                             <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
                             <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4 mx-0.1" />
                             <img src={Star} alt="Star" className="w-4 h-4 mx-0.1" />
-                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">7.8k sold</div>
+                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">2.5k sold</div>
                         </div>
                     </div>
                 </div>
-                {/* End of best sellers */}
 
                 <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-10">
                     ALL PRODUCTS
@@ -169,30 +176,35 @@ const ShopProfile = () => {
                             <a href="#category4" className="text-[16px] text-gray-800 mb-3 hover:underline">Fruits</a>
                         </div>
                     </div>
+                <div className="mt-6"> {/* Sort by section */}
                     <div className="w-[1010px] h-[55px] bg-[#0B472D] flex items-center pl-4"> {/* rectangle */}
                         <span className="text-white text-2xl font-inter">Sort by</span>
-                        <div className="bg-[#67B045] text-[12px] text-white font-inter rounded px-4 py-2 ml-4 w-[85px] h-[32px] flex items-center justify-center"> {/* button */}
-                            <button className="w-full h-full flex items-center justify-center text-white">
-                                Default
-                            </button>
+                        <div
+                            className={getButtonClassName('default')}
+                            onClick={() => setSelectedButton('default')}
+                        >
+                            Default
                         </div>
-                        <div className="bg-[#FFFFFF] text-[12px] text-white font-inter rounded px-4 py-2 ml-4 w-[85px] h-[32px] flex items-center justify-center"> {/* button */}
-                            <button className="w-full h-full flex items-center justify-center text-[#1E1E1E]">
-                                Top Sales
-                            </button>
+                        <div
+                            className={getButtonClassName('topSales')}
+                            onClick={() => setSelectedButton('topSales')}
+                        >
+                            Top Sales
                         </div>
-                        <div className="bg-[#FFFFFF] text-[12px] text-white font-inter rounded px-4 py-2 ml-4 w-[86px] h-[32px] flex items-center justify-center"> {/* button */}
-                            <button className="w-full h-full flex items-center justify-center text-[#1E1E1E]">
-                                Top Rated
-                            </button>
+                        <div
+                            className={getButtonClassName('topRated')}
+                            onClick={() => setSelectedButton('topRated')}
+                        >
+                            Top Rated
                         </div>
-                    </div>
+                    </div> {/* rectangle end */}
                 </div>
-                {/* End of Categories and Rectangle */}
+                {/* Product cards section */}
+                </div> {/* main container end */}
             </div>
             <Footer />
         </div>
     );
-}
+};
 
 export default ShopProfile;
