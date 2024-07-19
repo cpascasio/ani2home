@@ -136,8 +136,9 @@ const MyProfile = () => {
                                     </button>
                                 </div> {/* end of box for prof pic and buttons */}
                             </div>  {/* end of flex box */}
-                            
-                            <div className="w-1/4 mt-8"> {/* Account Settings Section  */}
+
+                            {/* ------ Account Settings Section ------  */}
+                            <div className="w-1/4 mt-8"> 
                             <h2 className="text-lg font-bold text-gray-600 text-left pb-5">Account Settings</h2>
                                 <ul className="space-y-4 text-left pl-8 pb-2">
 
