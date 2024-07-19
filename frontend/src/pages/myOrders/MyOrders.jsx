@@ -70,13 +70,13 @@ const MyOrders = () => {
                           <div className="text-lg font-bold mb-2 text-gray-600 pb-5">USER PROFILE</div>
                           <ul className="space-y-4 text-left">
                               <li>
-                                  <a href="#" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Profile</a>
+                                  <a href="/myProfile" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Profile</a>
                               </li>
                               <li>
                                   <a href="#" className="text-gray-600 underline hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Orders</a>
                               </li>
                               <li>
-                                  <a href="#" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Shop</a>
+                                  <a href="/myShop" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Shop</a>
                               </li>
                           </ul>
                       </div>
