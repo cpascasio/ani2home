@@ -185,28 +185,28 @@ const ShopProfile = () => {
                         <div className="flex flex-col text-left mx-3">
                             <a
                                 href="#category1"
-                                className={`text-[16px] ${selectedCategory === 'All' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:underline`}
+                                className={`text-[16px] ${selectedCategory === 'All' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:text-blue-500`}
                                 onClick={() => handleCategoryClick('All')}
                             >
                                 All
                             </a>
                             <a
                                 href="#category2"
-                                className={`text-[16px] ${selectedCategory === 'Vegetables' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:underline`}
+                                className={`text-[16px] ${selectedCategory === 'Vegetables' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:text-blue-500`}
                                 onClick={() => handleCategoryClick('Vegetables')}
                             >
                                 Vegetables
                             </a>
                             <a
                                 href="#category3"
-                                className={`text-[16px] ${selectedCategory === 'Meat' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:underline`}
+                                className={`text-[16px] ${selectedCategory === 'Meat' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:text-blue-500`}
                                 onClick={() => handleCategoryClick('Meat')}
                             >
                                 Meat
                             </a>
                             <a
                                 href="#category4"
-                                className={`text-[16px] ${selectedCategory === 'Fruits' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:underline`}
+                                className={`text-[16px] ${selectedCategory === 'Fruits' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:text-blue-500`}
                                 onClick={() => handleCategoryClick('Fruits')}
                             >
                                 Fruits
