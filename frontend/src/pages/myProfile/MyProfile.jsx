@@ -73,10 +73,10 @@ const MyProfile = () => {
                                 <a href="#" className="text-gray-600 underline hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Profile</a>
                             </li>
                             <li>
-                                <a href="#" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Orders</a>
+                                <a href="/myOrders" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Orders</a>
                             </li>
                             <li>
-                                <a href="#" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Shop</a>
+                                <a href="/myShop" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Shop</a>
                             </li>
                         </ul>
                     </div>
@@ -118,7 +118,7 @@ const MyProfile = () => {
                                                 <td className="text-left px-8 pb-2">Dasmarinas, Cavite</td>
                                             </tr>
                                             <tr>
-                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Bio:</td>
+                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium align-top">Bio:</td>
                                                 <td className="text-justify px-8 pb-2">Fernando is the proud owner of Pogi Farms where he passionately practices sustainable agriculture. He cultivates organiz produce on his
                                                 expansive land and welcomes visitors for educational farm tours, promoting community engagement and environmental awareness.</td>
                                             </tr>
@@ -136,29 +136,179 @@ const MyProfile = () => {
                                     </button>
                                 </div> {/* end of box for prof pic and buttons */}
                             </div>  {/* end of flex box */}
-                            
-                            <div className="w-1/4 mt-8"> {/* Account Settings Section  */}
+
+                            {/* ------ Account Settings Section ------  */}
+                            <div className="w-1/4 mt-8"> 
                             <h2 className="text-lg font-bold text-gray-600 text-left pb-5">Account Settings</h2>
                                 <ul className="space-y-4 text-left pl-8 pb-2">
+
+                                    {/* ------------- Change Password ------------ */}
                                     <li>
-                                        <button onClick="openModal('changePassword')" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
-                                            Change Password
+                                        <button className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out"
+                                                onClick={() => document.getElementById('modal_ChangePass').showModal()}>Change Password
                                         </button>
+                                        <dialog id="modal_ChangePass" className="modal">
+                                            <div className="modal-box w-11/12 max-w-lg p-6 bg-white shadow-lg rounded-md">
+                                                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                                                        onClick={() => document.getElementById('modal_ChangePass').close()}>✕
+                                                </button>
+                                                <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Change Password</h3>
+                                                <form method="dialog" className="space-y-4">
+                                                    <div className="flex flex-col">
+                                                        <label htmlFor="oldPassword" className="text-sm font-medium text-gray-600">Old Password</label>
+                                                        <input type="password" id="oldPassword" name="oldPassword"
+                                                            className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <label htmlFor="newPassword" className="text-sm font-medium text-gray-600">New Password</label>
+                                                        <input type="password" id="newPassword" name="newPassword"
+                                                            className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-600">Confirm Password</label>
+                                                        <input type="password" id="confirmPassword" name="confirmPassword"
+                                                            className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                    </div>
+                                                    <div className="flex justify-end space-x-2">
+                                                        <button type="button"
+                                                                className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none px-4"
+                                                                onClick={() => document.getElementById('modal_ChangePass').close()}>Cancel
+                                                        </button>
+                                                        <button type="submit"
+                                                                className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
+                                                                onClick={() => console.log('Save logic here')}>Save
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </dialog>
+                                    </li>
+
+                                    {/* ------------- Delete Account ------------ */}
+                                    <li>
+                                        <button className="text-gray-600 hover:text-red-500 hover:font-bold transition duration-800 ease-in-out"
+                                                onClick={() => document.getElementById('modal_DeleteAcc').showModal()}>Delete Account
+                                        </button>
+                                        <dialog id="modal_DeleteAcc" className="modal">
+                                            <div className="modal-box w-8/12 max-w-md p-6 bg-white shadow-lg rounded-md">
+                                                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                                                        onClick={() => document.getElementById('modal_DeleteAcc').close()}>✕
+                                                </button>
+                                                <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Delete Account</h3>
+                                                <p className="text-sm text-gray-600 mb-4">Are you sure you want to delete your account? This action cannot be undone.</p>
+                                                <form method="dialog" className="space-y-4">
+                                                    <div className="flex flex-col">
+                                                        <input type="text" id="confirmation" name="confirmation"
+                                                            className="input input-bordered bg-gray-200 text-gray-800 border-gray-300 focus:border-red-500 mb-2"
+                                                            required
+                                                            onFocus={() => {
+                                                                document.getElementById('confirmation').classList.add('border-red-500');
+                                                            }}
+                                                            onBlur={() => {
+                                                                document.getElementById('confirmation').classList.remove('border-red-500');
+                                                            }}
+                                                            onInput={() => {
+                                                                const input = document.getElementById('confirmation');
+                                                                const deleteBtn = document.getElementById('deleteBtn');
+                                                                deleteBtn.disabled = input.value !== 'CONFIRM';
+                                                            }}/>
+                                                        <label htmlFor="confirmation" className="text-sm text-gray-600 text-center pb-5">
+                                                            Please type <span className="font-bold">"CONFIRM"</span> to continue deleting your account
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex justify-end space-x-2">
+                                                        <button type="button"
+                                                                className="btn btn-sm bg-gray-500 rounded text-white hover:bg-gray-600 border-none px-4"
+                                                                onClick={() => document.getElementById('modal_DeleteAcc').close()}>Cancel
+                                                        </button>
+                                                        <button type="submit"
+                                                                id="deleteBtn"
+                                                                className="btn btn-sm bg-red-500 rounded text-white hover:bg-red-600 border-none px-5"
+                                                                disabled
+                                                                onClick={() => console.log('Delete logic here')}>Delete
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </dialog>
+
+
+                                    {/* ------------- Delete Shop ------------ */}
                                     </li>
                                     <li>
-                                        <button onClick="openModal('deleteShop')" className="text-gray-600 hover:text-red-500 hover:font-bold transition duration-800 ease-in-out">
-                                            Delete Shop
+                                        <button className="text-gray-600 hover:text-red-500 hover:font-bold transition duration-800 ease-in-out"
+                                                onClick={() => document.getElementById('modal_DeleteShop').showModal()}>Delete Shop
                                         </button>
+                                        <dialog id="modal_DeleteShop" className="modal">
+                                            <div className="modal-box w-8/12 max-w-md p-6 bg-white shadow-lg rounded-md">
+                                                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                                                        onClick={() => document.getElementById('modal_DeleteShop').close()}>✕
+                                                </button>
+                                                <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Delete Account</h3>
+                                                <p className="text-sm text-gray-600 mb-4">Are you sure you want to delete <span className="font-bold">Pogi Farms</span>? This action cannot be undone.</p>
+                                                <form method="dialog" className="space-y-4">
+                                                    <div className="flex flex-col">
+                                                        <input type="text" id="confirmationShop" name="confirmation"
+                                                            className="input input-bordered bg-gray-200 text-gray-800 border-gray-300 focus:border-red-500 mb-2"
+                                                            required
+                                                            onFocus={() => {
+                                                                document.getElementById('confirmationShop').classList.add('border-red-500');
+                                                            }}
+                                                            onBlur={() => {
+                                                                document.getElementById('confirmationShop').classList.remove('border-red-500');
+                                                            }}
+                                                            onInput={() => {
+                                                                const input = document.getElementById('confirmation');
+                                                                const deleteBtn = document.getElementById('deleteBtn');
+                                                                deleteBtn.disabled = input.value !== 'CONFIRM';
+                                                            }}/>
+                                                        <label htmlFor="confirmation" className="text-sm text-gray-600 text-center pb-5">
+                                                            Please type <span className="font-bold">"CONFIRM"</span> to continue deleting your account
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex justify-end space-x-2">
+                                                        <button type="button"
+                                                                className="btn btn-sm bg-gray-500 rounded text-white hover:bg-gray-600 border-none px-4"
+                                                                onClick={() => document.getElementById('modal_DeleteShop').close()}>Cancel
+                                                        </button>
+                                                        <button type="submit"
+                                                                id="deleteBtn"
+                                                                className="btn btn-sm bg-red-500 rounded text-white hover:bg-red-600 border-none px-5"
+                                                                disabled
+                                                                onClick={() => console.log('Delete logic here')}>Delete
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </dialog>
                                     </li>
+
+                                    {/* ------------- Log Out ------------ */}
                                     <li>
-                                        <button onClick="openModal('deleteAccount')" className="text-gray-600 hover:text-red-500 hover:font-bold transition duration-800 ease-in-out">
-                                            Delete Account
+                                        <button className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out"
+                                                onClick={() => document.getElementById('modal_Logout').showModal()}>Log Out
                                         </button>
-                                    </li>
-                                    <li>
-                                        <button onClick="openModal('logOut')" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
-                                            Log Out
-                                        </button>
+                                        <dialog id="modal_Logout" className="modal">
+                                            <div className="modal-box w-8/12 max-w-md p-6 bg-white shadow-lg rounded-md">
+                                                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                                                        onClick={() => document.getElementById('modal_Logout').close()}>✕
+                                                </button>
+                                                <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Delete Account</h3>
+                                                <p className="text-sm text-gray-600 mb-4">Are you sure you want to log out? </p>
+                                            
+                                                <div className="flex justify-end space-x-2">
+                                                    <button type="button"
+                                                            className="btn btn-sm bg-gray-500 rounded text-white hover:bg-gray-600 border-none px-4"
+                                                            onClick={() => document.getElementById('modal_Logout').close()}>Cancel
+                                                    </button>
+                                                    <button type="button"
+                                                            className="btn btn-sm bg-blue-500 rounded text-white hover:bg-red-600 border-none px-5"
+                                                            onClick={() => console.log('Delete logic here')}>Log Out
+                                                    </button>
+                                                </div>
+                    
+                                            </div>
+                                        </dialog>
                                     </li>
                                 </ul>
                             </div> {/* END of Account Settings Section  */}
