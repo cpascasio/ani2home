@@ -263,7 +263,7 @@ const ShopProfile = () => {
             </form>
         </div>
     </div> {/* rectangle end */}
-    <div className="overflow-y-auto max-h-[calc(2*284px+16px)]"> {/* Scrollable container with max height */}
+    <div className="overflow-y-auto max-h-[calc(2*284px+16px)] mb-20"> {/* Scrollable container with max height */}
         {[...Array(3)].map((_, rowIndex) => ( /* Create 2 rows of boxes */
             <div key={rowIndex} className="w-[1010px] flex justify-between mb-4"> {/* Container for white boxes */}
                 {[...Array(5)].map((_, boxIndex) => ( /* Create 5 white boxes per row */
