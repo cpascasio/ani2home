@@ -3,14 +3,14 @@ import Header from '../../components/Header.jsx';
 import Footer from '../../components/Footer.jsx';
 import './shopprofile.css';
 import FarmCover1 from '../../assets/FarmCover1.jpg';
-import Carrot from '../../assets/carrot.png'; // Importing the carrot image
-import Cabbage from '../../assets/cabbage.png'; // Importing the cabbage image
-import Onion from '../../assets/onion.png'; // Importing the onion image
-import Garlic from '../../assets/garlic.png'; // Importing the garlic image
-import StarFilled from '../../assets/StarFilled.png'; // Importing star images
-import StarHalfEmpty from '../../assets/StarHalfEmpty.png'; // Importing star images
-import Star from '../../assets/Star.png'; // Importing star images
-import HorizontalLines from '../../assets/horizontallines.png'; // Importing the horizontal lines image
+import Carrot from '../../assets/carrot.png';
+import Cabbage from '../../assets/cabbage.png';
+import Onion from '../../assets/onion.png';
+import Garlic from '../../assets/garlic.png';
+import StarFilled from '../../assets/StarFilled.png';
+import StarHalfEmpty from '../../assets/StarHalfEmpty.png';
+import Star from '../../assets/Star.png';
+import HorizontalLines from '../../assets/horizontallines.png';
 
 const ShopProfile = () => {
     return (
@@ -129,7 +129,7 @@ const ShopProfile = () => {
                             <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
                             <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4 mx-0.1" />
                             <img src={Star} alt="Star" className="w-4 h-4 mx-0.1" />
-                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">5.6k sold</div>
+                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">2.1k sold</div>
                         </div>
                     </div>
                     <div className="w-[244px] h-[364px] bg-white flex flex-col items-center"> {/* white box */}
@@ -146,25 +146,53 @@ const ShopProfile = () => {
                             <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
                             <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4 mx-0.1" />
                             <img src={Star} alt="Star" className="w-4 h-4 mx-0.1" />
-                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">2.1k sold</div>
+                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">7.8k sold</div>
                         </div>
                     </div>
-                </div> {/* end of container for white boxes */}
+                </div>
+                {/* End of best sellers */}
 
-                <div className="mt-10 font-inter font-bold text-[18px] text-gray-600 text-left">
+                <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-10">
                     ALL PRODUCTS
                 </div>
-
-                <div className="flex items-center mt-2">
-                    <img src={HorizontalLines} alt="Horizontal Lines" className="w-4 h-4" /> {/* Replace horizontal line with image */}
-                    <div className="px-3 text-[#737373] font-regular text-[18px]">
-                        Categories
+                {/* Categories Section */}
+                <div className="flex mt-7">
+                    <div className="w-[200px]">
+                        <div className="flex items-center text-gray-600 mb-3">
+                            <img src={HorizontalLines} alt="Categories Icon" className="w-[20px] h-[20px]" />
+                            <span className="text-[18px] font-inter font-bold pl-2">Categories</span>
+                        </div>
+                        <div className="flex flex-col text-left mx-3">
+                            <a href="#category1" className="text-[16px] font-bold text-gray-800 mb-3 hover:underline">All</a>
+                            <a href="#category2" className="text-[16px] text-gray-800 mb-3 hover:underline">Vegetables</a>
+                            <a href="#category3" className="text-[16px] text-gray-800 mb-3 hover:underline">Meat</a>
+                            <a href="#category4" className="text-[16px] text-gray-800 mb-3 hover:underline">Fruits</a>
+                        </div>
+                    </div>
+                    <div className="w-[1010px] h-[55px] bg-[#0B472D] flex items-center pl-4"> {/* rectangle */}
+                        <span className="text-white text-2xl font-inter">Sort by</span>
+                        <div className="bg-[#67B045] text-[12px] text-white font-inter rounded px-4 py-2 ml-4 w-[85px] h-[32px] flex items-center justify-center"> {/* button */}
+                            <button className="w-full h-full flex items-center justify-center text-white">
+                                Default
+                            </button>
+                        </div>
+                        <div className="bg-[#FFFFFF] text-[12px] text-white font-inter rounded px-4 py-2 ml-4 w-[85px] h-[32px] flex items-center justify-center"> {/* button */}
+                            <button className="w-full h-full flex items-center justify-center text-[#1E1E1E]">
+                                Top Sales
+                            </button>
+                        </div>
+                        <div className="bg-[#FFFFFF] text-[12px] text-white font-inter rounded px-4 py-2 ml-4 w-[86px] h-[32px] flex items-center justify-center"> {/* button */}
+                            <button className="w-full h-full flex items-center justify-center text-[#1E1E1E]">
+                                Top Rated
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div> {/* main container for body end */}
+                {/* End of Categories and Rectangle */}
+            </div>
             <Footer />
         </div>
     );
-};
+}
 
 export default ShopProfile;
