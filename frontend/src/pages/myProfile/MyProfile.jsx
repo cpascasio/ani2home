@@ -183,17 +183,60 @@ const MyProfile = () => {
                                         </dialog>
                                     </li>
 
-
-
-
+                                    {/* ------------- Delete Account ------------ */}
                                     <li>
-                                        <button onClick="openModal('deleteShop')" className="text-gray-600 hover:text-red-500 hover:font-bold transition duration-800 ease-in-out">
-                                            Delete Shop
+                                        <button className="text-gray-600 hover:text-red-500 hover:font-bold transition duration-800 ease-in-out"
+                                                onClick={() => document.getElementById('modal_DeleteAcc').showModal()}>Delete Account
                                         </button>
+                                        <dialog id="modal_DeleteAcc" className="modal">
+                                            <div className="modal-box w-8/12 max-w-md p-6 bg-white shadow-lg rounded-md">
+                                                <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                                                        onClick={() => document.getElementById('modal_DeleteAcc').close()}>✕
+                                                </button>
+                                                <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Delete Account</h3>
+                                                <p className="text-sm text-gray-600 mb-4">Are you sure you want to delete your account? This action cannot be undone.</p>
+                                                <form method="dialog" className="space-y-4">
+                                                    <div className="flex flex-col">
+                                                        <input type="text" id="confirmation" name="confirmation"
+                                                            className="input input-bordered bg-gray-200 text-gray-800 border-gray-300 focus:border-red-500 mb-2"
+                                                            required
+                                                            onFocus={() => {
+                                                                document.getElementById('confirmation').classList.add('border-red-500');
+                                                            }}
+                                                            onBlur={() => {
+                                                                document.getElementById('confirmation').classList.remove('border-red-500');
+                                                            }}
+                                                            onInput={() => {
+                                                                const input = document.getElementById('confirmation');
+                                                                const deleteBtn = document.getElementById('deleteBtn');
+                                                                deleteBtn.disabled = input.value !== 'CONFIRM';
+                                                            }}/>
+                                                        <label htmlFor="confirmation" className="text-sm text-gray-600 text-center pb-5">
+                                                            Please type <span className="font-bold">"CONFIRM"</span> to continue deleting your account
+                                                        </label>
+                                                    </div>
+                                                    <div className="flex justify-end space-x-2">
+                                                        <button type="button"
+                                                                className="btn btn-sm bg-gray-500 rounded text-white hover:bg-gray-600 border-none px-4"
+                                                                onClick={() => document.getElementById('modal_DeleteAcc').close()}>Cancel
+                                                        </button>
+                                                        <button type="submit"
+                                                                id="deleteBtn"
+                                                                className="btn btn-sm bg-red-500 rounded text-white hover:bg-red-600 border-none px-5"
+                                                                disabled
+                                                                onClick={() => console.log('Delete logic here')}>Delete
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </dialog>
+
+
+                                    {/* ------------- Delete Shop ------------ */}
                                     </li>
                                     <li>
                                         <button onClick="openModal('deleteAccount')" className="text-gray-600 hover:text-red-500 hover:font-bold transition duration-800 ease-in-out">
-                                            Delete Account
+                                            Delete Shop
                                         </button>
                                     </li>
                                     <li>
