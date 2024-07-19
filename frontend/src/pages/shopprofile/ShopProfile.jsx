@@ -243,20 +243,23 @@ const ShopProfile = () => {
                                         style={{ fontSize: '11px' }} // Inline style for placeholder text size
                                     />
                                     <div className="flex items-center ml-4">
-                                        <span className="text-white font-inter text-[18px] mr-2" style={{ minWidth: '100px' }}>
-                                            {isAscending ? 'Ascending' : 'Descending'}
-                                        </span>
-                                        <button
-                                            onClick={() => setIsAscending(!isAscending)}
-                                            className="flex items-center p-1"
-                                        >
-                                            <img
-                                                src={isAscending ? SortUp : SortDown}
-                                                alt={isAscending ? 'Sort Ascending' : 'Sort Descending'}
-                                                className="w-8 h-8 mr-4"
-                                            />
-                                        </button>
-                                    </div>
+    <span className="text-white font-inter text-[18px] mr-2" style={{ minWidth: '100px' }}>
+        {isAscending ? 'Ascending' : 'Descending'}
+    </span>
+    <button
+        onClick={(e) => {
+            e.preventDefault(); // Prevent the default form submission
+            setIsAscending(!isAscending);
+        }}
+        className="flex items-center p-1"
+    >
+        <img
+            src={isAscending ? SortUp : SortDown}
+            alt={isAscending ? 'Sort Ascending' : 'Sort Descending'}
+            className="w-8 h-8 mr-4"
+        />
+    </button>
+</div>
                                 </form>
                             </div>
                         </div> {/* rectangle end */}
