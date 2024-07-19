@@ -67,7 +67,7 @@ const MyProfile = () => {
             <div className="px-40 bg-gray-200"> {/*main container for body*/}
                 <div className="flex"> {/* Main div with left and right child divs */}
                     <div className="w-40% pr-40 pt-20"> {/* Left div */}
-                        <div className="text-l font-bold mb-2 text-gray-600 pb-5">USER PROFILE</div>
+                        <div className="text-lg font-bold mb-2 text-gray-600 pb-5">USER PROFILE</div>
                         <ul className="space-y-4 text-left">
                             <li>
                                 <a href="#" className="text-gray-600 underline hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Profile</a>
@@ -81,7 +81,7 @@ const MyProfile = () => {
                         </ul>
                     </div>
                     <div className="flex-1 pt-20"> {/* Right div */}
-                        <div className="text-l font-bold mb-2 text-left text-gray-600 pb-5">My Profile</div>
+                        <div className="text-lg font-bold mb-2 text-left text-gray-600 pb-5">My Profile</div>
 
                         <div className="bg-white p-10 rounded shadow-md"> {/* white background */}
                             <div className="flex items-center justify-between mb-4">

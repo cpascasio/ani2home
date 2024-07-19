@@ -67,7 +67,7 @@ const MyOrders = () => {
               <div className="px-40 bg-gray-200"> {/*main container for body*/}
                   <div className="flex"> {/* Main div with left and right child divs */}
                       <div className="w-40% pr-40 pt-20"> {/* Left div */}
-                          <div className="text-l font-bold mb-2 text-gray-600 pb-5">USER PROFILE</div>
+                          <div className="text-lg font-bold mb-2 text-gray-600 pb-5">USER PROFILE</div>
                           <ul className="space-y-4 text-left">
                               <li>
                                   <a href="#" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Profile</a>
@@ -82,30 +82,131 @@ const MyOrders = () => {
                       </div>
 
                       <div className="flex-1 pt-20"> {/* Right div */}
-                        <div className="text-l font-bold mb-2 text-left text-gray-600 pb-5">My Orders</div>
+                        <div className="text-lg font-bold mb-2 text-left text-gray-600 pb-5">My Orders</div>
 
-                        <div className="bg-white shadow-md cursor-pointer"> {/* white background and clickable */}
-                          <div className="flex p-4"> {/* flex container with padding */}
-                            <div className="flex-shrink-0 w-1/4 pr-4"> {/* first column: product image */}
-                              <img src="path/to/product-image.jpg" alt="Product Image" className="w-full h-auto" /> {/* product image */}
+                        {/* ----- where every item starts ------- */}
+                        <div className="bg-white shadow-md cursor-pointer mb-8"> {/* white background and clickable */}
+                          <div className="flex"> {/* flex container with padding */}
+
+                            <div className="flex-shrink-0 w-auto pr-5"> {/* for product image */}
+                              <img src="../../src/assets/carrot.png" alt="Product Image" className="w-40 h-auto object-cover" /> {/* product image */}
                             </div>
-                            <div className="flex-1 pr-4"> {/* second column: product details */}
-                              <div className="font-bold text-lg">Product Title</div> {/* product title */}
-                              <div className="text-gray-600 mt-1">Product Description</div> {/* product description */}
-                              <div className="text-gray-500 mt-1">Order Status</div> {/* order status */}
+                            <div className="flex-1 pt-5 text-left"> {/* product details */}
+                              <div className="text-base font-bold mb-2 text-left text-gray-600">Carrots</div> 
+                              <div className="text-gray-500 text-sm line-clamp-2">Fresh Carrot 18 inch harvested last night 800mg Lorem ipsum dolor sit amet, consectetur adipiscing elit</div> {/* added limit to only two lines. will show ... if more than} */}
+                              <div className="text-gray-500 text-sm pt-8 italic">Out for Delivery</div> 
                             </div>
-                            <div className="w-1/6 text-right px-4"> {/* third column: quantity */}
-                              <div className="text-lg font-medium">x1</div> {/* quantity */}
+                            <div className="w-1/6 flex items-center justify-center px-4 mb-3"> {/*quantity */}
+                              <div className="text-gray-500 text-sm">x1</div>
                             </div>
-                            <div className="w-1/4 text-center px-4"> {/* fourth column: total price */}
-                              <div className="text-lg font-medium">Total Price</div> {/* total price label */}
-                              <div className="text-red-500 text-xl font-bold mt-1">$99.99</div> {/* numerical total price */}
-                              <a href="#" className="text-blue-500 underline mt-1 block">View Shop</a> {/* view shop link */}
+                            <div className="w-auto pl-4 flex flex-col items-center text-center pr-8"> {/* total price container */}
+                              <div className="text-base mt-11 text-gray-600">Total Price</div> {/* total price label */}
+                              <div className="text-red-500 text-base mt-1">₱99.99</div> {/* total price amount */}
+                              <div className="w-full text-right mt-6"> {/* right-aligned link container */}
+                                <a href="#" className="text-gray-400 underline hover:text-blue-500">View Shop</a> {/* view shop link */}
+                              </div>
+                            </div>
+
+                          </div>
+                        </div>
+                        {/* ----- where every item ends ------- */}
+
+                        {/* ----- FOR MULTIPLE ITEMS ON ONE ORDER AND WITH ESTIMATED DELIVERY DATE ------- */}
+                        <div className="bg-white shadow-md cursor-pointer mb-8"> {/* white background and clickable */}
+                          <div className=""> {/* container for multiple orders */}
+                            {/* first order */}
+                            <div className="flex mb-0"> {/* flex container for first order; remove bottom margin */}
+                              <div className="flex-shrink-0 w-auto pr-5"> {/* for product image */}
+                                <img src="../../src/assets/carrot.png" alt="Product Image" className="w-40 h-auto object-cover" /> {/* product image */}
+                              </div>
+                              <div className="flex-1 pt-5 text-left"> {/* product details */}
+                                <div className="text-base font-bold mb-2 text-gray-600">Carrots</div> 
+                                <div className="text-gray-500 text-sm line-clamp-2">Fresh Carrot 18 inch harvested last night 800mg Lorem ipsum dolor sit amet, consectetur adipiscing elit</div> {/* added limit to only two lines; will show ... if more than */}
+                                <div className="flex items-center space-x-4 pt-8"> {/* container for "Seller to Pack" with expected delivery date */}
+                                  <div className="text-gray-500 text-sm">Seller to Pack</div>
+                                  <div className="px-2 py-1 border border-blue-500 text-sm text-blue-500 rounded">Get by Aug 02</div>
+                                </div>
+                              </div>
+                              <div className="w-1/6 flex items-center justify-center px-4 mb-0"> {/* quantity; remove bottom margin */}
+                                <div className="text-gray-500 text-sm">x1</div>
+                              </div>
+                              <div className="w-auto pl-4 flex flex-col items-center text-center pr-8"> {/* total price container */}
+                                <div className="text-base mt-11 text-gray-600">Total Price</div> {/* total price label */}
+                                <div className="text-red-500 text-base mt-1">₱99.99</div> {/* total price amount */}
+                                <div className="w-full text-right mt-6"> {/* right-aligned link container */}
+                                  <a href="#" className="text-gray-400 underline hover:text-blue-500">View Shop</a> {/* view shop link */}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Divider */}
+                            <div className="border-t border-gray-300 my-0"></div> {/* styled divider with no vertical margin */}
+
+                            {/* second order */}
+                            <div className="flex mb-0"> {/* flex container for second order; remove bottom margin */}
+                              <div className="flex-shrink-0 w-auto pr-5"> {/* for product image */}
+                                <img src="../../src/assets/onion.png" alt="Product Image" className="w-40 h-auto object-cover" /> {/* product image */}
+                              </div>
+                              <div className="flex-1 pt-5 text-left"> {/* product details */}
+                                <div className="text-base font-bold mb-2 text-gray-600">Onions</div> 
+                                <div className="text-gray-500 text-sm line-clamp-2">Fresh Onions 18 inch harvested last night 800mg Lorem ipsum dolor sit amet, consectetur adipiscing elit</div> {/* added limit to only two lines; will show ... if more than */}
+                                <div className="flex items-center space-x-4 pt-8"> {/* container for "Seller to Pack" with expected delivery date */}
+                                  <div className="text-gray-500 text-sm">Seller to Pack</div>
+                                  <div className="px-2 py-1 border border-blue-500 text-sm text-blue-500 rounded">Get by Aug 02</div>
+                                </div>
+                              </div>
+                              <div className="w-1/6 flex items-center justify-center px-4 mb-0"> {/* quantity; remove bottom margin */}
+                                <div className="text-gray-500 text-sm">x1</div>
+                              </div>
+                              <div className="w-auto pl-4 flex flex-col items-center text-center pr-8"> {/* total price container */}
+                                <div className="text-base mt-11 text-gray-600">Total Price</div> {/* total price label */}
+                                <div className="text-red-500 text-base mt-1">₱99.99</div> {/* total price amount */}
+                                <div className="w-full text-right mt-6"> {/* right-aligned link container */}
+                                  <a href="#" className="text-gray-400 underline hover:text-blue-500">View Shop</a> {/* view shop link */}
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
+                        {/* ----- MULTIPLE ITEM ON ONE ORDER ends ------- */}
 
 
+
+                        {/* ------ PAGINATION ------- */}
+                        <div className="flex justify-center my-12 ">
+                          <nav aria-label="Page navigation">
+                            <ul className="flex list-none space-x-2">
+
+                              {/* -- Previous Button -- */}
+                              <li>
+                                <a href="#" className="px-3 py-1 text-gray-500 border border-gray-300 rounded bg-white hover:bg-blue-500 hover:text-white" aria-label="Previous">
+                                  &laquo;
+                                </a>
+                              </li>
+                              
+                              {/* -- Page Number Buttons -- */}
+                              <li>
+                                <a href="#" className="px-3 py-1 text-white border border-gray-300 rounded bg-green-900 hover:bg-blue-500 hover:text-white">1</a> {/*for selected/active page*/}
+                              </li>
+                              <li>
+                                <a href="#" className="px-3 py-1 text-gray-700 border border-gray-300 rounded bg-white hover:bg-blue-500 hover:text-white">2</a>
+                              </li>
+                              <li>
+                                <a href="#" className="px-3 py-1 text-gray-700 border border-gray-300 rounded bg-white hover:bg-blue-500 hover:text-white">3</a>
+                              </li>
+                              <li>
+                                <a href="#" className="px-3 py-1 text-gray-700 border border-gray-300 rounded bg-white hover:bg-blue-500 hover:text-white">4</a>
+                              </li>
+                              
+                              {/* -- Next Button -- */}
+                              <li>
+                                <a href="#" className="px-3 py-1 text-gray-500 border border-gray-300 rounded bg-white hover:bg-blue-500 hover:text-white" aria-label="Next">
+                                  &raquo;
+                                </a>
+                              </li>
+                            </ul>
+                          </nav>
+                        </div>
 
                       </div>
 
