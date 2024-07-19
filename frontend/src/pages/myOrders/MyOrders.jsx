@@ -96,24 +96,17 @@ const MyOrders = () => {
                               <div className="text-gray-500 text-sm line-clamp-2">Fresh Carrot 18 inch harvested last night 800mg Lorem ipsum dolor sit amet, consectetur adipiscing elit</div> {/* added limit to only two lines. will show ... if more than} */}
                               <div className="text-gray-500 text-sm pt-8 italic">Out for Delivery</div> 
                             </div>
-                            <div className="w-auto flex items-center justify-center px-10 mb-3"> {/*quantity */}
+                            <div className="w-1/6 flex items-center justify-center px-4 mb-0"> {/*quantity */}
                               <div className="text-gray-500 text-sm">x1</div>
                             </div>
                             <div className="w-auto flex flex-col items-center text-center pr-6"> {/* total price container */}
-                              <div className="text-base mt-8 text-gray-600">Total Price</div> {/* total price label */}
-                              <div className="text-red-500 text-base mt-1">₱99.99</div> {/* total price amount */}
-                              <div className="flex space-x-2 mt-6"> {/* Container for both buttons */}
-                                  {/* Review Button ---  this is disabled unless order received*/}
-                                  <button className="border border-gray-600 text-gray-600 text-sm py-2 px-4 rounded bg-transparent hover:bg-gray-100 transition duration-300" disabled>
-                                      Review
-                                  </button>
-
-                                  {/* Order Received Button */}
-                                  <button className="bg-green-900 text-white text-sm py-2 px-4 rounded hover:bg-blue-500 transition duration-300">
-                                      Order Received
-                                  </button>
+                                <div className="text-base mt-8 text-gray-600">Total Price</div> {/* total price label */}
+                                <div className="text-red-500 text-base mt-1">₱99.99</div> {/* total price amount */}
+                                {/* Order Received Button */}
+                                <button className="bg-green-900 text-white text-sm py-2 px-4 mt-6 rounded hover:bg-blue-500 transition duration-300">
+                                    Order Received
+                                </button>
                               </div>
-                            </div>
                           </div>
                         </div>
                         {/* ----- where every item ends ------- */}
@@ -137,7 +130,7 @@ const MyOrders = () => {
                               <div className="w-1/6 flex items-center justify-center px-4 mb-0"> {/* quantity; remove bottom margin */}
                                 <div className="text-gray-500 text-sm">x1</div>
                               </div>
-                              <div className="w-auto flex flex-col items-center text-center pr-6"> {/* total price container */}
+                              <div className="w-1/6 flex flex-col items-center text-center pr-6"> {/* total price container */}
                                 <div className="text-base mt-8 text-gray-600">Total Price</div> {/* total price label */}
                                 <div className="text-red-500 text-base mt-1">₱99.99</div> {/* total price amount */}
                                 {/* Cancel Button */}
@@ -166,7 +159,7 @@ const MyOrders = () => {
                               <div className="w-1/6 flex items-center justify-center px-4 mb-0"> {/* quantity; remove bottom margin */}
                                 <div className="text-gray-500 text-sm">x1</div>
                               </div>
-                              <div className="w-auto flex flex-col items-center text-center pr-6"> {/* total price container */}
+                              <div className="w-1/6 flex flex-col items-center text-center pr-6"> {/* total price container */}
                                 <div className="text-base mt-8 text-gray-600">Total Price</div> {/* total price label */}
                                 <div className="text-red-500 text-base mt-1">₱99.99</div> {/* total price amount */}
                                 {/* Cancel Button */}
