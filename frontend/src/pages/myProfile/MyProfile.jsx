@@ -118,7 +118,7 @@ const MyProfile = () => {
                                                 <td className="text-left px-8 pb-2">Dasmarinas, Cavite</td>
                                             </tr>
                                             <tr>
-                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Bio:</td>
+                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium align-top">Bio:</td>
                                                 <td className="text-justify px-8 pb-2">Fernando is the proud owner of Pogi Farms where he passionately practices sustainable agriculture. He cultivates organiz produce on his
                                                 expansive land and welcomes visitors for educational farm tours, promoting community engagement and environmental awareness.</td>
                                             </tr>
