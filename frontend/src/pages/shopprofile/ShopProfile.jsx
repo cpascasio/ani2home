@@ -284,6 +284,7 @@ const ShopProfile = () => {
                             <div className="text-[8px] font-inter text-[#737373] ml-1 mt-1">4.5k sold</div>
                         </div>
                     </div>
+                    
                 ))}
             </div>
         ))}
