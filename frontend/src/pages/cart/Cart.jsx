@@ -1,5 +1,6 @@
-import Header from '../../components/Header.jsx'
-import Footer from '../../components/Footer.jsx'
+import { useState } from 'react';
+import Header from '../../components/Header.jsx';
+import Footer from '../../components/Footer.jsx';
 import Carrot from '../../assets/carrot.png';
 import Cabbage from '../../assets/cabbage.png';
 import Onion from '../../assets/onion.png';
@@ -7,13 +8,19 @@ import Garlic from '../../assets/garlic.png';
 import StarFilled from '../../assets/StarFilled.png'; // path to the star images
 import StarHalfEmpty from '../../assets/StarHalfEmpty.png'; // path to the star images
 import Star from '../../assets/Star.png'; // path to the star images
-import { useState } from 'react';
 
 const CartItem = ({ product, unitPrice }) => {
     const [quantity, setQuantity] = useState(1);
+    const [showModal, setShowModal] = useState(false);
 
     const handleIncrease = () => setQuantity(prevQuantity => prevQuantity + 1);
     const handleDecrease = () => setQuantity(prevQuantity => Math.max(prevQuantity - 1, 1));
+    const handleRemoveClick = () => setShowModal(true);
+    const handleCancel = () => setShowModal(false);
+    const handleRemove = () => {
+        setShowModal(false);
+        // Implement the actual remove logic here
+    };
 
     // Calculate total price
     const totalPrice = unitPrice * quantity;
@@ -44,7 +51,7 @@ const CartItem = ({ product, unitPrice }) => {
                     <div className="flex items-center mt-5"> {/* quantity selector */}
                         <button 
                             onClick={handleDecrease} 
-                            className="w-[20px] h-[20px] flex items-center justify-center text-[16px] font-inter text-[#737373] bg-gray-200 border border-gray-300"
+                            className="w-[20px] h-[20px] flex items-center justify-center text-[16px] font-inter text-[#737373] bg-gray-200 border border-gray-300 hover:bg-gray-300 transition-colors duration-300"
                         >
                             -
                         </button>
@@ -56,7 +63,7 @@ const CartItem = ({ product, unitPrice }) => {
                         />
                         <button 
                             onClick={handleIncrease} 
-                            className="w-[20px] h-[20px] flex items-center justify-center text-[16px] font-inter text-[#737373] bg-gray-200 border border-gray-300"
+                            className="w-[20px] h-[20px] flex items-center justify-center text-[16px] font-inter text-[#737373] bg-gray-200 border border-gray-300 hover:bg-gray-300 transition-colors duration-300"
                         >
                             +
                         </button>
@@ -68,8 +75,38 @@ const CartItem = ({ product, unitPrice }) => {
                 </div>
             </div>
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2 mx-10"> {/* Remove text */}
-                <a href="#" className="text-[15px] font-inter text-[#737373] underline hover:text-blue-500">Remove</a>
+                <button 
+                    onClick={handleRemoveClick} 
+                    className="text-[15px] font-inter text-[#737373] underline hover:text-blue-500"
+                >
+                    Remove
+                </button>
             </div>
+
+            {/* Modal */}
+            {showModal && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center z-50"> {/* Added z-50 */}
+                    <div className="bg-white w-[400px] p-6 rounded-lg shadow-lg">
+                        <div className="text-[16px] font-inter text-black mb-4">
+                            Are you sure you want to remove this product?
+                        </div>
+                        <div className="flex justify-end space-x-4">
+                            <button 
+                                onClick={handleCancel} 
+                                className="w-[80px] h-[40px] bg-gray-200 text-[16px] font-inter font-bold text-[#737373] border border-gray-300 hover:bg-gray-300"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleRemove} 
+                                className="w-[80px] h-[40px] bg-[#E11919] text-[16px] font-inter font-bold text-white border border-gray-300 hover:bg-red-600"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -100,6 +137,7 @@ const Cart = () => {
                         Proceed to Checkout
                     </button>
                 </div>
+                <br/>
             </div>
             <Footer />
         </div>
