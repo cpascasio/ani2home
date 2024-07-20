@@ -1,14 +1,247 @@
 import Header from '../../components/Header.jsx'
 import Footer from '../../components/Footer.jsx'
+import LocationIcon from '../../assets/location.png' // Path to the location icon
+import Carrot from '../../assets/carrot.png'; // Path to product images
+import Cabbage from '../../assets/cabbage.png';
+import Onion from '../../assets/onion.png';
+import Garlic from '../../assets/garlic.png';
+import LogisticsIcon from '../../assets/logistics.png'; // Path to the logistics image
+import Billing from '../../assets/billing.png';
+import { useState } from 'react';
+
+const products = [
+  { image: Carrot, name: "Carrots", description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru...", unitPrice: 695.00, quantity: 2 },
+  { image: Cabbage, name: "Cabbage", description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru...", unitPrice: 695.00, quantity: 1 },
+  { image: Onion, name: "Onions", description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru...", unitPrice: 695.00, quantity: 3 },
+  { image: Garlic, name: "Garlic", description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru...", unitPrice: 695.00, quantity: 1 }
+];
+
 const Checkout = () => {
+  const [editing, setEditing] = useState(false);
+  const [fullName, setFullName] = useState('Juan Dela Cruz');
+  const [countryCode, setCountryCode] = useState('+63');
+  const [phoneNumber, setPhoneNumber] = useState('987654321');
+  const [address, setAddress] = useState('123 Main St, City, Country');
+  const [note, setNote] = useState(''); // State for the note
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Select payment method');
+  const [isGcashDropdownOpen, setIsGcashDropdownOpen] = useState(false);
+  const [gcashNumber, setGcashNumber] = useState('');
+
+  const handleEditToggle = () => {
+    setEditing(!editing);
+  };
+
+  const handleFullNameChange = (e) => {
+    setFullName(e.target.value);
+  };
+
+  const handleCountryCodeChange = (e) => {
+    setCountryCode(e.target.value);
+  };
+
+  const handlePhoneNumberChange = (e) => {
+    setPhoneNumber(e.target.value);
+  };
+
+  const handleAddressChange = (e) => {
+    setAddress(e.target.value);
+  };
+
+  const handleNoteChange = (e) => {
+    setNote(e.target.value);
+  };
+
+  const [selectedPaymentOption, setSelectedPaymentOption] = useState('');
+  const paymentOptions = ['Cash on Delivery', 'GCash'];
+
+  const handleDropdownToggle = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handlePaymentOptionSelect = (option) => {
+    setSelectedPaymentOption(option);
+    setIsDropdownOpen(false);
+  };
+
+
+  // Calculate the total price
+  const totalPrice = products.reduce((acc, product) => acc + (product.unitPrice * product.quantity), 0);
+
   return (
     <div className='w-full'>
       <Header />
-        <div className="px-40 bg-gray-200"> {/* main container for body */}
-                <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-10">
-                    YOUR CART
-                </div>
+      <div className="px-40 bg-gray-200 min-h-screen"> {/* main container for body */}
+        <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-10">
+          YOUR CART
         </div>
+        <div className="flex justify-center mt-6"> {/* container for white box */}
+          <div className="bg-white w-[848px] h-[auto] p-4"> {/* white box with padding */}
+            <div className="flex items-center"> {/* container for location icon and text */}
+              <img src={LocationIcon} alt="Location" className="w-[20px] h-[20px] mr-2" />
+              <div className="font-inter text-[15px] text-[#737373]">Delivery Address</div>
+            </div>
+            {editing ? (
+              <div className="mt-2">
+                <div className="flex items-center mb-2">
+                  <input 
+                    type="text" 
+                    value={fullName} 
+                    onChange={handleFullNameChange} 
+                    className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2 mr-2" 
+                    placeholder="Full Name"
+                  />
+                  <select 
+                    value={countryCode} 
+                    onChange={handleCountryCodeChange} 
+                    className="font-inter text-[15px] text-[#737373] border border-gray-300 p-2 mr-2"
+                  >
+                    <option value="+63">+63</option>
+                    <option value="+1">+1</option>
+                    <option value="+44">+44</option>
+                    {/* Add more country codes as needed */}
+                  </select>
+                  <input 
+                    type="text" 
+                    value={phoneNumber} 
+                    onChange={handlePhoneNumberChange} 
+                    className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2" 
+                    placeholder="Phone Number"
+                  />
+                </div>
+                <textarea 
+                  value={address} 
+                  onChange={handleAddressChange} 
+                  className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2 resize-none"
+                  rows="3"
+                  placeholder="Address"
+                />
+                <button 
+                  onClick={handleEditToggle}
+                  className="mt-2 px-4 py-2 bg-gray-200 text-[#737373] font-inter text-[15px] border border-gray-300 hover:bg-gray-300"
+                >
+                  Save
+                </button>
+              </div>
+            ) : (
+              <div 
+                className="mt-2 p-2 cursor-pointer"
+                onClick={handleEditToggle}
+              >
+                <div className="font-inter text-[15px] text-[#737373]">{fullName} | {countryCode} {phoneNumber}</div>
+                <div className="font-inter text-[15px] text-[#737373]">{address}</div>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="mt-1 flex flex-col items-center">
+          {products.map((product, index) => {
+            const totalProductPrice = product.unitPrice * product.quantity;
+            return (
+              <div key={index} className="bg-white w-[848px] h-[91px] flex items-center p-4 mb-1">
+                <img src={product.image} alt={product.name} className="w-[69px] h-[63px]" />
+                <div className="ml-4 flex flex-col justify-between">
+                  <div className="font-inter font-bold text-[18px] text-[#737373] text-left">{product.name}</div>
+                  <div className="font-inter text-[15px] text-[#737373] text-left line-clamp-1" style={{ width: '356px', height: '25px' }}>{product.description}</div>
+                </div>
+                <div className="ml-20 font-inter text-[17px] text-[#737373]">x {product.quantity}</div>
+                <div className="ml-auto flex flex-col items-center justify-center mx-10">
+                  <div className="font-inter text-[17px] text-[#737373] mx-2">Price</div>
+                  <div className="font-inter text-[15px] text-[#E11919]">₱{totalProductPrice.toFixed(2)}</div>
+                </div>
+              </div>
+            );
+          })}
+          <div className="bg-[#D5FAFF] w-[848px] h-[119px] mt-1 flex items-start p-4">
+            <img src={LogisticsIcon} alt="Logistics" className="w-[36px] h-[23px]" />
+            <div className="ml-4 flex flex-col justify-between">
+              <div className="font-inter text-[15px] text-black ml-[-70px] mb-0.5 mt-[-3px]">Shipping Details</div>
+              <div className="font-inter text-[15px] text-black ml-[-80px]">Standard Local</div>
+              <div className="font-inter text-[15px] text-black ml-[-100px]">SPX Express</div>
+              <div className="font-inter text-[13px] text-black mt-1">Guaranteed to get by 5 - 8 Aug</div>
+            </div>
+            <div className="ml-auto flex flex-col items-center justify-center mt-5 mx-12">
+              <div className="font-inter text-[17px] text-black">Price</div>
+              <div className="font-inter text-[15px] text-black">₱50.00</div>
+            </div>
+          </div>
+          <div className="bg-white w-[848px] h-[auto] mt-1 p-4">
+            <div className="font-inter text-[15px] text-[#737373]">Note</div>
+            <textarea
+              value={note}
+              onChange={handleNoteChange}
+              placeholder="Please leave a message..."
+              className="w-full border-b border-[#AFAFAF] text-[#737373] font-inter text-[15px] p-2 resize-none"
+              style={{ minHeight: '40px' }}
+            />
+          </div>
+          <div className="bg-white w-[848px] h-[46px] mt-1 flex items-center justify-between p-4">
+            <div className="font-inter text-[15px] text-[#737373]">
+              Order Total ({products.length} Items):
+            </div>
+            <div className="font-inter text-[15px] text-[#E11919] mr-10">
+              ₱{totalPrice.toFixed(2)}
+            </div>
+          </div>
+          <div className="bg-white w-[848px] h-[46px] mt-1 flex items-center justify-between p-4 border border-gray-300 relative">
+          <div className="font-inter text-[15px] text-[#737373]">
+            Payment Option
+          </div>
+          <div className="flex items-center">
+            <div className="font-inter text-[15px] text-[#E11919]">
+              {selectedPaymentOption || 'Select payment method'}
+            </div>
+            <svg
+              onClick={handleDropdownToggle}
+              className={`w-[20px] h-[20px] ml-2 cursor-pointer transition-transform duration-300 ${isDropdownOpen ? 'rotate-90' : ''}`}
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </div>
+          {isDropdownOpen && (
+            <div className="absolute bg-white border border-gray-300 w-full mt-1 z-10">
+              {paymentOptions.map((option) => (
+                <div
+                  key={option}
+                  onClick={() => handlePaymentOptionSelect(option)}
+                  className="flex items-center p-2 cursor-pointer hover:bg-gray-200"
+                >
+                  <div className={`w-4 h-4 border rounded-full flex items-center justify-center mr-2 ${selectedPaymentOption === option ? 'bg-blue-500' : 'bg-white'}`}>
+                    {selectedPaymentOption === option && (
+                      <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+                    )}
+                  </div>
+                  <div className="font-inter text-[15px] text-[#737373]">{option}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* White Box Below */}
+        <div className="bg-white w-[848px] h-[117px] mt-1 p-4 flex items-start">
+          <img src={Billing} alt="Billing" className="w-[25px] h-[37px]" />
+          <div className="ml-4 flex flex-col justify-between">
+            <div className="font-inter text-[15px] text-[#737373] mx-2">Payment Details</div>
+            <div className="font-inter text-[13px] text-[#737373] mr-3">Product Total</div>
+            <div className="font-inter text-[13px] text-[#737373] mr-2 mb-1">Shipping Total</div>
+            <div className="font-inter text-[15px] text-[#737373] mr-3">Total Payment</div>
+          </div>
+          <div className="ml-auto flex flex-col items-center justify-center mt-5 mr-10">
+            <div className="font-inter text-[13px] text-[#737373]">₱{totalPrice.toFixed(2)}</div>
+            <div className="font-inter text-[13px] text-[#737373] mb-1.5">₱50.00</div>
+            <div className="font-inter text-[15px] text-[#E11919]">₱{(totalPrice + 50).toFixed(2)}</div>
+          </div>
+        </div>
+        </div>
+      </div>
       <Footer />
     </div>
   );
