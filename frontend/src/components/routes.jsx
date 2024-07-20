@@ -19,7 +19,8 @@ const routes = [
     { path: "/myProfile", element: <MyProfile />, name: "MyProfile" },
     { path: "/myOrders", element: <MyOrders />, name: "MyOrders" },
     { path: "/myShop", element: <MyShop />, name: "MyShop" },
-    { path: "/cart", element: <Cart />, name: "Cart" }
+    { path: "/cart", element: <Cart />, name: "Cart" },
+    { path: "/checkout", element: <Checkout />, name: "Checkout" }
 ];
 
 export default routes;
