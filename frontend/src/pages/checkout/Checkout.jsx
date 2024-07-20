@@ -25,9 +25,11 @@ const Checkout = () => {
   const [address, setAddress] = useState('123 Main St, City, Country');
   const [note, setNote] = useState(''); // State for the note
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Select payment method');
-  const [isGcashDropdownOpen, setIsGcashDropdownOpen] = useState(false);
-  const [gcashNumber, setGcashNumber] = useState('');
+
+  const [originalFullName, setOriginalFullName] = useState(fullName);
+  const [originalCountryCode, setOriginalCountryCode] = useState(countryCode);
+  const [originalPhoneNumber, setOriginalPhoneNumber] = useState(phoneNumber);
+  const [originalAddress, setOriginalAddress] = useState(address);
 
   const navigate = useNavigate();
 
@@ -50,6 +52,14 @@ const Checkout = () => {
   const handleAddressChange = (e) => {
     setAddress(e.target.value);
   };
+
+  const handleCancelEdit = () => {
+    setFullName(originalFullName);
+    setCountryCode(originalCountryCode);
+    setPhoneNumber(originalPhoneNumber);
+    setAddress(originalAddress);
+    setEditing(false);
+  };  
 
   const handleNoteChange = (e) => {
     setNote(e.target.value);
@@ -134,14 +144,20 @@ const Checkout = () => {
                 />
                 <button 
                   onClick={handleEditToggle}
-                  className="mt-2 px-4 py-2 bg-gray-200 text-[#737373] font-inter text-[15px] border border-gray-300 hover:bg-gray-300"
+                  className="mt-2 px-4 py-2 bg-[#67B045] text-white font-inter text-[15px] border border-gray-300 hover:bg-[#55a03d]"
                 >
                   Save
+                </button>
+                <button 
+                  onClick={handleCancelEdit}
+                  className="ml-4 px-4 py-2 bg-gray-200 text-[#737373] font-inter text-[15px] border border-gray-300 hover:bg-gray-300"
+                >
+                  Cancel
                 </button>
               </div>
             ) : (
               <div 
-                className="mt-2 p-2 cursor-pointer"
+                className="mt-2 p-2 cursor-pointer transition-all duration-300 hover:bg-gray-100"
                 onClick={handleEditToggle}
               >
                 <div className="font-inter text-[15px] text-[#737373]">{fullName} | {countryCode} {phoneNumber}</div>
