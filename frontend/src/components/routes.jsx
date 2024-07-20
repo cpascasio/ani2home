@@ -7,6 +7,7 @@ import MyProfile from "../pages/myProfile/MyProfile";
 import MyOrders from "../pages/myOrders/MyOrders";
 import MyShop from "../pages/myShop/MyShop";
 import Cart from "../pages/cart/Cart";
+import Checkout from "../pages/checkout/Checkout";
 
 
 const routes = [
@@ -18,7 +19,8 @@ const routes = [
     { path: "/myProfile", element: <MyProfile />, name: "MyProfile" },
     { path: "/myOrders", element: <MyOrders />, name: "MyOrders" },
     { path: "/myShop", element: <MyShop />, name: "MyShop" },
-    { path: "/cart", element: <Cart />, name: "Cart" }
+    { path: "/cart", element: <Cart />, name: "Cart" },
+    { path: "/checkout", element: <Checkout />, name: "Checkout" }
 ];
 
 export default routes;
