@@ -8,6 +8,7 @@ import Garlic from '../../assets/garlic.png';
 import LogisticsIcon from '../../assets/logistics.png'; // Path to the logistics image
 import Billing from '../../assets/billing.png';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const products = [
   { image: Carrot, name: "Carrots", description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru...", unitPrice: 695.00, quantity: 2 },
@@ -27,6 +28,8 @@ const Checkout = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('Select payment method');
   const [isGcashDropdownOpen, setIsGcashDropdownOpen] = useState(false);
   const [gcashNumber, setGcashNumber] = useState('');
+
+  const navigate = useNavigate();
 
   const handleEditToggle = () => {
     setEditing(!editing);
@@ -67,6 +70,19 @@ const Checkout = () => {
 
   // Calculate the total price
   const totalPrice = products.reduce((acc, product) => acc + (product.unitPrice * product.quantity), 0);
+
+  // Function to format numbers with commas
+  const formatNumber = (number) => {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  const handleCancel = () => {
+    navigate('/cart');
+  };
+
+  const handlePlaceOrder = () => {
+    navigate('/confirmation');
+  };
 
   return (
     <div className='w-full'>
@@ -147,7 +163,7 @@ const Checkout = () => {
                 <div className="ml-20 font-inter text-[17px] text-[#737373]">x {product.quantity}</div>
                 <div className="ml-auto flex flex-col items-center justify-center mx-10">
                   <div className="font-inter text-[17px] text-[#737373] mx-2">Price</div>
-                  <div className="font-inter text-[15px] text-[#E11919]">₱{totalProductPrice.toFixed(2)}</div>
+                  <div className="font-inter text-[15px] text-[#E11919]">₱{formatNumber(totalProductPrice.toFixed(2))}</div>
                 </div>
               </div>
             );
@@ -162,7 +178,7 @@ const Checkout = () => {
             </div>
             <div className="ml-auto flex flex-col items-center justify-center mt-5 mx-12">
               <div className="font-inter text-[17px] text-black">Price</div>
-              <div className="font-inter text-[15px] text-black">₱50.00</div>
+              <div className="font-inter text-[15px] text-black">₱{formatNumber(50.00.toFixed(2))}</div>
             </div>
           </div>
           <div className="bg-white w-[848px] h-[auto] mt-1 p-4">
@@ -180,9 +196,10 @@ const Checkout = () => {
               Order Total ({products.length} Items):
             </div>
             <div className="font-inter text-[15px] text-[#E11919] mr-10">
-              ₱{totalPrice.toFixed(2)}
+              ₱{formatNumber(totalPrice.toFixed(2))}
             </div>
           </div>
+
           <div className="bg-white w-[848px] h-[46px] mt-1 flex items-center justify-between p-4 border border-gray-300 relative">
           <div className="font-inter text-[15px] text-[#737373]">
             Payment Option
@@ -225,21 +242,42 @@ const Checkout = () => {
           )}
         </div>
 
-        {/* White Box Below */}
-        <div className="bg-white w-[848px] h-[117px] mt-1 p-4 flex items-start">
-          <img src={Billing} alt="Billing" className="w-[25px] h-[37px]" />
-          <div className="ml-4 flex flex-col justify-between">
-            <div className="font-inter text-[15px] text-[#737373] mx-2">Payment Details</div>
-            <div className="font-inter text-[13px] text-[#737373] mr-3">Product Total</div>
-            <div className="font-inter text-[13px] text-[#737373] mr-2 mb-1">Shipping Total</div>
-            <div className="font-inter text-[15px] text-[#737373] mr-3">Total Payment</div>
+          {/* Payment Details Section */} 
+          <div className="bg-white w-[848px] p-4 flex flex-col mt-1">
+            <div className="flex items-center mb-4">
+              <img src={Billing} alt="Billing" className="w-[20px] h-[32px] mr-2" />
+              <div className="font-inter text-[15px] text-[#737373]">Payment Details</div>
+            </div>
+            <div className="flex justify-between mb-2">
+              <div className="font-inter text-[13px] text-[#737373]">Product Total</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{formatNumber(totalPrice.toFixed(2))}</div>
+            </div>
+            <div className="flex justify-between mb-2">
+              <div className="font-inter text-[13px] text-[#737373]">Shipping Total</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{formatNumber(50.00.toFixed(2))}</div>
+            </div>
+            <hr className="border-t border-gray-300 my-2" />
+            <div className="flex justify-between mt-2">
+              <div className="font-inter text-[15px] text-[#737373]">Total Payment</div>
+              <div className="font-inter text-[15px] text-[#E11919]">₱{formatNumber((totalPrice + 50).toFixed(2))}</div>
+            </div>
           </div>
-          <div className="ml-auto flex flex-col items-center justify-center mt-5 mr-10">
-            <div className="font-inter text-[13px] text-[#737373]">₱{totalPrice.toFixed(2)}</div>
-            <div className="font-inter text-[13px] text-[#737373] mb-1.5">₱50.00</div>
-            <div className="font-inter text-[15px] text-[#E11919]">₱{(totalPrice + 50).toFixed(2)}</div>
+          
+          <div className="flex justify-between mt-4 mb-20">
+            <button 
+              onClick={handleCancel} 
+              className="w-[122px] h-[40px] bg-white border border-gray-300 text-[#737373] font-inter font-bold text-[16px] hover:bg-gray-100 mr-4" // Added mr-4 for spacing
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handlePlaceOrder} 
+              className="w-[122px] h-[40px] bg-white border border-gray-300 text-[#737373] font-inter font-bold text-[16px] hover:bg-gray-100"
+            >
+              Place Order
+            </button>
           </div>
-        </div>
+
         </div>
       </div>
       <Footer />
