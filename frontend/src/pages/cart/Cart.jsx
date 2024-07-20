@@ -77,9 +77,9 @@ const CartItem = ({ product, unitPrice }) => {
 const Cart = () => {
     const products = [
         { image: Carrot, description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru..." },
-        { image: Cabbage, description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru..." },
-        { image: Onion, description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru..." },
-        { image: Garlic, description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru..." }
+        { image: Cabbage, description: "Fresh Cabbage 18 inch harvested last night 800mg sale emeru..." },
+        { image: Onion, description: "Fresh Onion 18 inch harvested last night 800mg sale emeru..." },
+        { image: Garlic, description: "Fresh Garlic 18 inch harvested last night 800mg sale emeru..." }
     ];
 
     return (
@@ -92,6 +92,14 @@ const Cart = () => {
                 {products.map((product, index) => (
                     <CartItem key={index} product={product} unitPrice={695.00} />
                 ))}
+                <div className="flex justify-center mt-10"> {/* container for checkout button */}
+                    <button 
+                        onClick={() => window.location.href = "http://localhost:5173/checkout"}
+                        className="w-[212px] h-[40px] bg-white text-[16px] font-inter font-bold text-[#737373] border border-gray-300 hover:bg-gray-200"
+                    >
+                        Proceed to Checkout
+                    </button>
+                </div>
             </div>
             <Footer />
         </div>
