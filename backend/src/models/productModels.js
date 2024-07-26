@@ -5,7 +5,7 @@ const productSchema = Joi.object({
     storeId: Joi.string().guid({ version: 'uuidv4' }).required(),
     productName: Joi.string().required(),
     productDescription: Joi.string().required(),    
-    productDate: Joi.date().default(() => new Date(), 'current date').iso().default(""),
+    productDate: Joi.date().iso().default(""),
     rating: Joi.number().min(0).max(5).precision(1).required(),
     totalSales: Joi.number().required().default(0),
     stock: Joi.number().required().default(0),
