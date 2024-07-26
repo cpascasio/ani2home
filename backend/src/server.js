@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors'); // Import CORS module
 const middleware = require('./middleware'); // Import middleware
 const userRouters = require('./controllers/users'); // Import the user routes
+const productRoutes = require('./controllers/products'); // Import the product routes
 
 const app = express();
 
