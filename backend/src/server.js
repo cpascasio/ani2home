@@ -19,6 +19,9 @@ const apiRouter = express.Router();
 // Mount the user routes to the API router
 apiRouter.use('/users', userRouters); // Use the user routes
 
+// product route
+apiRouter.use('/products', productRoutes);
+
 // Middleware to parse JSON bodies
 app.use(express.json());
 

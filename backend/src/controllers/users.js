@@ -43,17 +43,6 @@ const addUserToFirestore = async (value) => {
 router.post('/create-user', async (req, res) => {
   // Validate the request body against the schema
 
-  const exampleRequestBody = {
-    userId: "RrIK6ZljOATZ86RAwPCrbnu5p242",
-    firstName: "Ceejay",
-    lastName: "Pascasio",
-    userName: "ceejay1117",
-    email: "ceejay1110@gmail.com",
-    dateOfBirth: "2002-11-17",
-    address: "123 Main St, Anytown, AN 12345",
-    phoneNumber: "09951456240"
-  };
-
   console.log('Request body:', req.body);
 
   const { error, value } = userSchema.validate(req.body);
