@@ -130,7 +130,7 @@ const Login = () => {
         if (email) payload.email = email;
         if (username) payload.userName = username;
 
-        await axios.post("http://localhost:5000/api/users/create-user", payload, {
+        await axios.post("http://localhost:3000/api/users/create-user", payload, {
           headers: {
             'Authorization': `Bearer ${tokenResult.token}`,
             'Content-Type': 'application/json'
@@ -196,7 +196,7 @@ const Login = () => {
         if (userProfilePic) payload.userProfilePic = userProfilePic;
         if (name.trim()) payload.name = name;
 
-        await axios.post("http://localhost:5000/api/users/create-user", payload, {
+        await axios.post("http://localhost:3000/api/users/create-user", payload, {
           headers: {
             'Authorization': `Bearer ${tokenResult.token}`,
             'Content-Type': 'application/json'

@@ -1,8 +1,8 @@
 const Joi = require('joi');
 
 const productSchema = Joi.object({
-    productId: Joi.string().guid({ version: 'uuidv4' }).required(),
-    storeId: Joi.string().guid({ version: 'uuidv4' }).required(),
+    // productId: Joi.string().guid({ version: 'uuidv4' }).required(),
+    storeId: Joi.string().default(""),
     productName: Joi.string().required(),
     productDescription: Joi.string().required(),    
     productDate: Joi.date().iso().default(""),

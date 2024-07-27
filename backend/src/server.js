@@ -9,7 +9,7 @@ const app = express();
 
 app.use(cors()); // Use CORS module
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 3000;
 
 // Create an API router
 const apiRouter = express.Router();
