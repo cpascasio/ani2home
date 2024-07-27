@@ -26,11 +26,34 @@ router.get('/:productId', async (req, res) => {
 }
 );
 
-
-router.post('/', async (req, res) => {
+// Route to get all products
+router.get('/', async (req, res) => {
     try {
-        const product = await Product.create(req.body);
-        res.status(201).json(product);
+        const products = [];
+        const snapshot = await db.collection('products').get();
+        snapshot.forEach((doc) => {
+            products.push(doc.data());
+        });
+        res.json(products);
+    } catch (error) {
+        console.error('Error getting products:', error);
+        res.status(500).send('Error getting products');
+    }
+}
+);
+
+// Route to create a new product
+router.post('/create-product', async (req, res) => {
+    const { error, value } = productSchema.validate(req.body);
+
+    if (error) {
+        return res.status(400).json({ error: error.details[0].message });
+    }
+
+    try {
+        const newProductRef = db.collection('products').doc();
+        await newProductRef.set(value);
+        res.status(201).json({ message: 'Product created successfully', product: value });
     } catch (error) {
         console.error('Error creating product:', error);
         res.status(500).send('Error creating product');
