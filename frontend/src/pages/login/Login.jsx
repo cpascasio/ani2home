@@ -173,7 +173,7 @@ const Login = () => {
         console.log("🚀 ~ handleGoogleLogin ~ tokenResult:", tokenResult)
         //setToken(tokenResult);
 
-        const userId = result?.uid;
+        const userId = user?.uid;
         const email = user.providerData[0]?.email;
         const userName = user.providerData[0]?.displayName?.replace(/\s+/g, '');
         const phoneNumber = user.providerData[0]?.phoneNumber;

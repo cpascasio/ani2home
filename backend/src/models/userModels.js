@@ -11,6 +11,7 @@ const Joi = require('joi');
     address: Joi.string().default(""),
     phoneNumber: Joi.string().default(""),
     followers: Joi.array().items(Joi.string()).default([]),
+    isStore : Joi.boolean().default(false),
     isVerified: Joi.boolean().default(false)
 });
 
