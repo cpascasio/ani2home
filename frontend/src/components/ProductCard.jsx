@@ -1,4 +1,14 @@
 import React from 'react';
+import { useState } from 'react';
+const [products, setProducts] = useState([]);
+
+const { data: productsFetch } = useFetch("/api/products");
+
+useEffect(() => {
+    if (productsFetch) {
+        setProducts(productsFetch);
+    }
+}, [productsFetch]);
 
 const ProductCard = () => {
   return (
