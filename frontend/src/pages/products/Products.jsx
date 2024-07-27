@@ -1,5 +1,8 @@
 // import ProductCard component
 import ProductCard from '../../components/ProductCard';
+import useFetch from '../../../hooks/useFetch'
+
+
 
 const Products = () => { // function name should match the file name
 
