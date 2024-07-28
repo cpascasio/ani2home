@@ -8,7 +8,6 @@ import useFetch from '../../../hooks/useFetch'
 const Products = () => { // function name should match the file name
 
   const [products, setProducts] = useState([]);
-
   const { data: productsFetch } = useFetch("/api/products");
   
 

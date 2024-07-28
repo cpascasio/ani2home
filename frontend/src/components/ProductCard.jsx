@@ -1,9 +1,20 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CartContext } from '../context/CartContext';
 import { format } from 'date-fns';
 
 
 const ProductCard = (product) => {  
+  const { addToCart } = useContext(CartContext);
+  const navigate = useNavigate();
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    navigate('/cart');
+  };
+
+
   return (
     <div className="card bg-base-100 w-96 shadow-xl">
       <figure className="px-10 pt-10">
@@ -20,7 +31,9 @@ const ProductCard = (product) => {
         <p>Rating: {product.rating}</p>
         {/* <p>Date: {product.productDate}</p> */}
         <div className="card-actions">
-          <button className="btn btn-primary">Add To Cart</button>
+        <button className="btn btn-primary" onClick={handleAddToCart}>
+            Add To Cart
+          </button>
         </div>
       </div>
     </div>
