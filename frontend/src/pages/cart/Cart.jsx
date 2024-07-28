@@ -5,9 +5,32 @@ import Footer from '../../components/Footer.jsx';
 import CartItem from '../../components/CartItem';
 import { CartContext } from '../../context/CartContext';
 
+import { useNavigate } from 'react-router-dom';
+
+
 
 const Cart = () => {
     const { cart } = useContext(CartContext);
+    const { checkout } = useContext(CartContext);
+    const navigate = useNavigate();
+
+
+    // const handleCheckout = () => {
+    //     checkout(product);
+    //     navigate('/checkout');
+    //   };
+    const handleCheckout = () => {
+        if (cart.length === 0) {
+          alert('Your cart is empty');
+          return;
+        }
+        navigate('/checkout');
+       // add console log
+        console.log('checkout', cart
+        );
+        
+
+      };
 
     return (
         <div className='w-full'>
@@ -21,7 +44,7 @@ const Cart = () => {
                 ))}
                 <div className="flex justify-center mt-10"> {/* container for checkout button */}
                     <button 
-                        onClick={() => window.location.href = "http://localhost:5173/checkout"}
+                        onClick={handleCheckout}
                         className="w-[212px] h-[40px] bg-white text-[16px] font-inter font-bold text-[#737373] border border-gray-300 hover:bg-gray-200"
                     >
                         Proceed to Checkout

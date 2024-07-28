@@ -1,16 +1,34 @@
 // import useState
-import { useState } from 'react';
+import { useState, useContext } from 'react';
+import { Link, useNavigate} from 'react-router-dom';
 
 import StarFilled from '../assets/StarFilled.png'; // path to the star images
 import StarHalfEmpty from '../assets/StarHalfEmpty.png'; // path to the star images
 import Star from '../assets/Star.png'; // path to the star images
+import { CartContext } from '../context/CartContext';
 
 const CartItem = ({ product }) => {
-    const [quantity, setQuantity] = useState(1);
+    // const [quantity, setQuantity] = useState(1);
     const [showModal, setShowModal] = useState(false);
 
-    const handleIncrease = () => setQuantity(prevQuantity => prevQuantity + 1);
-    const handleDecrease = () => setQuantity(prevQuantity => Math.max(prevQuantity - 1, 1));
+    // const handleIncrease = () => setQuantity(prevQuantity => prevQuantity + 1);
+    // const handleDecrease = () => setQuantity(prevQuantity => Math.max(prevQuantity - 1, 1));
+
+    const [quantity, setQuantity] = useState(product.quantity || 1);
+  const { updateQuantity } = useContext(CartContext);
+
+  const handleIncrease = () => {
+    const newQuantity = quantity + 1;
+    setQuantity(newQuantity);
+    updateQuantity(product.id, newQuantity);
+  };
+
+  const handleDecrease = () => {
+    const newQuantity = Math.max(quantity - 1, 1);
+    setQuantity(newQuantity);
+    updateQuantity(product.id, newQuantity);
+  };
+
     const handleRemoveClick = () => setShowModal(true);
     const handleCancel = () => setShowModal(false);
     const handleRemove = () => {
@@ -57,6 +75,12 @@ const CartItem = ({ product }) => {
                             readOnly
                             className="w-[40px] h-[20px] text-center border border-gray-300 mx-1"
                         />
+                        <Link
+                            to={{
+                            pathname: '/checkout',
+                            state: { quantity },
+                            }}
+                        ></Link>
                         <button 
                             onClick={handleIncrease} 
                             className="w-[20px] h-[20px] flex items-center justify-center text-[16px] font-inter text-[#737373] bg-gray-200 border border-gray-300 hover:bg-gray-300 transition-colors duration-300"

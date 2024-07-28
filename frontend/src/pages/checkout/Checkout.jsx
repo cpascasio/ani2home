@@ -1,23 +1,20 @@
 import Header from '../../components/Header.jsx'
 import Footer from '../../components/Footer.jsx'
 import LocationIcon from '../../assets/location.png' // Path to the location icon
-import Carrot from '../../assets/carrot.png'; // Path to product images
-import Cabbage from '../../assets/cabbage.png';
-import Onion from '../../assets/onion.png';
-import Garlic from '../../assets/garlic.png';
 import LogisticsIcon from '../../assets/logistics.png'; // Path to the logistics image
 import Billing from '../../assets/billing.png';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useContext, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { CartContext } from '../../context/CartContext.jsx';
 
-const products = [
-  { image: Carrot, name: "Carrots", description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru...", unitPrice: 695.00, quantity: 2 },
-  { image: Cabbage, name: "Cabbage", description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru...", unitPrice: 695.00, quantity: 1 },
-  { image: Onion, name: "Onions", description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru...", unitPrice: 695.00, quantity: 3 },
-  { image: Garlic, name: "Garlic", description: "Fresh Carrot 18 inch harvested last night 800mg sale emeru...", unitPrice: 695.00, quantity: 1 }
-];
+
 
 const Checkout = () => {
+  const navigate = useNavigate();
+  const { cart } = useContext(CartContext);
+  const location = useLocation();
+  const { quantity } = location.state || {};
+
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState('Juan Dela Cruz');
   const [countryCode, setCountryCode] = useState('+63');
@@ -31,7 +28,14 @@ const Checkout = () => {
   const [originalPhoneNumber, setOriginalPhoneNumber] = useState(phoneNumber);
   const [originalAddress, setOriginalAddress] = useState(address);
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    console.log('Quantity:', quantity);
+
+}, [quantity]);
+
+
+
+  
 
   const handleEditToggle = () => {
     setEditing(!editing);
@@ -79,7 +83,7 @@ const Checkout = () => {
 
 
   // Calculate the total price
-  const totalPrice = products.reduce((acc, product) => acc + (product.unitPrice * product.quantity), 0);
+  const totalPrice = cart.reduce((acc, product) => acc + (product.unitPrice * quantity), 0);
 
   // Function to format numbers with commas
   const formatNumber = (number) => {
@@ -93,6 +97,8 @@ const Checkout = () => {
   const handlePlaceOrder = () => {
     navigate('/confirmation');
   };
+
+ 
 
   return (
     <div className='w-full'>
@@ -167,16 +173,16 @@ const Checkout = () => {
           </div>
         </div>
         <div className="mt-1 flex flex-col items-center">
-          {products.map((product, index) => {
-            const totalProductPrice = product.unitPrice * product.quantity;
+          {cart.map((product, index) => {
+            const totalProductPrice = product.price * quantity;
             return (
               <div key={index} className="bg-white w-[848px] h-[91px] flex items-center p-4 mb-1">
-                <img src={product.image} alt={product.name} className="w-[69px] h-[63px]" />
+                <img src={product.pictures[0]} alt={product.productName} className="w-[69px] h-[63px]" />
                 <div className="ml-4 flex flex-col justify-between">
-                  <div className="font-inter font-bold text-[18px] text-[#737373] text-left">{product.name}</div>
+                  <div className="font-inter font-bold text-[18px] text-[#737373] text-left">{product.productName}</div>
                   <div className="font-inter text-[15px] text-[#737373] text-left line-clamp-1" style={{ width: '356px', height: '25px' }}>{product.description}</div>
                 </div>
-                <div className="ml-20 font-inter text-[17px] text-[#737373]">x {product.quantity}</div>
+                <div className="ml-20 font-inter text-[17px] text-[#737373]">x {quantity}</div>
                 <div className="ml-auto flex flex-col items-center justify-center mx-10">
                   <div className="font-inter text-[17px] text-[#737373] mx-2">Price</div>
                   <div className="font-inter text-[15px] text-[#E11919]">₱{formatNumber(totalProductPrice.toFixed(2))}</div>
@@ -209,7 +215,7 @@ const Checkout = () => {
           </div>
           <div className="bg-white w-[848px] h-[46px] mt-1 flex items-center justify-between p-4">
             <div className="font-inter text-[15px] text-[#737373]">
-              Order Total ({products.length} Items):
+              Order Total ({cart.length} Items):
             </div>
             <div className="font-inter text-[15px] text-[#E11919] mr-10">
               ₱{formatNumber(totalPrice.toFixed(2))}
