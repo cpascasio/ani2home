@@ -10,7 +10,7 @@ const useFetch = (url) => {
             try {
                 setLoading(true);
                 const response = await fetch(
-                    `http://localhost:5000${url}`
+                    `http://localhost:3000${url}`
                 );
                 const consume = await response.json();
                 if (!response.ok) {

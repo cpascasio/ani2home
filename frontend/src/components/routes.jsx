@@ -4,7 +4,13 @@ import Login from "../pages/login/Login";
 import Register from "../pages/register/Register"
 import Products from "../pages/products/Products";
 import Seller from "../pages/seller/Seller";
-
+import ShopProfile from "../pages/shopprofile/ShopProfile";
+import MyProfile from "../pages/myProfile/MyProfile";
+import MyOrders from "../pages/myOrders/MyOrders";
+import MyShop from "../pages/myShop/MyShop";
+import Cart from "../pages/cart/Cart";
+import Checkout from "../pages/checkout/Checkout";
+import Confirmation from "../pages/confirmation/Confirmation";
 
 const routes = [
     {/* CTRL + CLICK the elements to go to the file */ },
@@ -12,8 +18,14 @@ const routes = [
     { path: "/login", element: <Login />, name: "Login" },
     { path: "/register", element: <Register />, name: "Register" },
     { path: "/products", element: <Products />, name: "Products" },
-    { path: "/seller", element: <Seller />, name: "Seller" }
-    
+    { path: "/seller", element: <Seller />, name: "Seller" },
+    { path: "/shopProfile", element: <ShopProfile />, name: "ShopProfile" },
+    { path: "/myProfile", element: <MyProfile />, name: "MyProfile" },
+    { path: "/myOrders", element: <MyOrders />, name: "MyOrders" },
+    { path: "/myShop", element: <MyShop />, name: "MyShop" },
+    { path: "/cart", element: <Cart />, name: "Cart" },
+    { path: "/checkout", element: <Checkout />, name: "Checkout" },
+    { path: "/confirmation", element: <Confirmation />, name: "Confirmation" }
 ];
 
 export default routes;
