@@ -13,7 +13,7 @@ const productSchema = Joi.object({
     totalSales: Joi.number().required().default(0),
     stock: Joi.number().required(),
     price: Joi.number().precision(2).required(),
-    pictures: Joi.array().items(Joi.string()).max(5).required(),
+    pictures: Joi.array().items(Joi.string()).max(5).default([]),
     type: Joi.string().required(),
     category: Joi.string().valid('Vegetable', 'Fruit').required()
 });

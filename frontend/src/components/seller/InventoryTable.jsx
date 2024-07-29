@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import './InventoryTable.css';
 
 const InventoryTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+    productName: '',
+    productdescription: '',
     category: '',
     item: '',
-    unit: 'kilo',
+    isKilo: false,
     price: '',
     stock: '',
-    photo: ''
+    pictures: ''
   });
 
   const itemsPerPage = 10;
@@ -51,92 +50,112 @@ const InventoryTable = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    setShowModal(false);
-  };
+
+    // check formData and check if 
+    
+    try {
+        await axios.post("http://localhost:3000/api/products/create-product", formData, {
+            headers: {
+                'Authorization': `Bearer ${user?.token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        // Handle form submission
+        setShowModal(false);
+    } catch (error) {
+        console.error("There was an error creating the user!", error);
+    }
+};
 
   const vegetables = ['Broccoli', 'Aubergine', 'Carrot', 'Chili', 'Lemon'];
   const fruits = ['Apple', 'Banana', 'Orange', 'Strawberry', 'Grapes'];
 
   return (
-    <div className="inventory-table">
-      <div className="header">
+    <div className="p-5 bg-white rounded-lg shadow-lg">
+      <div className="flex justify-between items-center mb-5">
         <input
           type="text"
           placeholder="Search..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          className="p-2 w-1/3 border border-gray-300 rounded-lg"
         />
-        <button className="add-button" onClick={() => setShowModal(true)}>+ Add Item</button>
+        <button
+          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+          onClick={() => setShowModal(true)}
+        >
+          + Add Item
+        </button>
       </div>
-      <table>
+      <table className="w-full border-collapse">
         <thead>
           <tr>
-            <th>Item Code</th>
-            <th>Photo</th>
-            <th>Item Name</th>
-            <th>Item Group</th>
-            <th>Last Purchase</th>
-            <th>On Hand</th>
-            <th>Actions</th>
+            <th className="p-2 border-b bg-gray-100">Item Code</th>
+            <th className="p-2 border-b bg-gray-100">Photo</th>
+            <th className="p-2 border-b bg-gray-100">Item Name</th>
+            <th className="p-2 border-b bg-gray-100">Item Group</th>
+            <th className="p-2 border-b bg-gray-100">Last Purchase</th>
+            <th className="p-2 border-b bg-gray-100">On Hand</th>
+            <th className="p-2 border-b bg-gray-100">Actions</th>
           </tr>
         </thead>
         <tbody>
           {displayedData.map((item, index) => (
-            <tr key={index}>
-              <td>{item.code}</td>
-              <td>{item.photo}</td>
-              <td>{item.name}</td>
-              <td>{item.group}</td>
-              <td>{item.lastPurchase}</td>
-              <td>{item.onHand}</td>
-              <td>
-                <button>Edit</button>
-                <button>Delete</button>
+            <tr key={index} className="hover:bg-gray-50">
+              <td className="p-2 border-b">{item.code}</td>
+              <td className="p-2 border-b">{item.photo}</td>
+              <td className="p-2 border-b">{item.name}</td>
+              <td className="p-2 border-b">{item.group}</td>
+              <td className="p-2 border-b">{item.lastPurchase}</td>
+              <td className="p-2 border-b">{item.onHand}</td>
+              <td className="p-2 border-b">
+                <button className="px-3 py-1 bg-blue-500 text-white rounded-lg mr-2">Edit</button>
+                <button className="px-3 py-1 bg-red-500 text-white rounded-lg">Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div className="pagination">
+      <div className="flex justify-center mt-5">
         {Array.from({ length: totalPages }, (_, index) => (
           <button
             key={index}
-            className={currentPage === index + 1 ? 'active' : ''}
+            className={`px-3 py-1 border rounded-lg mx-1 ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-white text-black'}`}
             onClick={() => handlePageChange(index + 1)}
           >
             {index + 1}
           </button>
         ))}
       </div>
-      
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={() => setShowModal(false)}>&times;</span>
-            <h2>Add New Item</h2>
+      {showModal && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
+          <div className="bg-white p-5 rounded-lg shadow-lg w-1/3">
+            <span className="absolute top-2 right-2 text-2xl cursor-pointer" onClick={() => setShowModal(false)}>&times;</span>
+            <h2 className="text-xl mb-5">Add New Item</h2>
             <form onSubmit={handleSubmit}>
-              <label>
+              <label className="block mb-3">
                 Name:
-                <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+                <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
               </label>
-              <label>
+              <label className="block mb-3">
                 Description:
-                <input type="text" name="description" value={formData.description} onChange={handleChange} required />
+                <input type="text" name="description" value={formData.description} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
               </label>
-              <label>
+              <label className="block mb-3">
                 Category:
-                <select name="category" value={formData.category} onChange={handleChange} required>
+                <select name="category" value={formData.category} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg">
                   <option value="">Select Category</option>
                   <option value="vegetable">Vegetable</option>
                   <option value="fruit">Fruit</option>
                 </select>
               </label>
               {formData.category && (
-                <label>
+                <label className="block mb-3">
                   Item:
-                  <select name="item" value={formData.item} onChange={handleChange} required>
+                  <select name="item" value={formData.item} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg">
                     <option value="">Select Item</option>
                     {formData.category === 'vegetable' ? vegetables.map((veg, index) => (
                       <option key={index} value={veg}>{veg}</option>
@@ -145,37 +164,37 @@ const InventoryTable = () => {
                     ))}
                   </select>
                   {formData.item === '' && (
-                    <input type="text" name="item" placeholder="Other" onChange={handleChange} required />
+                    <input type="text" name="item" placeholder="Other" onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg mt-2" />
                   )}
                 </label>
               )}
-              <label>
+              <label className="block mb-3">
                 Unit:
-                <select name="unit" value={formData.unit} onChange={handleChange} required>
+                <select name="unit" value={formData.unit} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg">
                   <option value="kilo">Kilo</option>
                   <option value="pieces">Pieces</option>
                 </select>
               </label>
-              <label>
+              <label className="block mb-3">
                 Price per {formData.unit}:
-                <input type="number" name="price" value={formData.price} onChange={handleChange} required />
+                <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
               </label>
-              <label>
+              <label className="block mb-3">
                 Stock:
-                <input type="number" name="stock" value={formData.stock} onChange={handleChange} required />
+                <input type="number" name="stock" value={formData.stock} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
               </label>
-              <label>
+              <label className="block mb-3">
                 Photo:
-                <input type="file" name="photo" onChange={handleChange} />
+                <input type="file" name="photo" onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg" />
               </label>
               {formData.photo && (
-                <img src={URL.createObjectURL(formData.photo)} alt="Item" />
+                <img src={URL.createObjectURL(formData.photo)} alt="Item" className="mt-3 max-w-full" />
               )}
-              <button type="submit">Add Item</button>
+              <button type="submit" onClick={handleSubmit} className="w-full py-2 bg-blue-500 text-white rounded-lg">Add Item</button>
             </form>
           </div>
         </div>
-      
+      )}
     </div>
   );
 };
