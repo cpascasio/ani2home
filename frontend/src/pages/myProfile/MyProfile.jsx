@@ -2,17 +2,22 @@ import Header from '../../components/Header.jsx'
 import Footer from '../../components/Footer.jsx'
 import useFetch from '../../../hooks/useFetch.js';
 import { useUser } from '../../context/UserContext.jsx';
+import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 const MyProfile = () => {
 
-    const { user, dispatch } = useUser();
+    const  userLog = localStorage.getItem('user');
+
+    const {user} = useUser();
 
     const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
 
     const [userData, setUserData] = useState({});
 
     const [editMode, setEditMode] = useState(false);
+
+    const navigate = useNavigate();
     
 
     // if button is pressed, editmode to true
@@ -22,14 +27,22 @@ const MyProfile = () => {
 
     // if false, just display the user data
 
+    useEffect(() =>{
+        
+        console.log(user);
+        
+    }, []);
 
+    
     
 
     useEffect(() =>{
-        if(user != null) {
+        if(userLog != null) {
         console.log(user);
+        }else{
+            navigate('/login');
         }
-    }, [user]);
+    }, [userLog]);
 
     
 
