@@ -5,51 +5,68 @@ import Footer from '../../components/Footer.jsx';
 import CartItem from '../../components/CartItem';
 import { CartContext } from '../../context/CartContext';
 import useFetch from '../../../hooks/useFetch'
-
+import { useUser } from '../../context/UserContext.jsx';
 import { useNavigate } from 'react-router-dom';
 
 
 
 const Cart = () => {
 
-    const { data: cartFetch } = useFetch('https://fakestoreapi.com/products');
+  const { user } = useUser();
+
+    const { data: cartFetch } = useFetch(`/api/cart/${user?.userId}`);
 
     const [cartNew, setCartNew] = useState([]);
 
-    const { cart } = useContext(CartContext);
-    const { checkout } = useContext(CartContext);
+    //const { cart } = useContext(CartContext);
+    // const navigate = useNavigate();
+
+    // add console log for user
+    //console.log('Current user:', user);
     const navigate = useNavigate();
+
+    // fetch cart items from firebase
   
+  
+    useEffect(() => {
+      if (cartFetch) {
+        setCartNew(cartFetch);
+      }
+      console.log(cartFetch);
+    },[cartFetch]);
+  
+    useEffect(() => {
+      console.log(cartNew);
+    }, [cartNew]);
 
-  useEffect(() => {
-    if (cartFetch) {
-      setCartNew(cartFetch);
-    }
-  }
-  , [cartFetch]);
+  // useEffect(() => {
+  //   if (cartFetch) {
+  //     setCartNew(cartFetch);
+  //   }
+  // }
+  // , [cartFetch]);
 
 
-  useEffect(() => {
-    console.log(cartNew)
-  }
-  , [cartNew]);
+  // useEffect(() => {
+  //   console.log(cartNew)
+  // }
+  // , [cartNew]);
 
     // const handleCheckout = () => {
     //     checkout(product);
     //     navigate('/checkout');
     //   };
     const handleCheckout = () => {
-        if (cart.length === 0) {
+        if (cartNew?.length === 0) {
           alert('Your cart is empty');
           return;
         }
-        navigate('/checkout');
-       // add console log
-        console.log('checkout', cart
-        );
+        navigate('/checkout', { state: { cartItems: cartNew}});
+        console.log('handleCheckout', cartNew);
         
 
       };
+
 
     return (
         <div className='w-full'>
@@ -58,7 +75,7 @@ const Cart = () => {
                 <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-10">
                     YOUR CART
                 </div>
-                {cart.map((product, index) => (
+                {cartNew?.map((product, index) => (
                     <CartItem key={index} product={product} />
                 ))}
                 <div className="flex justify-center mt-10"> {/* container for checkout button */}

@@ -6,14 +6,36 @@ import Billing from '../../assets/billing.png';
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
+// import useFetch
+import useFetch from '../../../hooks/useFetch';
+// import user contxt
+import { useUser } from '../../context/UserContext.jsx';
 
 
 
 const Checkout = () => {
+  const { user } = useUser();
+  const [items, setItems] = useState([]);
+  const { data: itemsFetch } = useFetch(`/api/cart/cart-items/${user?.userId}`);
+  
+
+  useEffect(() => {
+    if (itemsFetch) {
+      setItems(itemsFetch);
+    }
+  }
+  , [itemsFetch]);
+
+  useEffect(() => {
+    console.log("Items: ", items)
+  }
+  , [items]);
+
   const navigate = useNavigate();
   const { cart } = useContext(CartContext);
   const location = useLocation();
   const { quantity } = location.state || {};
+  const { cartItems = [] } = location.state || {};
 
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState('Juan Dela Cruz');
@@ -28,10 +50,8 @@ const Checkout = () => {
   const [originalPhoneNumber, setOriginalPhoneNumber] = useState(phoneNumber);
   const [originalAddress, setOriginalAddress] = useState(address);
 
-  useEffect(() => {
-    console.log('Quantity:', quantity);
 
-}, [quantity]);
+  console.log('handleCheckout', cartItems);
 
 
 
@@ -83,7 +103,7 @@ const Checkout = () => {
 
 
   // Calculate the total price
-  const totalPrice = cart.reduce((acc, product) => acc + (product.unitPrice * quantity), 0);
+  const totalPrice = cart.reduce((acc, product) => acc + (product.unitPrice * cartItems.quantity), 0);
 
   // Function to format numbers with commas
   const formatNumber = (number) => {
@@ -173,9 +193,11 @@ const Checkout = () => {
           </div>
         </div>
         <div className="mt-1 flex flex-col items-center">
-          {cart.map((product, index) => {
+        {items.map((item, index) => {
+            const { product, quantity } = item;
             const totalProductPrice = product.price * quantity;
             return (
+              
               <div key={index} className="bg-white w-[848px] h-[91px] flex items-center p-4 mb-1">
                 <img src={product.pictures[0]} alt={product.productName} className="w-[69px] h-[63px]" />
                 <div className="ml-4 flex flex-col justify-between">
@@ -215,7 +237,7 @@ const Checkout = () => {
           </div>
           <div className="bg-white w-[848px] h-[46px] mt-1 flex items-center justify-between p-4">
             <div className="font-inter text-[15px] text-[#737373]">
-              Order Total ({cart.length} Items):
+              Order Total ({cartItems.length} Items):
             </div>
             <div className="font-inter text-[15px] text-[#E11919] mr-10">
               ₱{formatNumber(totalPrice.toFixed(2))}
