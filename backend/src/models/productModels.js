@@ -4,21 +4,25 @@ const now = new Date().toISOString();
 
 const productSchema = Joi.object({
     // productId: Joi.string().guid({ version: 'uuidv4' }).required(),
-    storeId: Joi.string().default(""),
-    productName: Joi.string().required(),
-    productDescription: Joi.string().required(),
-    dateAdded: Joi.date().iso().default(now),
-    rating: Joi.number().min(0).max(5).precision(1).default(0),
-    isKilo: Joi.boolean().default(false),
-    totalSales: Joi.number().required().default(0),
-    stock: Joi.number().required(),
-    price: Joi.number().precision(2).required(),
-    pictures: Joi.array().items(Joi.string()).max(5).default([]),
-    type: Joi.string().required(),
-    category: Joi.string().valid('Vegetable', 'Fruit').required()
+    storeId: Joi.string().optional(),
+    productName: Joi.string().optional(),
+    productDescription: Joi.string().optional(),
+    dateAdded: Joi.date().iso().optional(),
+    rating: Joi.number().min(0).max(5).precision(1).optional(),
+    isKilo: Joi.boolean().optional(),
+    totalSales: Joi.number().optional(),
+    stock: Joi.number().optional(),
+    price: Joi.number().precision(2).optional(),
+    pictures: Joi.array().items(Joi.string()).max(5).optional(),
+    type: Joi.string().optional(),
+    category: Joi.string().valid('Vegetable', 'Fruit').optional()
 });
 
 module.exports = productSchema;
+
+// dateAdded
+// rating
+// totalSales
 
 // modal specifications
 

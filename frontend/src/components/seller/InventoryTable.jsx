@@ -1,19 +1,24 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useUser } from "../../context/UserContext";
 
 const InventoryTable = () => {
+  const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     productName: '',
-    productdescription: '',
+    productDescription: '',
     category: '',
-    item: '',
+    type: '',
     isKilo: false,
+    unit: 'kilo',
     price: '',
     stock: '',
-    pictures: ''
-  });
+    pictures: []
+  };
+  const [formData, setFormData] = useState(initialFormData);
 
   const itemsPerPage = 10;
 
@@ -46,29 +51,35 @@ const InventoryTable = () => {
     const { name, value } = e.target;
     setFormData(prevState => ({
       ...prevState,
-      [name]: value
+      [name]: value,
+      isKilo: name === 'unit' ? value === 'kilo' : prevState.isKilo
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // check formData and check if 
-    
+    // Remove unit in formData
+    const { unit, ...rest } = formData;
+
+    console.log("FORMDATA");
+    console.log(rest);
+
     try {
-        await axios.post("http://localhost:3000/api/products/create-product", formData, {
-            headers: {
-                'Authorization': `Bearer ${user?.token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        // Handle form submission
-        setShowModal(false);
+      await axios.post("http://localhost:3000/api/products/create-product", rest, {
+        headers: {
+          'Authorization': `Bearer ${user?.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // Reset form data and close modal
+      setFormData(initialFormData);
+      setShowModal(false);
     } catch (error) {
-        console.error("There was an error creating the user!", error);
+      console.error("There was an error!", error);
     }
-};
+  };
 
   const vegetables = ['Broccoli', 'Aubergine', 'Carrot', 'Chili', 'Lemon'];
   const fruits = ['Apple', 'Banana', 'Orange', 'Strawberry', 'Grapes'];
@@ -133,29 +144,29 @@ const InventoryTable = () => {
       {showModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
           <div className="bg-white p-5 rounded-lg shadow-lg w-1/3">
-            <span className="absolute top-2 right-2 text-2xl cursor-pointer" onClick={() => setShowModal(false)}>&times;</span>
+            <span className="absolute top-2 right-2 text-2xl cursor-pointer" onClick={() => {setShowModal(false); setFormData(initialFormData);}}>&times;</span>
             <h2 className="text-xl mb-5">Add New Item</h2>
             <form onSubmit={handleSubmit}>
               <label className="block mb-3">
                 Name:
-                <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
+                <input type="text" name="productName" value={formData.productName} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
               </label>
               <label className="block mb-3">
                 Description:
-                <input type="text" name="description" value={formData.description} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
+                <input type="text" name="productDescription" value={formData.productDescription} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
               </label>
               <label className="block mb-3">
                 Category:
                 <select name="category" value={formData.category} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg">
                   <option value="">Select Category</option>
-                  <option value="vegetable">Vegetable</option>
-                  <option value="fruit">Fruit</option>
+                  <option value="Vegetable">Vegetable</option>
+                  <option value="Fruit">Fruit</option>
                 </select>
               </label>
               {formData.category && (
                 <label className="block mb-3">
                   Item:
-                  <select name="item" value={formData.item} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg">
+                  <select name="type" value={formData.type} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg">
                     <option value="">Select Item</option>
                     {formData.category === 'vegetable' ? vegetables.map((veg, index) => (
                       <option key={index} value={veg}>{veg}</option>
@@ -163,8 +174,8 @@ const InventoryTable = () => {
                       <option key={index} value={fruit}>{fruit}</option>
                     ))}
                   </select>
-                  {formData.item === '' && (
-                    <input type="text" name="item" placeholder="Other" onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg mt-2" />
+                  {formData.type === '' && (
+                    <input type="text" name="type" placeholder="Other" onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg mt-2" />
                   )}
                 </label>
               )}

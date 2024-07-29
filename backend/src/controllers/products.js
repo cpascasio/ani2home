@@ -46,6 +46,17 @@ router.get('/', async (req, res) => {
 router.post('/create-product', async (req, res) => {
     const { error, value } = productSchema.validate(req.body);
 
+
+    // add these fields to the value
+
+    // dateAdded = new Date(now()).toISOString()
+// rating = 0;
+// totalSales = 0
+
+    value.dateAdded = new Date().toISOString();
+    value.rating = 0;
+    value.totalSales = 0;
+
     if (error) {
         return res.status(400).json({ error: error.details[0].message });
     }
