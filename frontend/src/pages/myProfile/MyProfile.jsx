@@ -12,6 +12,17 @@ const MyProfile = () => {
 
     const [userData, setUserData] = useState({});
 
+    const [editMode, setEditMode] = useState(false);
+    
+
+    // if button is pressed, editmode to true
+    // if editmode is true, show the edit form
+
+
+
+    // if false, just display the user data
+
+
     
 
     useEffect(() =>{
