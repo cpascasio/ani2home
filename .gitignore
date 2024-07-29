@@ -23,4 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-src/config/firebase-config.js
+
+frontend/src/config/firebase-config.js
+
+backend/src/config/serviceAccount.json

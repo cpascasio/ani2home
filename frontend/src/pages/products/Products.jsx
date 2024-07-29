@@ -1,8 +1,12 @@
+// import ProductCard component
+import ProductCard from '../../components/ProductCard';
+
 const Products = () => { // function name should match the file name
 
     return (
       <div className="flex w-full border-2">
         <button className="btn btn-outline btn-info">Info</button>
+        <ProductCard/>
       </div>
     );
   };
