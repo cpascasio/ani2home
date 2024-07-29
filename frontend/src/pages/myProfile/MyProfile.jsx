@@ -1,6 +1,47 @@
 import Header from '../../components/Header.jsx'
 import Footer from '../../components/Footer.jsx'
+import useFetch from '../../../hooks/useFetch.js';
+import { useUser } from '../../context/UserContext.jsx';
+import { useEffect, useState } from 'react';
+
 const MyProfile = () => {
+
+    const { user, dispatch } = useUser();
+
+    const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
+
+    const [userData, setUserData] = useState({});
+
+    
+
+    useEffect(() =>{
+        if(user != null) {
+        console.log(user);
+        }
+    }, [user]);
+
+
+    useEffect(() =>{
+        if(userFetch != null) {
+            setUserData(userFetch.data);
+        console.log(userFetch.data);
+        }
+    }, [userFetch]);
+
+    useEffect(() =>{
+        if(userData != null) {
+        console.log(userData);
+        }
+    }, [userData]);
+
+
+
+    //TODO:
+    //1. conditionally render page if user is logged in from backend if not, redirect to login page
+    //2. display userdata by userData.blahblah and display it in the 
+    //3. make the edit user profile functionality work with backend endpoint.
+
+
   return (
     <div className='w-full'>
         <Header />
