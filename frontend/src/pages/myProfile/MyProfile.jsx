@@ -31,7 +31,7 @@ const MyProfile = () => {
         }
     }, [user]);
 
-    /*
+    
 
     useEffect(() =>{
         if(userFetch != null) {
@@ -41,7 +41,7 @@ const MyProfile = () => {
     }, [userFetch]);
 
 
-    */
+    
 
 
     useEffect(() =>{
@@ -67,7 +67,7 @@ const MyProfile = () => {
                     <div className="flex flex-col items-center text-white"> {/*box for logo and stats*/}
                         <div className="flex justify-center items-center mb-4">
                             <div className="bg-white rounded-full"> {/* White background */}
-                                <img src="../src/assets/MyProfile pic.png" alt="Profile Pic" className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+                                <img src={userData.userProfilePic} alt="Profile Pic" className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
                             </div>
                         </div>
                         <div className="mt-[5%]"> {/*stats box */}
@@ -76,7 +76,7 @@ const MyProfile = () => {
                                     <img src="../src/assets/FollowersIcon.png" alt="Followers" />
                                 </div>
                                 <div className="text-left font-inter">
-                                    <strong>Followers:</strong> 1,203
+                                    <strong>Followers:</strong> {userData.followers}
                                 </div>
                             </div>
                             <div className="flex items-center mb-2"> {/*ratings */}
@@ -99,14 +99,13 @@ const MyProfile = () => {
                     </div> {/*end of box for logo and stats */}
                     <div className="flex flex-col flex-1 pl-[4%] pr-[4%] text-white items-start relative"> {/*Name, Location, Bio, Buttons */}
                         <h1 className="text-4xl font-bold font-inter mb-0">
-                            Fernando Lopez
+                            {userData.name}
                         </h1>
                         <div className="italic mb-4 font-inter">
-                            Dasmarinas, Cavite
+                            {userData.address}
                         </div>
                         <div className="mb-6 text-justify font-inter"> {/*CHARACTERS MAXIMUM: 439 */}
-                            Fernando is the proud owner of Pogi Farms where he passionately practices sustainable agriculture. He cultivates organiz produce on his
-                            expansive land and welcomes visitors for educational farm tours, promoting community engagement and environmental awareness.
+                            {userData.bio}
                         </div>
                         <button className="absolute bottom-0 right-0 rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold mr-7 
                         transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
@@ -152,7 +151,7 @@ const MyProfile = () => {
                                 </button>
 
                                 <dialog id="modal_editProfile" className="modal">
-                                    <div className="modal-box w-11/12 max-w-lg bg-white shadow-lg rounded-md">
+                                    <div className="modal-box w-11/12 max-w-lg p-6 bg-white shadow-lg rounded-md">
                                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                                                 onClick={() => document.getElementById('modal_editProfile').close()}>✕
                                         </button>
@@ -225,11 +224,11 @@ const MyProfile = () => {
                                         <tbody>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium min-w-40">Name:</td>
-                                                <td className="text-left px-8 pb-2">Fernando Lopez</td>
+                                                <td className="text-left px-8 pb-2">{userData.name}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Username:</td>
-                                                <td className="text-left px-8 pb-2">fernando_lopez</td>
+                                                <td className="text-left px-8 pb-2">{userData.userName}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Email:</td>
@@ -237,29 +236,28 @@ const MyProfile = () => {
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium w-100">Phone Number:</td>
-                                                <td className="text-left px-8 pb-2">123-456-7890</td>
+                                                <td className="text-left px-8 pb-2">{userData.phoneNumber}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Location:</td>
-                                                <td className="text-left px-8 pb-2">Dasmarinas, Cavite</td>
+                                                <td className="text-left px-8 pb-2">{userData.address}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium align-top">Bio:</td>
-                                                <td className="text-justify px-8 pb-2">Fernando is the proud owner of Pogi Farms where he passionately practices sustainable agriculture. He cultivates organiz produce on his
-                                                expansive land and welcomes visitors for educational farm tours, promoting community engagement and environmental awareness.</td>
+                                                <td className="text-justify px-8 pb-2">{userData.bio}</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div> {/* end of table for forms */}
 
                                 <div className="w-1/4 flex flex-col items-center justify-center"> {/* right side with prof pic and buttons */}
-                                    <img src="../src/assets/MyProfile pic.png" alt="Profile Picture" className="w-28 h-28 rounded-full object-cover mb-12" />
+                                    <img src={userData.userProfilePic} alt="Profile Picture" className="w-28 h-28 rounded-full object-cover mb-12" />
                                     {/* <button className="bg-none text-gray-700 font-bold py-2 px-4 rounded hover:bg-gray-400 hover:text-white mb-3 w-full border border-slate-400">
                                         Discard Changes
                                     </button>
                                     <button className="bg-green-900 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 w-full">
                                         Save
-                                    </button> */}
+                                    </button>   */}
                                 </div> {/* end of box for prof pic and buttons */}
                             </div>  {/* end of flex box */}
 
