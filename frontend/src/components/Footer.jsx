@@ -1,26 +1,26 @@
 const Footer = () => {
     return (
-        <div id="footer" className="w-full h-auto flex py-20 justify-center gap-52">
-            <div className="flex-col">
-                <b>Contact</b>
-                <p>email@dlsu.edu.ph</p>
-                <p>email@dlsu.edu.ph</p>
+        <div id="footer" className="bg-gray-100 py-10 px-4 lg:px-8 flex flex-col lg:flex-row lg:justify-between items-center lg:items-start max-w-full mx-auto">
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left mb-8 lg:mb-0">
+                <b className="text-lg font-semibold">Contact</b>
+                <p className="text-sm">email@dlsu.edu.ph</p>
+                <p className="text-sm">email@dlsu.edu.ph</p>
             </div>
-            <div className="flex-col">
-                <b>Our Company</b>
-                <a>Products</a>
-                <a>About Us</a>
-                <a>Contact Us</a>
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left mb-8 lg:mb-0">
+                <b className="text-lg font-semibold">Our Company</b>
+                <a className="text-sm">Products</a>
+                <a className="text-sm">About Us</a>
+                <a className="text-sm">Contact Us</a>
             </div>
-            <div className="flex-col">
-                <b>Follow Us</b>
-                <a>Facebook</a>
-                <a>Twitter</a>
-                <a>LinkedIn</a>
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left mb-8 lg:mb-0">
+                <b className="text-lg font-semibold">Follow Us</b>
+                <a className="text-sm">Facebook</a>
+                <a className="text-sm">Twitter</a>
+                <a className="text-sm">LinkedIn</a>
             </div>
-            <div className="flex-col">
-                <div id="footerLogo" className="h-20 w-20 inline-block align-middle">
-
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
+                <div id="footerLogo" className="h-16 w-16 md:h-20 md:w-20 bg-gray-300 flex items-center justify-center">
+                    {/* Footer Logo */}
                 </div>
             </div>
         </div>
