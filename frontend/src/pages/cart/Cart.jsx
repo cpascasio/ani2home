@@ -1,19 +1,38 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import React, { useContext } from 'react';
 import Header from '../../components/Header.jsx';
 import Footer from '../../components/Footer.jsx';
 import CartItem from '../../components/CartItem';
 import { CartContext } from '../../context/CartContext';
+import useFetch from '../../../hooks/useFetch'
 
 import { useNavigate } from 'react-router-dom';
 
 
 
 const Cart = () => {
+
+    const { data: cartFetch } = useFetch('https://fakestoreapi.com/products');
+
+    const [cartNew, setCartNew] = useState([]);
+
     const { cart } = useContext(CartContext);
     const { checkout } = useContext(CartContext);
     const navigate = useNavigate();
+  
 
+  useEffect(() => {
+    if (cartFetch) {
+      setCartNew(cartFetch);
+    }
+  }
+  , [cartFetch]);
+
+
+  useEffect(() => {
+    console.log(cartNew)
+  }
+  , [cartNew]);
 
     // const handleCheckout = () => {
     //     checkout(product);
