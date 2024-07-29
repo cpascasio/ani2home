@@ -4,6 +4,18 @@ import './InventoryTable.css';
 const InventoryTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    category: '',
+    item: '',
+    unit: 'kilo',
+    price: '',
+    stock: '',
+    photo: ''
+  });
+
   const itemsPerPage = 10;
 
   const inventoryData = [
@@ -31,6 +43,23 @@ const InventoryTable = () => {
     setCurrentPage(pageNumber);
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle form submission
+    setShowModal(false);
+  };
+
+  const vegetables = ['Broccoli', 'Aubergine', 'Carrot', 'Chili', 'Lemon'];
+  const fruits = ['Apple', 'Banana', 'Orange', 'Strawberry', 'Grapes'];
+
   return (
     <div className="inventory-table">
       <div className="header">
@@ -40,7 +69,7 @@ const InventoryTable = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <button className="add-button">+ Add Item</button>
+        <button className="add-button" onClick={() => setShowModal(true)}>+ Add Item</button>
       </div>
       <table>
         <thead>
@@ -82,6 +111,71 @@ const InventoryTable = () => {
           </button>
         ))}
       </div>
+      
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close" onClick={() => setShowModal(false)}>&times;</span>
+            <h2>Add New Item</h2>
+            <form onSubmit={handleSubmit}>
+              <label>
+                Name:
+                <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+              </label>
+              <label>
+                Description:
+                <input type="text" name="description" value={formData.description} onChange={handleChange} required />
+              </label>
+              <label>
+                Category:
+                <select name="category" value={formData.category} onChange={handleChange} required>
+                  <option value="">Select Category</option>
+                  <option value="vegetable">Vegetable</option>
+                  <option value="fruit">Fruit</option>
+                </select>
+              </label>
+              {formData.category && (
+                <label>
+                  Item:
+                  <select name="item" value={formData.item} onChange={handleChange} required>
+                    <option value="">Select Item</option>
+                    {formData.category === 'vegetable' ? vegetables.map((veg, index) => (
+                      <option key={index} value={veg}>{veg}</option>
+                    )) : fruits.map((fruit, index) => (
+                      <option key={index} value={fruit}>{fruit}</option>
+                    ))}
+                  </select>
+                  {formData.item === '' && (
+                    <input type="text" name="item" placeholder="Other" onChange={handleChange} required />
+                  )}
+                </label>
+              )}
+              <label>
+                Unit:
+                <select name="unit" value={formData.unit} onChange={handleChange} required>
+                  <option value="kilo">Kilo</option>
+                  <option value="pieces">Pieces</option>
+                </select>
+              </label>
+              <label>
+                Price per {formData.unit}:
+                <input type="number" name="price" value={formData.price} onChange={handleChange} required />
+              </label>
+              <label>
+                Stock:
+                <input type="number" name="stock" value={formData.stock} onChange={handleChange} required />
+              </label>
+              <label>
+                Photo:
+                <input type="file" name="photo" onChange={handleChange} />
+              </label>
+              {formData.photo && (
+                <img src={URL.createObjectURL(formData.photo)} alt="Item" />
+              )}
+              <button type="submit">Add Item</button>
+            </form>
+          </div>
+        </div>
+      
     </div>
   );
 };
