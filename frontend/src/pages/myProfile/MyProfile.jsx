@@ -100,22 +100,22 @@ const MyProfile = () => {
                                         </button>
                                         <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Edit Profile</h3>
                                         
-                                        <div className="flex flex-col items-center mb-6">
-                                            <label htmlFor="profilePicture" className="text-sm font-medium text-gray-600 mt-2 cursor-pointer text-left pb-4 w-full">
-                                                Change Profile Picture
-                                            </label>
-                                            <img src="../src/assets/MyProfile pic.png" alt="Profile Picture" className="w-28 h-auto rounded-full object-cover mb-4"/>
-                                            <input type="file" id="profilePicture" name="profilePicture" accept="image/*" className="mt-2"
-                                                onChange={(e) => {
-                                                    // Handle file upload here
-                                                    console.log(e.target.files[0]);
-                                                    }}
-                                            />
-                                            
-                                        </div>
                                         
                                         
                                         <form method="dialog" className="space-y-4">
+                                            <div className="flex flex-col items-center mb-6">
+                                                <label htmlFor="profilePicture" className="text-sm font-medium text-gray-600 mt-2 cursor-pointer text-left pb-4 w-full">
+                                                    Change Profile Picture
+                                                </label>
+                                                <img src="../src/assets/MyProfile pic.png" alt="Profile Picture" className="w-28 h-auto rounded-full object-cover mb-4"/>
+                                                <input type="file" id="profilePicture" name="profilePicture" accept="image/*" className="mt-2"
+                                                    onChange={(e) => {
+                                                        // Handle file upload here
+                                                        console.log(e.target.files[0]);
+                                                        }}
+                                                />
+                                                
+                                            </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newName" className="text-sm font-medium text-gray-600 text-left">Name</label>
                                                 <input type="text" id="newName" name="newName"
