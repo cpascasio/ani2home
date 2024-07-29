@@ -86,11 +86,79 @@ const MyProfile = () => {
                         <div className="bg-white p-10 rounded shadow-md"> {/* white background */}
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-lg font-bold text-gray-600">Personal Information</h2> 
-                                <button className="relative overflow-hidden flex">          {/* edit button */}
+                                <button className="relative overflow-hidden flex"
+                                    onClick={() => document.getElementById('modal_editProfile').showModal()}> {/* edit button */}
                                     <span className="absolute inset-0 opacity-0 hover:opacity-100"></span>
                                     <img src="../../src/assets/edit button.png" alt="Edit" className="w-6 h-6 mr-2" />
                                     <img src="../../src/assets/edit button hover.png" alt="Edit" className="w-6 h-6 mr-2 opacity-0 hover:opacity-100  absolute inset-0" />
                                 </button>
+
+                                <dialog id="modal_editProfile" className="modal">
+                                    <div className="modal-box w-11/12 max-w-lg bg-white shadow-lg rounded-md">
+                                        <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                                                onClick={() => document.getElementById('modal_editProfile').close()}>✕
+                                        </button>
+                                        <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Edit Profile</h3>
+                                        
+                                        <div className="flex flex-col items-center mb-6">
+                                            <label htmlFor="profilePicture" className="text-sm font-medium text-gray-600 mt-2 cursor-pointer text-left pb-4 w-full">
+                                                Change Profile Picture
+                                            </label>
+                                            <img src="../src/assets/MyProfile pic.png" alt="Profile Picture" className="w-28 h-auto rounded-full object-cover mb-4"/>
+                                            <input type="file" id="profilePicture" name="profilePicture" accept="image/*" className="mt-2"
+                                                onChange={(e) => {
+                                                    // Handle file upload here
+                                                    console.log(e.target.files[0]);
+                                                    }}
+                                            />
+                                            
+                                        </div>
+                                        
+                                        
+                                        <form method="dialog" className="space-y-4">
+                                            <div className="flex flex-col">
+                                                <label htmlFor="newName" className="text-sm font-medium text-gray-600 text-left">Name</label>
+                                                <input type="text" id="newName" name="newName"
+                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <label htmlFor="newUsername" className="text-sm font-medium text-gray-600 text-left">Username</label>
+                                                <input type="text" id="newUsername" name="newUsername"
+                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <label htmlFor="newEmail" className="text-sm font-medium text-gray-600 text-left">Email</label>
+                                                <input type="email" id="newEmail" name="newEmail"
+                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <label htmlFor="newPhoneNumber" className="text-sm font-medium text-gray-600 text-left">Phone Number</label>
+                                                <input type="tel" id="newPhoneNumber" name="newPhoneNumber"
+                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <label htmlFor="newLocation" className="text-sm font-medium text-gray-600 text-left">Location</label>
+                                                <input type="text" id="newLocation" name="newLocation"
+                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <label htmlFor="newBio" className="text-sm font-medium text-gray-600 text-left">Bio</label>
+                                                <input type="textarea" id="newBio" name="newBio"
+                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                            </div>
+                                            <div className="flex justify-end space-x-2">
+                                                <button type="button"
+                                                        className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none px-4"
+                                                        onClick={() => document.getElementById('modal_editProfile').close()}>Cancel
+                                                </button>
+                                                <button type="submit"
+                                                        className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
+                                                        onClick={() => console.log('Save logic here')}>Save
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </dialog>
                             </div>
 
                             <div className="flex space-x-8"> {/* container for flex */}
@@ -128,12 +196,12 @@ const MyProfile = () => {
 
                                 <div className="w-1/4 flex flex-col items-center justify-center"> {/* right side with prof pic and buttons */}
                                     <img src="../src/assets/MyProfile pic.png" alt="Profile Picture" className="w-28 h-28 rounded-full object-cover mb-12" />
-                                    <button className="bg-none text-gray-700 font-bold py-2 px-4 rounded hover:bg-gray-400 hover:text-white mb-3 w-full border border-slate-400">
+                                    {/* <button className="bg-none text-gray-700 font-bold py-2 px-4 rounded hover:bg-gray-400 hover:text-white mb-3 w-full border border-slate-400">
                                         Discard Changes
                                     </button>
                                     <button className="bg-green-900 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 w-full">
                                         Save
-                                    </button>
+                                    </button> */}
                                 </div> {/* end of box for prof pic and buttons */}
                             </div>  {/* end of flex box */}
 
