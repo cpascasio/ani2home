@@ -4,6 +4,7 @@ import useFetch from '../../../hooks/useFetch.js';
 import { useUser } from '../../context/UserContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const MyProfile = () => {
 
@@ -66,11 +67,65 @@ const MyProfile = () => {
 
 
 
+
+
     //TODO:
     //1. conditionally render page if user is logged in from backend if not, redirect to login page
     //2. display userdata by userData.blahblah and display it in the 
     //3. make the edit user profile functionality work with backend endpoint.
 
+    // create the handleSubmit function that gets the value of formData then does an axios.put to the route http://localhost:3000/api/users/edit-user with headers type application json and token given the formdata. 
+
+    const handleSubmit = async (event) => {
+        event.preventDefault(); // Prevent the default form submission behavior
+    
+        // Collect form data
+        const formData = new FormData(event.target);
+    
+        // Create an object to hold form values
+        const data = {};
+    
+        // Check if fields have been changed
+        if (formData.get('newName') !== userData?.name) {
+            data.name = formData.get('newName') || "";
+        }
+        if (formData.get('newUsername') !== userData?.userName) {
+            data.userName = formData.get('newUsername');
+        }
+        if (formData.get('newEmail') !== userData?.email) {
+            data.email = formData.get('newEmail');
+        }
+        if (formData.get('newLocation') !== userData?.address) {
+            data.address = formData.get('newLocation') || "";
+        }
+        if (formData.get('newPhoneNumber') !== userData?.phoneNumber) {
+            data.phoneNumber = formData.get('newPhoneNumber') || "";
+        }
+        if (formData.get('newBio') !== userData?.bio) {
+            data.bio = formData.get('newBio') || "";
+        }
+    
+        // Get the token from localStorage or any other source
+        const token = user?.token; // Replace with your actual token retrieval method
+    
+        try {
+            const response = await axios.put(
+                `http://localhost:3000/api/users/edit-user/${user?.userId}`, // Include userId in the URL
+                data,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    },
+                }
+            );
+            console.log('Success:', response.data);
+            // Handle success (e.g., show a success message or redirect)
+        } catch (error) {
+            console.error('Error:', error.response?.data || error.message);
+            // Handle error (e.g., show an error message)
+        }
+    };
 
   return (
     <div className='w-full'>
@@ -174,7 +229,7 @@ const MyProfile = () => {
                                             <label htmlFor="profilePicture" className="text-sm font-medium text-gray-600 mt-2 cursor-pointer text-left pb-4 w-full">
                                                 Change Profile Picture
                                             </label>
-                                            <img src="../src/assets/MyProfile pic.png" alt="Profile Picture" className="w-28 h-auto rounded-full object-cover mb-4"/>
+                                            <img src={userData.userProfilePic} alt="Profile Picture" className="w-28 h-auto rounded-full object-cover mb-4"/>
                                             <input type="file" id="profilePicture" name="profilePicture" accept="image/*" className="mt-2"
                                                 onChange={(e) => {
                                                     // Handle file upload here
@@ -185,36 +240,36 @@ const MyProfile = () => {
                                         </div>
                                         
                                         
-                                        <form method="dialog" className="space-y-4">
+                                        <form onSubmit={handleSubmit} className="space-y-4">
                                             <div className="flex flex-col">
                                                 <label htmlFor="newName" className="text-sm font-medium text-gray-600 text-left">Name</label>
-                                                <input type="text" id="newName" name="newName"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="text" id="newName" name="newName" value={userData.name}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newUsername" className="text-sm font-medium text-gray-600 text-left">Username</label>
-                                                <input type="text" id="newUsername" name="newUsername"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="text" id="newUsername" name="newUsername" value={userData.userName}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newEmail" className="text-sm font-medium text-gray-600 text-left">Email</label>
-                                                <input type="email" id="newEmail" name="newEmail"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="email" id="newEmail" name="newEmail" value={userData.email}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newPhoneNumber" className="text-sm font-medium text-gray-600 text-left">Phone Number</label>
-                                                <input type="tel" id="newPhoneNumber" name="newPhoneNumber"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="tel" id="newPhoneNumber" pattern="(\+63|0)[1-9][0-9]{9}" name="newPhoneNumber" value={userData.phoneNumber}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newLocation" className="text-sm font-medium text-gray-600 text-left">Location</label>
-                                                <input type="text" id="newLocation" name="newLocation"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="text" id="newLocation" name="newLocation" value={userData.address}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newBio" className="text-sm font-medium text-gray-600 text-left">Bio</label>
-                                                <input type="textarea" id="newBio" name="newBio"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="textarea" id="newBio" name="newBio" value={userData.bio}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex justify-end space-x-2">
                                                 <button type="button"
@@ -223,10 +278,10 @@ const MyProfile = () => {
                                                 </button>
                                                 <button type="submit"
                                                         className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
-                                                        onClick={() => console.log('Save logic here')}>Save
+                                                        >Save
                                                 </button>
                                             </div>
-                                        </form>
+                                        </form >
                                     </div>
                                 </dialog>
                             </div>
