@@ -20,6 +20,7 @@ const MyProfile = () => {
         }
     }, [user]);
 
+    /*
 
     useEffect(() =>{
         if(userFetch != null) {
@@ -28,8 +29,13 @@ const MyProfile = () => {
         }
     }, [userFetch]);
 
+
+    */
+
+
     useEffect(() =>{
         if(userData != null) {
+        console.log("USERDATA: ");
         console.log(userData);
         }
     }, [userData]);
@@ -148,7 +154,7 @@ const MyProfile = () => {
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Email:</td>
-                                                <td className="text-left px-8 pb-2">fernando@example.com</td>
+                                                <td className="text-left px-8 pb-2">{userData.email}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium w-100">Phone Number:</td>
