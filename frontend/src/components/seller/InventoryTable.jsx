@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useUser } from "../../context/UserContext";
+import useFetch from "../../../hooks/useFetch";
 
 const InventoryTable = () => {
   const { user } = useUser();
@@ -20,24 +21,25 @@ const InventoryTable = () => {
   };
   const [formData, setFormData] = useState(initialFormData);
 
+  const { data: fetchProducts } = useFetch("/api/products/");
+
+  const [products, setProducts] = useState([]);
+
   const itemsPerPage = 10;
 
-  const inventoryData = [
-    { code: 'V01456', photo: '🥦', name: 'Broccoli', group: 'Vegetable', lastPurchase: '03 May 2021', onHand: '10 Kg' },
-    { code: 'V01457', photo: '🍆', name: 'Aubergine', group: 'Vegetable', lastPurchase: '04 May 2021', onHand: '8 Kg' },
-    { code: 'V01458', photo: '🥕', name: 'Carrot', group: 'Vegetable', lastPurchase: '04 May 2021', onHand: '12 Kg' },
-    { code: 'V01459', photo: '🌶️', name: 'Chili', group: 'Vegetable', lastPurchase: '05 May 2021', onHand: '4.5 Kg' },
-    { code: 'V01460', photo: '🍋', name: 'Lemon', group: 'Vegetable', lastPurchase: '03 May 2021', onHand: '1 Kg' },
-    { code: 'M01461', photo: '🍗', name: 'Chicken', group: 'Meat', lastPurchase: '02 May 2021', onHand: '56 P' },
-    { code: 'M01462', photo: '🥩', name: 'Beef Liver', group: 'Meat', lastPurchase: '03 May 2021', onHand: '4 Kg' },
-    { code: 'M01463', photo: '🥩', name: 'Beef', group: 'Meat', lastPurchase: '02 May 2021', onHand: '43 Kg' },
-    { code: 'F01464', photo: '🐟', name: 'Salmon Fish', group: 'Fish', lastPurchase: '06 May 2021', onHand: '23 Kg' },
-    { code: 'F01465', photo: '🍤', name: 'Shrimp', group: 'Fish', lastPurchase: '02 May 2021', onHand: '13 Kg' },
-    // Add more items as needed
-  ];
+  useEffect(() => {
+    if (fetchProducts != null) {
+      setProducts(fetchProducts);
+    }
+    console.log("🚀 ~ InventoryTable ~ fetchProducts:", fetchProducts)
+  }, [fetchProducts]);
 
-  const filteredData = inventoryData.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    console.log("🚀 ~ InventoryTable ~ products:", products);
+  }, [products]);
+
+  const filteredData = products.filter(item =>
+    item.productName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -72,7 +74,7 @@ const InventoryTable = () => {
           'Content-Type': 'application/json'
         }
       });
-      
+
       // Reset form data and close modal
       setFormData(initialFormData);
       setShowModal(false);
@@ -104,25 +106,25 @@ const InventoryTable = () => {
       <table className="w-full border-collapse">
         <thead>
           <tr>
-            <th className="p-2 border-b bg-gray-100">Item Code</th>
+            <th className="p-2 border-b bg-gray-100">Product Code</th>
             <th className="p-2 border-b bg-gray-100">Photo</th>
-            <th className="p-2 border-b bg-gray-100">Item Name</th>
-            <th className="p-2 border-b bg-gray-100">Item Group</th>
-            <th className="p-2 border-b bg-gray-100">Last Purchase</th>
-            <th className="p-2 border-b bg-gray-100">On Hand</th>
+            <th className="p-2 border-b bg-gray-100">Product Name</th>
+            <th className="p-2 border-b bg-gray-100">Category</th>
+            <th className="p-2 border-b bg-gray-100">Type</th>
+            <th className="p-2 border-b bg-gray-100">Stock</th>
             <th className="p-2 border-b bg-gray-100">Actions</th>
           </tr>
         </thead>
         <tbody>
           {displayedData.map((item, index) => (
             <tr key={index} className="hover:bg-gray-50">
-              <td className="p-2 border-b">{item.code}</td>
-              <td className="p-2 border-b">{item.photo}</td>
-              <td className="p-2 border-b">{item.name}</td>
-              <td className="p-2 border-b">{item.group}</td>
-              <td className="p-2 border-b">{item.lastPurchase}</td>
-              <td className="p-2 border-b">{item.onHand}</td>
-              <td className="p-2 border-b">
+              <td className="p-2 border-b break-all">{item.productId}</td>
+              <td className="p-2 border-b break-all">{item.photo}</td>
+              <td className="p-2 border-b break-all">{item.productName}</td>
+              <td className="p-2 border-b break-all">{item.category}</td>
+              <td className="p-2 border-b break-all">{item.type}</td>
+              <td className="p-2 border-b break-all">{item.stock} {item.isKilo ? "kg" : "pcs"}</td>
+              <td className="p-2 border-b break-all">
                 <button className="px-3 py-1 bg-blue-500 text-white rounded-lg mr-2">Edit</button>
                 <button className="px-3 py-1 bg-red-500 text-white rounded-lg">Delete</button>
               </td>
@@ -144,7 +146,7 @@ const InventoryTable = () => {
       {showModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
           <div className="bg-white p-5 rounded-lg shadow-lg w-1/3">
-            <span className="absolute top-2 right-2 text-2xl cursor-pointer" onClick={() => {setShowModal(false); setFormData(initialFormData);}}>&times;</span>
+            <span className="absolute top-2 right-2 text-2xl cursor-pointer" onClick={() => { setShowModal(false); setFormData(initialFormData); }}>&times;</span>
             <h2 className="text-xl mb-5">Add New Item</h2>
             <form onSubmit={handleSubmit}>
               <label className="block mb-3">
@@ -168,7 +170,7 @@ const InventoryTable = () => {
                   Item:
                   <select name="type" value={formData.type} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg">
                     <option value="">Select Item</option>
-                    {formData.category === 'vegetable' ? vegetables.map((veg, index) => (
+                    {formData.category === 'Vegetable' ? vegetables.map((veg, index) => (
                       <option key={index} value={veg}>{veg}</option>
                     )) : fruits.map((fruit, index) => (
                       <option key={index} value={fruit}>{fruit}</option>

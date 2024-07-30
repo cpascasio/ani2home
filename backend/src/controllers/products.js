@@ -32,15 +32,17 @@ router.get('/', async (req, res) => {
         const products = [];
         const snapshot = await db.collection('products').get();
         snapshot.forEach((doc) => {
-            products.push(doc.data());
+            let product = doc.data();
+            product.productId = doc.id;
+            products.push(product);
         });
         res.json(products);
     } catch (error) {
         console.error('Error getting products:', error);
         res.status(500).send('Error getting products');
     }
-}
-);
+});
+
 
 // Route to create a new product
 router.post('/create-product', async (req, res) => {
