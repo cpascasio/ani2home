@@ -85,6 +85,7 @@ const MyProfile = () => {
         // Create an object to hold form values
         const data = {};
     
+        
         // Check if fields have been changed
         if (formData.get('newName') !== userData?.name) {
             data.name = formData.get('newName') || "";
@@ -243,32 +244,32 @@ const MyProfile = () => {
                                         <form onSubmit={handleSubmit} className="space-y-4">
                                             <div className="flex flex-col">
                                                 <label htmlFor="newName" className="text-sm font-medium text-gray-600 text-left">Name</label>
-                                                <input type="text" id="newName" name="newName" value={userData.name}
+                                                <input type="text" id="newName" name="newName" defaultValue={userData?.name}
                                                     className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newUsername" className="text-sm font-medium text-gray-600 text-left">Username</label>
-                                                <input type="text" id="newUsername" name="newUsername" value={userData.userName}
+                                                <input type="text" id="newUsername" name="newUsername" defaultValue={userData?.userName}
                                                     className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newEmail" className="text-sm font-medium text-gray-600 text-left">Email</label>
-                                                <input type="email" id="newEmail" name="newEmail" value={userData.email}
+                                                <input type="email" id="newEmail" name="newEmail" defaultValue={userData?.email}
                                                     className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newPhoneNumber" className="text-sm font-medium text-gray-600 text-left">Phone Number</label>
-                                                <input type="tel" id="newPhoneNumber" pattern="(\+63|0)[1-9][0-9]{9}" name="newPhoneNumber" value={userData.phoneNumber}
+                                                <input type="tel" id="newPhoneNumber" pattern="(\+63|0)[1-9][0-9]{9}" name="newPhoneNumber" defaultValue={userData?.phoneNumber}
                                                     className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newLocation" className="text-sm font-medium text-gray-600 text-left">Location</label>
-                                                <input type="text" id="newLocation" name="newLocation" value={userData.address}
+                                                <input type="text" id="newLocation" name="newLocation" defaultValue={userData?.address}
                                                     className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newBio" className="text-sm font-medium text-gray-600 text-left">Bio</label>
-                                                <input type="textarea" id="newBio" name="newBio" value={userData.bio}
+                                                <input type="textarea" id="newBio" name="newBio" defaultValue={userData?.bio}
                                                     className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex justify-end space-x-2">
@@ -292,27 +293,27 @@ const MyProfile = () => {
                                         <tbody>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium min-w-40">Name:</td>
-                                                <td className="text-left px-8 pb-2">{userData.name}</td>
+                                                <td className="text-left px-8 pb-2">{userData?.name}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Username:</td>
-                                                <td className="text-left px-8 pb-2">{userData.userName}</td>
+                                                <td className="text-left px-8 pb-2">{userData?.userName}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Email:</td>
-                                                <td className="text-left px-8 pb-2">{userData.email}</td>
+                                                <td className="text-left px-8 pb-2">{userData?.email}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium w-100">Phone Number:</td>
-                                                <td className="text-left px-8 pb-2">{userData.phoneNumber}</td>
+                                                <td className="text-left px-8 pb-2">{userData?.phoneNumber}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Location:</td>
-                                                <td className="text-left px-8 pb-2">{userData.address}</td>
+                                                <td className="text-left px-8 pb-2">{userData?.address}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium align-top">Bio:</td>
-                                                <td className="text-justify px-8 pb-2">{userData.bio}</td>
+                                                <td className="text-justify px-8 pb-2">{userData?.bio}</td>
                                             </tr>
                                         </tbody>
                                     </table>
