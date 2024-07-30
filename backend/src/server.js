@@ -4,6 +4,7 @@ const middleware = require('./middleware'); // Import middleware
 const userRouters = require('./controllers/users'); // Import the user routes
 const productRoutes = require('./controllers/products'); // Import the product routes
 const cartRoutes = require('./controllers/cart'); // Import the product routes
+const orderRoutes = require('./controllers/order'); // Import the order routes
 
 const app = express();
 
@@ -26,6 +27,9 @@ apiRouter.use('/products', productRoutes);
 
 // product route
 apiRouter.use('/cart', cartRoutes);
+
+// product route
+apiRouter.use('/orders', orderRoutes);
 
 // Middleware to parse JSON bodies
 app.use(express.json());
