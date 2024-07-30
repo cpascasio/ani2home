@@ -218,72 +218,72 @@ const MyProfile = () => {
                                     <img src="../../src/assets/edit button hover.png" alt="Edit" className="w-6 h-6 mr-2 opacity-0 hover:opacity-100  absolute inset-0" />
                                 </button>
 
-                                <dialog id="modal_editProfile" className="modal">
-                                    <div className="modal-box w-11/12 max-w-lg p-6 bg-white shadow-lg rounded-md">
+                                <dialog id="modal_editProfile" className="modal fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                                    <div className="modal-box w-full max-w-lg bg-white shadow-lg rounded-md p-6 overflow-auto relative">
                                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                                                 onClick={() => document.getElementById('modal_editProfile').close()}>✕
                                         </button>
                                         <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Edit Profile</h3>
-                                        
-                                        <div className="flex flex-col items-center mb-6">
-                                            <label htmlFor="profilePicture" className="text-sm font-medium text-gray-600 mt-2 cursor-pointer text-left pb-4 w-full">
-                                                Change Profile Picture
-                                            </label>
-                                            <img src={userData.userProfilePic} alt="Profile Picture" className="w-28 h-auto rounded-full object-cover mb-4"/>
-                                            <input type="file" id="profilePicture" name="profilePicture" accept="image/*" className="mt-2"
-                                                onChange={(e) => {
-                                                    // Handle file upload here
-                                                    console.log(e.target.files[0]);
-                                                    }}
-                                            />
-                                            
-                                        </div>
-                                        
-                                        
+
                                         <form onSubmit={handleSubmit} className="space-y-4">
+                                            <div className="flex flex-col items-center mb-6">
+                                                <label htmlFor="profilePicture" className="text-sm font-medium text-gray-600 mt-2 cursor-pointer text-left pb-4 w-full">
+                                                    Change Profile Picture
+                                                </label>
+                                                <img src={userData.userProfilePic} alt="Profile Picture" className="w-28 h-auto rounded-full object-cover mb-4"/>
+                                                <input type="file" id="profilePicture" name="profilePicture" accept="image/*" className="mt-2"
+                                                    onChange={(e) => {
+                                                        // Handle file upload here
+                                                        console.log(e.target.files[0]);
+                                                    }}
+                                                />
+                                            </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newName" className="text-sm font-medium text-gray-600 text-left">Name</label>
                                                 <input type="text" id="newName" name="newName" value={userData.name}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
+                                                    className="input input-bordered bg-gray-200 text-gray-800 w-full" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newUsername" className="text-sm font-medium text-gray-600 text-left">Username</label>
                                                 <input type="text" id="newUsername" name="newUsername" value={userData.userName}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
+                                                    className="input input-bordered bg-gray-200 text-gray-800 w-full" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newEmail" className="text-sm font-medium text-gray-600 text-left">Email</label>
                                                 <input type="email" id="newEmail" name="newEmail" value={userData.email}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
+                                                    className="input input-bordered bg-gray-200 text-gray-800 w-full" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newPhoneNumber" className="text-sm font-medium text-gray-600 text-left">Phone Number</label>
                                                 <input type="tel" id="newPhoneNumber" pattern="(\+63|0)[1-9][0-9]{9}" name="newPhoneNumber" value={userData.phoneNumber}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
+                                                    className="input input-bordered bg-gray-200 text-gray-800 w-full" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newLocation" className="text-sm font-medium text-gray-600 text-left">Location</label>
                                                 <input type="text" id="newLocation" name="newLocation" value={userData.address}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
+                                                    className="input input-bordered bg-gray-200 text-gray-800 w-full" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newBio" className="text-sm font-medium text-gray-600 text-left">Bio</label>
-                                                <input type="textarea" id="newBio" name="newBio" value={userData.bio}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
+                                                <textarea id="newBio" name="newBio" value={userData.bio}
+                                                    className="input input-bordered bg-gray-200 text-gray-800 w-full" rows="3"></textarea>
                                             </div>
-                                            <div className="flex justify-end space-x-2">
+                                            <div className="flex justify-end space-x-2 mt-4">
                                                 <button type="button"
                                                         className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none px-4"
                                                         onClick={() => document.getElementById('modal_editProfile').close()}>Cancel
                                                 </button>
                                                 <button type="submit"
-                                                        className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
-                                                        >Save
+                                                        className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5">
+                                                    Save
                                                 </button>
                                             </div>
-                                        </form >
+                                        </form>
                                     </div>
                                 </dialog>
+
+
+
                             </div>
 
                             <div className="flex space-x-8"> {/* container for flex */}
