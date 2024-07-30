@@ -8,6 +8,9 @@ const InventoryTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
   const initialFormData = {
     productName: '',
     productDescription: '',
@@ -19,6 +22,7 @@ const InventoryTable = () => {
     stock: '',
     pictures: []
   };
+
   const [formData, setFormData] = useState(initialFormData);
 
   const { data: fetchProducts } = useFetch("/api/products/");
@@ -64,20 +68,68 @@ const InventoryTable = () => {
     // Remove unit in formData
     const { unit, ...rest } = formData;
 
-    console.log("FORMDATA");
-    console.log(rest);
-
     try {
-      await axios.post("http://localhost:3000/api/products/create-product", rest, {
+        const response = await axios.post("http://localhost:3000/api/products/create-product", rest, {
+            headers: {
+                'Authorization': `Bearer ${user?.token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const newProduct = response.data.product;
+
+        // Update products state
+        setProducts(prevProducts => [...prevProducts, newProduct]);
+
+        // Reset form data and close modal
+        setFormData(initialFormData);
+        setShowModal(false);
+    } catch (error) {
+        console.error("There was an error!", error);
+    }
+};
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+  
+    // Remove unit and productId from formData
+    const { unit, productId, ...rest } = formData;
+  
+    console.log('rest', rest);
+  
+    try {
+      await axios.put(`http://localhost:3000/api/products/${selectedProduct.productId}`, rest, {
         headers: {
           'Authorization': `Bearer ${user?.token}`,
           'Content-Type': 'application/json'
         }
       });
-
-      // Reset form data and close modal
+  
+      // Update products state
+      setProducts(products.map(product => 
+        product.productId === selectedProduct.productId ? { ...product, ...rest } : product
+      ));
       setFormData(initialFormData);
-      setShowModal(false);
+      setShowEditModal(false);
+    } catch (error) {
+      console.error("There was an error!", error);
+    }
+  };
+  
+  const handleEdit = (product) => {
+    setSelectedProduct(product);
+    setFormData(product);
+    setShowEditModal(true);
+  };
+  
+  const handleDelete = async (productId) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/products/${productId}`, {
+        headers: {
+          'Authorization': `Bearer ${user?.token}`
+        }
+      });
+      setProducts(products.filter(product => product.productId !== productId));
     } catch (error) {
       console.error("There was an error!", error);
     }
@@ -125,8 +177,8 @@ const InventoryTable = () => {
               <td className="p-2 border-b break-all">{item.type}</td>
               <td className="p-2 border-b break-all">{item.stock} {item.isKilo ? "kg" : "pcs"}</td>
               <td className="p-2 border-b break-all">
-                <button className="px-3 py-1 bg-blue-500 text-white rounded-lg mr-2">Edit</button>
-                <button className="px-3 py-1 bg-red-500 text-white rounded-lg">Delete</button>
+                <button className="px-3 py-1 bg-blue-500 text-white rounded-lg mr-2" onClick={() => handleEdit(item)}>Edit</button>
+                <button className="px-3 py-1 bg-red-500 text-white rounded-lg" onClick={() => handleDelete(item.productId)}>Delete</button>
               </td>
             </tr>
           ))}
@@ -204,6 +256,71 @@ const InventoryTable = () => {
                 <img src={URL.createObjectURL(formData.photo)} alt="Item" className="mt-3 max-w-full" />
               )}
               <button type="submit" onClick={handleSubmit} className="w-full py-2 bg-blue-500 text-white rounded-lg">Add Item</button>
+            </form>
+          </div>
+        </div>
+      )}
+      {showEditModal && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
+          <div className="bg-white p-5 rounded-lg shadow-lg w-1/3">
+            <span className="absolute top-2 right-2 text-2xl cursor-pointer" onClick={() => { setShowEditModal(false); setFormData(initialFormData); }}>&times;</span>
+            <h2 className="text-xl mb-5">Edit Item</h2>
+            <form onSubmit={handleEditSubmit}>
+              <label className="block mb-3">
+                Name:
+                <input type="text" name="productName" value={formData.productName} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
+              </label>
+              <label className="block mb-3">
+                Description:
+                <input type="text" name="productDescription" value={formData.productDescription} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
+              </label>
+              <label className="block mb-3">
+                Category:
+                <select name="category" value={formData.category} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg">
+                  <option value="">Select Category</option>
+                  <option value="Vegetable">Vegetable</option>
+                  <option value="Fruit">Fruit</option>
+                </select>
+              </label>
+              {formData.category && (
+                <label className="block mb-3">
+                  Item:
+                  <select name="type" value={formData.type} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg">
+                    <option value="">Select Item</option>
+                    {formData.category === 'Vegetable' ? vegetables.map((veg, index) => (
+                      <option key={index} value={veg}>{veg}</option>
+                    )) : fruits.map((fruit, index) => (
+                      <option key={index} value={fruit}>{fruit}</option>
+                    ))}
+                  </select>
+                  {formData.type === '' && (
+                    <input type="text" name="type" placeholder="Other" onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg mt-2" />
+                  )}
+                </label>
+              )}
+              <label className="block mb-3">
+                Unit:
+                <select name="unit" value={formData.unit} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg">
+                  <option value="kilo">Kilo</option>
+                  <option value="pieces">Pieces</option>
+                </select>
+              </label>
+              <label className="block mb-3">
+                Price per {formData.unit}:
+                <input type="number" name="price" value={formData.price} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
+              </label>
+              <label className="block mb-3">
+                Stock:
+                <input type="number" name="stock" value={formData.stock} onChange={handleChange} required className="w-full p-2 border border-gray-300 rounded-lg" />
+              </label>
+              <label className="block mb-3">
+                Photo:
+                <input type="file" name="photo" onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-lg" />
+              </label>
+              {formData.photo && (
+                <img src={URL.createObjectURL(formData.photo)} alt="Item" className="mt-3 max-w-full" />
+              )}
+              <button type="submit" className="w-full py-2 bg-blue-500 text-white rounded-lg">Save Changes</button>
             </form>
           </div>
         </div>
