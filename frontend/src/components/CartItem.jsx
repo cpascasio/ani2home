@@ -38,7 +38,7 @@ const CartItem = ({ product }) => {
                 <img src={product.image} alt="Product" className="w-[100px] h-[100px]" />
                 <div className="flex flex-col lg:ml-4 items-start mt-2 lg:mt-1">
                     <div className="w-full line-clamp-2 text-[15px] font-inter text-[#737373] text-left lg:text-left mb-3 mt-3">
-                        {product.description} hello
+                        {product.description}
                     </div>
                     <div className="flex items-center justify-center mt-2">
                         <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.5" />
