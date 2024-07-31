@@ -19,6 +19,8 @@ const MyProfile = () => {
     const [editMode, setEditMode] = useState(false);
 
     const navigate = useNavigate();
+
+    const [isCollapseOpen, setIsCollapseOpen] = useState(false);
     
 
     // if button is pressed, editmode to true
@@ -131,82 +133,127 @@ const MyProfile = () => {
   return (
     <div className='w-full'>
         <Header />
-        <div className="flex w-full h-auto bg-gradient-to-r from-green-900"> {/*banner */}
-                <div className="flex flex-1 pl-[3%] pt-[2%] pb-[2%]"> {/*banner left side */}
-                    <div className="flex flex-col items-center text-white"> {/*box for logo and stats*/}
-                        <div className="flex justify-center items-center mb-4">
-                            <div className="bg-white rounded-full"> {/* White background */}
-                                <img src={userData.userProfilePic} alt="Profile Pic" className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+        <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900"> {/* Banner */}
+            <div className="flex flex-col md:flex-row md:pl-[3%] md:pt-[2%] md:pb-[2%] p-4 w-full md:w-1/2"> {/* Banner Left Side */}
+                <div className="flex flex-col items-center text-white mb-4 md:mb-0"> {/* Box for Logo and Stats */}
+                    <div className="flex justify-center items-center mb-4">
+                        <div className="bg-white rounded-full"> {/* White Background */}
+                            <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+                        </div>
+                    </div>
+                    <div className="mt-4"> {/* Stats Box */}
+                        <div className="flex items-center mb-2"> {/* Followers */}
+                            <div className="mr-2">
+                                <img src="../src/assets/FollowersIcon.png" alt="Followers" />
+                            </div>
+                            <div className="text-left font-inter text-sm">
+                                <strong>Followers:</strong> {userData.followers}
                             </div>
                         </div>
-                        <div className="mt-[5%]"> {/*stats box */}
-                            <div className="flex items-center mb-2"> {/*followers */}
-                                <div className="mr-2">
-                                    <img src="../src/assets/FollowersIcon.png" alt="Followers" />
-                                </div>
-                                <div className="text-left font-inter">
-                                    <strong>Followers:</strong> {userData.followers}
-                                </div>
+                        <div className="flex items-center mb-2"> {/* Ratings */}
+                            <div className="mr-2">
+                                <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
                             </div>
-                            <div className="flex items-center mb-2"> {/*ratings */}
-                                <div className="mr-2">
-                                    <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
-                                </div>
-                                <div className="text-left font-inter">
-                                    <strong>Rating:</strong> 4.4 (1,304)
-                                </div>
-                            </div>
-                            <div className="flex items-center mb-2"> {/*products */}
-                                <div className="mr-2">
-                                    <img src="../src/assets/ProductsIcon.png" alt="Products" />
-                                </div>
-                                <div className="text-left font-inter">
-                                    <strong>Products:</strong> 67
-                                </div>
+                            <div className="text-left font-inter text-sm">
+                                <strong>Rating:</strong> 4.4 (1,304)
                             </div>
                         </div>
-                    </div> {/*end of box for logo and stats */}
-                    <div className="flex flex-col flex-1 pl-[4%] pr-[4%] text-white items-start relative"> {/*Name, Location, Bio, Buttons */}
-                        <h1 className="text-4xl font-bold font-inter mb-0">
-                            {userData.name}
-                        </h1>
-                        <div className="italic mb-4 font-inter">
-                            {userData.address}
+                        <div className="flex items-center mb-2"> {/* Products */}
+                            <div className="mr-2">
+                                <img src="../src/assets/ProductsIcon.png" alt="Products" />
+                            </div>
+                            <div className="text-left font-inter text-sm">
+                                <strong>Products:</strong> 67
+                            </div>
                         </div>
-                        <div className="mb-6 text-justify font-inter"> {/*CHARACTERS MAXIMUM: 439 */}
-                            {userData.bio}
-                        </div>
-                        <button className="absolute bottom-0 right-0 rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold mr-7 
-                        transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
-                            Get Verified
-                        </button>
-                    </div> {/*end of name etc of user profile */}
-            </div> {/*banner left side end*/}
-                
-                <div className="flex flex-1 w-full"> {/*banner right side */}
-                    {/* should insert cover photo here --> use FarmCover1.jpg */}
-                    
-                </div> {/*banner right side end*/}
-            </div> {/*banner end*/}
+                    </div>
+                </div> {/* End of Box for Logo and Stats */}
+                <div className="flex flex-col flex-1 pl-0 md:pl-[4%] pr-0 md:pr-[4%] text-white items-start relative"> {/* Name, Location, Bio, Buttons */}
+                    <h1 className="text-2xl md:text-4xl font-bold font-inter mb-2 md:mb-0">
+                        {userData.name}
+                    </h1>
+                    <div className="italic mb-2 md:mb-4 font-inter text-sm md:text-base">
+                        {userData.address}
+                    </div>
+                    <div className="mb-4 md:mb-6 text-justify font-inter text-sm md:text-base"> {/* Characters Maximum: 439 */}
+                        {userData.bio}
+                    </div>
+                    <button className="absolute bottom-0 right-0 rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold mr-4 md:mr-7 
+                    transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
+                        Get Verified
+                    </button>
+                </div> {/* End of Name, etc. of User Profile */}
+            </div> {/* Banner Left Side End */}
+            
+            <div className="flex flex-1 w-full md:w-1/2"> {/* Banner Right Side */}
+                <img src="../src/assets/FarmCover1.jpg" alt="Cover Photo" className="w-full h-auto object-cover" /> {/* Insert Cover Photo */}
+            </div> {/* Banner Right Side End */}
+        </div> {/* Banner End */}
+
 
             {/* ----- start of body ----- */} 
-            <div className="flex flex-col lg:flex-row lg:space-x-8 p-4 lg:p-8 bg-gray-200 min-h-screen"> {/* Main container */}
-                    <div className="w-full lg:w-1/3 lg:max-w-xs lg:pt-10 mx-auto flex flex-col items-center"> {/* Centered left div */}
-                        <div className="text-lg font-bold mb-2 text-gray-600 pb-5 text-left">USER PROFILE</div>
-                        <ul className="space-y-4 text-left lg:pr-11"> {/* Ensure the list takes full width */}
+            <div className="w-full min-h-screen bg-gray-200">
+            <div className="flex flex-col min-h-screen sm:flex-row w-full max-w-screen-xl mx-auto p-4 bg-gray-200"> {/* Main container */}
+                <div className="w-full sm:w-[15%] p-4">
+                    {/* Mobile Collapse */}
+                    <div className="block lg:hidden w-full">
+                        <button
+                        onClick={() => setIsCollapseOpen(!isCollapseOpen)}
+                        className="flex items-center cursor-pointer bg-[#0B472D] text-white p-2 rounded-md w-full text-left mb-3"
+                        >
+                        <span className="flex-1">USER PROFILE</span>
+                        <svg
+                            className={`w-4 h-4 transition-transform ${isCollapseOpen ? 'rotate-180' : 'rotate-0'}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                        </button>
+                        {isCollapseOpen && (
+                        <div className="bg-[#67B045] text-white p-4 w-auto max-w-md mx-auto">
+                            <ul className="space-y-4 text-left lg:pr-11">
                             <li>
-                                <a href="#" className="text-gray-600 underline hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Profile</a>
+                                <a href="#" className="block text-[16px] text-gray-200 underline hover:text-blue-300">
+                                My Profile
+                                </a>
                             </li>
                             <li>
-                                <a href="/myOrders" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Orders</a>
+                                <a href="/myOrders" className="block text-[16px] text-gray-200 hover:text-blue-300">
+                                My Orders
+                                </a>
                             </li>
                             <li>
-                                <a href="/myShop" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Shop</a>
+                                <a href="/myShop" className="block text-[16px] text-gray-200 hover:text-blue-300">
+                                My Shop
+                                </a>
                             </li>
+                            </ul>
+                        </div>
+                        )}
+                    </div>
+
+                    {/* Desktop View */}
+                    <div className="hidden lg:block w-full">
+                        <div className="text-lg font-bold text-gray-600 pb-5 text-left flex items-center lg:mb-2 lg:mt-4 lg:ml-4">USER PROFILE</div>
+                        <ul className="space-y-4 text-left">
+                        <li>
+                            <a href="#" className="text-gray-600 underline hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4">My Profile</a>
+                        </li>
+                        <li>
+                            <a href="/myOrders" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4">My Orders</a>
+                        </li>
+                        <li>
+                            <a href="/myShop" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4">My Shop</a>
+                        </li>
                         </ul>
                     </div>
-                    <div className="flex-1 lg:pt-10"> {/* Right div */}
-                        <div className="text-lg font-bold mb-2 text-left text-gray-600 pb-5">My Profile</div>
+                    </div>
+        
+
+                    <div className="w-full sm:w-[85%] px-4 lg:pb-12"> {/* Right div */}
+                        <div className="text-lg font-bold mb-3 text-left text-gray-600 lg:my-5 lg:pb-3 lg:mt-8">My Profile</div>
 
                         <div className="bg-white p-4 md:p-6 lg:p-8 rounded shadow-md w-full max-w-full mx-auto overflow-auto"> {/* white background */}
                             <div className="flex items-center justify-between mb-4">
@@ -225,107 +272,170 @@ const MyProfile = () => {
                                         </button>
                                         <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Edit Profile</h3>
 
-                                        <form onSubmit={handleSubmit} className="space-y-4">
-                                            <div className="flex flex-col items-center mb-6">
-                                                <label htmlFor="profilePicture" className="text-sm font-medium text-gray-600 mt-2 cursor-pointer text-left pb-4 w-full">
-                                                    Change Profile Picture
-                                                </label>
-                                                <img src={userData.userProfilePic} alt="Profile Picture" className="w-28 h-auto rounded-full object-cover mb-4"/>
-                                                <input type="file" id="profilePicture" name="profilePicture" accept="image/*" className="mt-2"
-                                                    onChange={(e) => {
-                                                        // Handle file upload here
-                                                        console.log(e.target.files[0]);
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <label htmlFor="newName" className="text-sm font-medium text-gray-600 text-left">Name</label>
-                                                <input type="text" id="newName" name="newName" defaultValue={userData?.name}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <label htmlFor="newUsername" className="text-sm font-medium text-gray-600 text-left">Username</label>
-                                                <input type="text" id="newUsername" name="newUsername" defaultValue={userData?.userName}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <label htmlFor="newEmail" className="text-sm font-medium text-gray-600 text-left">Email</label>
-                                                <input type="email" id="newEmail" name="newEmail" defaultValue={userData?.email}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <label htmlFor="newPhoneNumber" className="text-sm font-medium text-gray-600 text-left">Phone Number</label>
-                                                <input type="tel" id="newPhoneNumber" pattern="(\+63|0)[1-9][0-9]{9}" name="newPhoneNumber" defaultValue={userData?.phoneNumber}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <label htmlFor="newLocation" className="text-sm font-medium text-gray-600 text-left">Location</label>
-                                                <input type="text" id="newLocation" name="newLocation" defaultValue={userData?.address}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <label htmlFor="newBio" className="text-sm font-medium text-gray-600 text-left">Bio</label>
-                                                <textarea id="newBio" name="newBio" defaultValue={userData?.bio}
-                                                    className="input input-bordered bg-gray-200 text-gray-800 resize-none h-auto"
-                                                    rows="8">
-                                                </textarea>
-                                            </div>
-                                            <div className="flex justify-end space-x-2 mt-4">
-                                                <button type="button"
-                                                        className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none w-auto h-auto"
-                                                        onClick={() => document.getElementById('modal_editProfile').close()}>Cancel
-                                                </button>
-                                                <button type="submit"
-                                                        className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none w-auto h-auto"
-                                                        onClick={() => console.log('Save logic here')}>Save
-                                                </button>
-                                            </div>
+                                        <form onSubmit={handleSubmit} className="space-y-4 px-4 sm:px-6 lg:px-8">
+                                        {/* Profile Picture */}
+                                        <div className="flex flex-col items-center mb-6">
+                                            <label htmlFor="profilePicture" className="text-sm font-medium text-gray-600 cursor-pointer text-left w-full">
+                                            Change Profile Picture
+                                            </label>
+                                            <img src={userData.userProfilePic} alt="Profile Picture" className="w-28 h-28 rounded-full object-cover mb-4" />
+                                            <input
+                                            type="file"
+                                            id="profilePicture"
+                                            name="profilePicture"
+                                            accept="image/*"
+                                            className="mt-2"
+                                            onChange={(e) => {
+                                                // Handle file upload here
+                                                console.log(e.target.files[0]);
+                                            }}
+                                            />
+                                        </div>
+
+                                        {/* Name */}
+                                        <div className="flex flex-col">
+                                            <label htmlFor="newName" className="text-sm font-medium text-gray-600 text-left">Name</label>
+                                            <input
+                                            type="text"
+                                            id="newName"
+                                            name="newName"
+                                            defaultValue={userData?.name}
+                                            className="input input-bordered bg-gray-200 text-gray-800 w-full"
+                                            />
+                                        </div>
+
+                                        {/* Username */}
+                                        <div className="flex flex-col">
+                                            <label htmlFor="newUsername" className="text-sm font-medium text-gray-600 text-left">Username</label>
+                                            <input
+                                            type="text"
+                                            id="newUsername"
+                                            name="newUsername"
+                                            defaultValue={userData?.userName}
+                                            className="input input-bordered bg-gray-200 text-gray-800 w-full"
+                                            />
+                                        </div>
+
+                                        {/* Email */}
+                                        <div className="flex flex-col">
+                                            <label htmlFor="newEmail" className="text-sm font-medium text-gray-600 text-left">Email</label>
+                                            <input
+                                            type="email"
+                                            id="newEmail"
+                                            name="newEmail"
+                                            defaultValue={userData?.email}
+                                            className="input input-bordered bg-gray-200 text-gray-800 w-full"
+                                            />
+                                        </div>
+
+                                        {/* Phone Number */}
+                                        <div className="flex flex-col">
+                                            <label htmlFor="newPhoneNumber" className="text-sm font-medium text-gray-600 text-left">Phone Number</label>
+                                            <input
+                                            type="tel"
+                                            id="newPhoneNumber"
+                                            pattern="(\+63|0)[1-9][0-9]{9}"
+                                            name="newPhoneNumber"
+                                            defaultValue={userData?.phoneNumber}
+                                            className="input input-bordered bg-gray-200 text-gray-800 w-full"
+                                            />
+                                        </div>
+
+                                        {/* Location */}
+                                        <div className="flex flex-col">
+                                            <label htmlFor="newLocation" className="text-sm font-medium text-gray-600 text-left">Location</label>
+                                            <input
+                                            type="text"
+                                            id="newLocation"
+                                            name="newLocation"
+                                            defaultValue={userData?.address}
+                                            className="input input-bordered bg-gray-200 text-gray-800 w-full"
+                                            />
+                                        </div>
+
+                                        {/* Bio */}
+                                        <div className="flex flex-col">
+                                            <label htmlFor="newBio" className="text-sm font-medium text-gray-600 text-left">Bio</label>
+                                            <textarea
+                                            id="newBio"
+                                            name="newBio"
+                                            defaultValue={userData?.bio}
+                                            className="input input-bordered bg-gray-200 text-gray-800 resize-none w-full h-auto py-2"
+                                            rows="8">
+                                            </textarea>
+                                        </div>
+
+                                        {/* Buttons */}
+                                        <div className="flex justify-end space-x-2 mt-4">
+                                            <button
+                                            type="button"
+                                            className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none w-auto h-auto"
+                                            onClick={() => document.getElementById('modal_editProfile').close()}
+                                            >
+                                            Cancel
+                                            </button>
+                                            <button
+                                            type="submit"
+                                            className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none w-auto h-auto"
+                                            onClick={() => console.log('Save logic here')}
+                                            >
+                                            Save
+                                            </button>
+                                        </div>
                                         </form>
+
                                     </div>
                                 </dialog>
-
-
-
                             </div>
 
                             <div className="flex flex-col lg:flex-row lg:space-x-8 p-4"> {/* Container for flex with responsive direction */}
-                                {/* Right side with profile pic and buttons */}
+                                {/* Right side with profile pic */}
                                 <div className="w-full lg:w-1/4 flex flex-col items-center justify-center mb-4 lg:mb-0">
-                                    <img src={userData.userProfilePic} alt="Profile Picture" className="w-28 h-28 rounded-full object-cover" />
+                                    <img 
+                                        src={userData.userProfilePic} 
+                                        alt="Profile Picture" 
+                                        className="w-28 h-28 lg:w-44 lg:h-44 rounded-full object-cover"
+                                    />
                                 </div>
 
+
                                 {/* Table for forms */}
-                                <div className="w-full lg:w-3/4 overflow-x-auto"> {/* Added overflow-x-auto for responsive table */}
+                                <div className="w-full lg:w-3/4">
                                     <table className="table-auto w-full">
                                         <tbody>
                                             <tr>
-                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Name:</td>
-                                                <td className="text-left px-8 pb-2">{userData?.name}</td>
+                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium whitespace-nowrap">Name:</td>
+                                                <td className="text-left px-4 pb-2">{userData?.name}</td>
                                             </tr>
                                             <tr>
-                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Username:</td>
-                                                <td className="text-left px-8 pb-2">{userData?.userName}</td>
+                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium whitespace-nowrap">Username:</td>
+                                                <td className="text-left px-4 pb-2">{userData?.userName}</td>
                                             </tr>
                                             <tr>
-                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Email:</td>
-                                                <td className="text-left px-8 pb-2">{userData?.email}</td>
+                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium whitespace-nowrap">Email:</td>
+                                                <td className="text-left px-4 pb-2">{userData?.email}</td>
                                             </tr>
                                             <tr>
-                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Phone Number:</td>
-                                                <td className="text-left px-8 pb-2">{userData?.phoneNumber}</td>
+                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium whitespace-nowrap">Phone Number:</td>
+                                                <td className="text-left px-4 pb-2">{userData?.phoneNumber}</td>
                                             </tr>
                                             <tr>
-                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Location:</td>
-                                                <td className="text-left px-8 pb-2">{userData?.address}</td>
+                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium whitespace-nowrap">Location:</td>
+                                                <td className="text-left px-4 pb-2">{userData?.address}</td>
                                             </tr>
                                             <tr>
-                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium align-top">Bio:</td>
-                                                <td className="text-justify px-8 pb-2">{userData?.bio}</td>
+                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium align-top whitespace-nowrap">Bio:</td>
+                                                <td className="text-left px-4 pb-2">
+                                                    <div className="bio-content max-h-40 md:max-h-none overflow-auto md:overflow-visible">
+                                                        {userData?.bio}
+                                                    </div>
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
+
 
 
                             {/* ------ Account Settings Section ------  */}
@@ -503,6 +613,7 @@ const MyProfile = () => {
                                     </li>
                                 </ul>
                             </div> {/* END of Account Settings Section  */}
+                        </div>
                         </div>
                     </div>
                 </div>
