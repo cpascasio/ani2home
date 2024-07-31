@@ -7,7 +7,7 @@ const db = admin.firestore();
 
 
 // Webhook route (add this to your apiRouter or app directly)
-router.post('/', (req, res) => {
+router.post('/lalamove', (req, res) => {
     // Log the request headers and body
     console.log('Webhook received!');
     console.log('Headers:', req.headers);
@@ -21,5 +21,8 @@ router.post('/', (req, res) => {
     res.status(200).json({ message: 'Webhook received successfully!' });
   });
 
+
+
+  
 
 module.exports = router;
