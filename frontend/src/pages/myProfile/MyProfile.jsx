@@ -277,7 +277,7 @@ const MyProfile = () => {
                                                 </button>
                                                 <button type="submit"
                                                         className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none w-auto h-auto"
-                                                        onClick={() => console.log('Save logic here')}>Save
+                                                        >Save
                                                 </button>
                                             </div>
                                         </form>
