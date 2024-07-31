@@ -3,16 +3,16 @@ import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 
 
+
 const firebaseConfig = {
-    apiKey: "AIzaSyAwttPbRQqWaT-6RJcPKqdn_0CwZZb5WNY",
-    authDomain: "ani2home-fede2.firebaseapp.com",
-    projectId: "ani2home-fede2",
-    storageBucket: "ani2home-fede2.appspot.com",
-    messagingSenderId: "660379576038",
-    appId: "1:660379576038:web:495817096c1f3b7e4cfd27",
-    measurementId: "G-2SMHL861T8"
-  };
-  
+  apiKey: import.meta.env.VITE_API_KEY,
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_APP_ID,
+  measurementId: import.meta.env.VITE_MEASUREMENT_ID
+};
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);

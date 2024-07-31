@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
-import { format } from 'date-fns';
 
 
 const ProductCard = (product) => {  
