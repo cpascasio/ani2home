@@ -4,6 +4,7 @@ const middleware = require('./middleware'); // Import middleware
 const userRouters = require('./controllers/users'); // Import the user routes
 const productRoutes = require('./controllers/products'); // Import the product routes
 const webhooksRoutes = require('./controllers/webhooks'); // Import the product routes
+const lalamoveRoutes = require('./controllers/lalamove'); // Import the product routes
 
 require('dotenv').config();
 
@@ -20,11 +21,17 @@ const apiRouter = express.Router();
 // Apply middleware specific to API routes
 //apiRouter.use(middleware.decodeToken); // checks if the user is authorized by checking the token
 
+// product route
+apiRouter.use('/webhooks', webhooksRoutes);
+
+
 // Mount the user routes to the API router
 apiRouter.use('/users', userRouters); // Use the user routes
 
+
 // product route
-apiRouter.use('/webhooks', webhooksRoutes);
+apiRouter.use('/lalamove', lalamoveRoutes);
+
 
 // product route
 apiRouter.use('/products', productRoutes);
