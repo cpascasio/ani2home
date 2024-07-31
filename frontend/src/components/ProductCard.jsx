@@ -38,30 +38,28 @@ const ProductCard = (product) => {
     //   </div>
     // </div>
 
-    <div className="bg-white flex flex-col border border-gray-300 rounded-lg overflow-hidden shadow-md w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto">
-  <img
-    src={product.pictures[0]} 
-    alt={product.productName} 
-    className="w-full h-[178px] object-cover"
-  />
-  <div className="p-3">
-    <h2 className="text-left text-sm font-bold text-gray-900 truncate">{product.productName}</h2> 
-    <p className="text-left text-xs text-gray-600 mt-1 line-clamp-2"> 
-      {product.productDescription}
-    </p>
-    <p className="text-left text-xs text-red-500 mt-1">Rating: {product.rating}</p>
-  </div>
-  <button
-    className="bg-green-900 text-white py-2 px-4 rounded-md hover:bg-blue-500 hover:text-white transition-colors duration-300 mx-4 mb-4"
-    onClick={handleAddToCart} 
-  >
-    Add To Cart
-  </button>
-</div>
 
-
-
-  );
-};
-
-export default ProductCard;
+      <div className="bg-white flex flex-col border border-gray-300 rounded-lg overflow-hidden shadow-md w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto">
+        <img
+          src={product.pictures[0]} 
+          alt={product.productName} 
+          className="w-full h-[178px] object-cover"
+        />
+        <div className="p-3">
+          <h2 className="text-left text-sm font-bold text-gray-900 truncate">{product.productName}</h2> 
+          <p className="text-left text-xs text-gray-600 mt-1 line-clamp-2">
+            {product.productDescription}
+          </p>
+          <p className="text-left text-xs text-red-500 mt-1">Rating: {product.rating}</p>
+        </div>
+        <button
+          className="bg-green-900 text-white py-1 px-2 text-xs rounded-md hover:bg-blue-500 hover:text-white transition-colors duration-300 mx-4 mb-4 sm:py-2 sm:px-4 sm:text-sm"
+          onClick={handleAddToCart} 
+        >
+          Add To Cart
+        </button>
+      </div>
+    );
+  };
+  
+  export default ProductCard;
