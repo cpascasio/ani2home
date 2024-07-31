@@ -3,7 +3,6 @@ import backgroundImage from '../../assets/product-categories-bg.svg';
 import category1Image from '../../assets/category1.png';
 import category2Image from '../../assets/category2.png';
 import category3Image from '../../assets/category3.png';
-import FeaturedRecipes from "../../components/homepage/FeaturedRecipes.jsx";
 
 const ProductCategories = () => {
   return (
@@ -28,19 +27,19 @@ const ProductCategories = () => {
           Our Products
         </h1>
         <p
-          className="text-md md:text-lg lg:text-xl text-center"
+          className="text-md md:text-lg lg:text-xl text-center max-w-2xl"
           style={{
             color: '#0b472d',
             fontFamily: 'Arial, sans-serif',
             marginTop: '1%', // Adjust vertical position
           }}
         >
-          Explore a curated selection of fresh, local produce and artisanal food, directly sourced 
+          Explore a selection of fresh, local produce and artisanal food, directly sourced 
           from nearby farmers and markets, and discover the essence of farm-to-table living.
         </p>
 
         {/* Buttons Container */}
-        <div className="flex flex-wrap justify-center gap-4 md:gap-6 lg:gap-8 pt-6 mt-4">
+        <div className="flex flex-wrap justify-center gap-10 md:gap-12 lg:gap-14 pt-6 mt-4">
           {/* Category Button 1 */}
           <button
             className="relative flex items-center justify-center w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full bg-green-600 text-white font-bold text-base sm:text-lg md:text-xl hover:bg-green-700 transition-all duration-300 hover:scale-110"
@@ -87,9 +86,6 @@ const ProductCategories = () => {
           </button>
         </div>
       </div>
-
-      {/* Featured Recipes - Overlapping */}
-      <FeaturedRecipes />
     </div>
   );
 };

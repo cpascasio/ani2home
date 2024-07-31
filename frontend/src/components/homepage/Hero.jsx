@@ -13,7 +13,7 @@ const Hero = () => {
         }}
       >
         <div className="absolute inset-0 flex flex-col justify-start items-center px-8 z-10 md:px-16 lg:px-24 xl:px-32">
-          <div className="mt-16 md:mt-24 lg:mt-32">
+          <div className="mt-24 md:mt-32 lg:mt-40">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-2 text-center"
                 style={{
                     color: '#0059B8',
@@ -28,7 +28,6 @@ const Hero = () => {
                 }}>
                 Nurturing Communities, One Delivery at a Time.
             </p>
-            <br/>
             <button className="font-bold py-2 px-4 md:py-3 md:px-6 lg:py-4 lg:px-8 rounded-full mb-10"
             style={{
                 backgroundColor: '#67B045',
@@ -36,7 +35,7 @@ const Hero = () => {
                 transition: 'background-color 0.3s ease',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#C6C6C6';
+              e.currentTarget.style.backgroundColor = '#072C1C';
               e.currentTarget.style.color = '#67B045';
             }}
             onMouseLeave={(e) => {

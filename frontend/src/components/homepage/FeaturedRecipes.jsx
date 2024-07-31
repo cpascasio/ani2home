@@ -1,5 +1,7 @@
 import React from 'react';
 import Slider from 'react-slick';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBowlFood, faSpoon } from '@fortawesome/free-solid-svg-icons'; // Use appropriate icons
 
 import strawberrySpinachSalad from '../../assets/recipe1.jpg';
 import bananaPancakes from '../../assets/recipe2.jpg';
@@ -24,58 +26,77 @@ const FeaturedRecipes = () => {
     slidesToScroll: 1,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+    ],
   };
 
   return (
-    <div
-      className="absolute p-8 bg-white rounded-lg shadow-lg z-20"
+    <div className="p-8 shadow-lg z-20 mx-auto"
       style={{
-        top: '123%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        padding: '20px',
-        backgroundColor: '#efefef',
-        borderRadius: '8px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-        height: '600px',
-        width: '1050px',
+        backgroundColor: '#0B472D',
+        width: '100%',
+        maxWidth: '2500px',
+        margin: '0 auto',
+        height: '700px',
       }}
     >
-      <br/>
-      <h1 className="text-5xl font-bold mb-4 text-center"
+      <div className="flex items-center justify-center">
+        <FontAwesomeIcon icon={faBowlFood} className="text-white text-4xl mr-4" />
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center"
+          style={{
+            color: '#EFEFEF',
+            textShadow: '1px 1px 2px rgba(0, 0, 0, 0.2)',
+            fontFamily: 'Arial, sans-serif',
+          }}
+        >
+          Featured Recipes
+        </h1>
+        <FontAwesomeIcon icon={faBowlFood} className="text-white text-4xl ml-4" />
+      </div>
+      <br />
+      <p className="text-md md:text-lg lg:text-xl text-center max-w-2xl"
         style={{
-          color: '#1F934C',
-          textShadow: '2px 2px 2px rgba(0, 0, 0, 0.3)',
+          color: '#D2E5B9',
           fontFamily: 'Arial, sans-serif',
-        }}
-      > 
-        Featured Recipes
-      </h1>
-      <h3 className="text-1xl mb-4 text-center"
-        style={{
-          color: '#0b472d',
-          fontFamily: 'Arial, sans-serif',
+          lineHeight: '1.5',
+          margin: '0 auto',
         }}
       >
-        Explore our curated selection of recipes, highlighting <br/>
-        the freshest fruits and vegetables for a wholesome meal experience.
-      </h3>
-
-      <br/>
+        Discover our curated selection of recipes featuring the freshest fruits and vegetables from Ani2Home's local farmers and markets. Perfect for a wholesome and delightful meal experience.
+      </p>
+      <br />
       <Slider {...settings}>
         {featuredRecipes.map((recipe) => (
           <div key={recipe.id} className="p-4">
-            <div className="flex flex-col items-center">
-              <div className="relative">
-                <img
-                  src={recipe.imageUrl}
-                  alt={recipe.title}
-                  className="w-48 h-48 object-cover mb-4 rounded-lg transition-transform duration-300 ease-in-out hover:scale-110"
-                />
+            <div className="flex flex-col items-center bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform duration-300 hover:scale-105"
+              style={{ height: '100%' }}
+            >
+              <img
+                src={recipe.imageUrl}
+                alt={recipe.title}
+                className="w-full h-60 object-cover mb-1 rounded-t-lg"
+                style={{ borderBottom: '4px solid #0059B8' }}
+              />
+              <div className="p-4 text-center">
+                <h4 className="text-lg font-semibold mb-2 text-green-800">{recipe.title}</h4>
+                <p className="text-sm text-gray-600">{recipe.description}</p>
               </div>
-              <h4 className="text-xl font-semibold mb-2 text-green-800">{recipe.title}</h4>
-              <p className="text-sm text-center text-gray-500">{recipe.description}</p>
             </div>
+            <br />
           </div>
         ))}
       </Slider>
@@ -87,10 +108,10 @@ const NextArrow = (props) => {
   const { onClick } = props;
   return (
     <div
-      className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer bg-green-900 p-2 rounded-full text-white z-10"
+      className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-10"
       onClick={onClick}
     >
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
       </svg>
     </div>
@@ -101,10 +122,10 @@ const PrevArrow = (props) => {
   const { onClick } = props;
   return (
     <div
-      className="absolute top-1/2 left-4 transform -translate-y-1/2 cursor-pointer bg-green-900 p-2 rounded-full text-white z-10"
+      className="absolute top-1/2 left-4 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-10"
       onClick={onClick}
     >
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
       </svg>
     </div>
