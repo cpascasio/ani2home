@@ -78,37 +78,43 @@ const MyProfile = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault(); // Prevent the default form submission behavior
-    
+      
         // Collect form data
         const formData = new FormData(event.target);
-    
+      
         // Create an object to hold form values
         const data = {};
-    
-        
-        // Check if fields have been changed
-        if (formData.get('newName') !== userData?.name) {
-            data.name = formData.get('newName') || "";
-        }
-        if (formData.get('newUsername') !== userData?.userName) {
-            data.userName = formData.get('newUsername');
-        }
-        if (formData.get('newEmail') !== userData?.email) {
-            data.email = formData.get('newEmail');
-        }
-        if (formData.get('newLocation') !== userData?.address) {
-            data.address = formData.get('newLocation') || "";
-        }
-        if (formData.get('newPhoneNumber') !== userData?.phoneNumber) {
-            data.phoneNumber = formData.get('newPhoneNumber') || "";
-        }
-        if (formData.get('newBio') !== userData?.bio) {
-            data.bio = formData.get('newBio') || "";
-        }
-    
+
+        data.name = formData.get('newName') || "";
+        data.userName = formData.get('newUsername');
+        data.email = formData.get('newEmail');
+        data.address = formData.get('newLocation') || "";
+        data.phoneNumber = formData.get('newPhoneNumber') || "";
+        data.bio = formData.get('newBio') || "";
+
+        // // Check if fields have been changed
+        // if (formData.get('newName') !== userData?.name) {
+        //     data.name = formData.get('newName') || "";
+        // }
+        // if (formData.get('newUsername') !== userData?.userName) {
+        //     data.userName = formData.get('newUsername');
+        // }
+        // if (formData.get('newEmail') !== userData?.email) {
+        //     data.email = formData.get('newEmail');
+        // }
+        // if (formData.get('newLocation') !== userData?.address) {
+        //     data.address = formData.get('newLocation') || "";
+        // }
+        // if (formData.get('newPhoneNumber') !== userData?.phoneNumber) {
+        //     data.phoneNumber = formData.get('newPhoneNumber') || "";
+        // }
+        // if (formData.get('newBio') !== userData?.bio) {
+        //     data.bio = formData.get('newBio') || "";
+        // }
+      
         // Get the token from localStorage or any other source
         const token = user?.token; // Replace with your actual token retrieval method
-    
+      
         try {
             const response = await axios.put(
                 `http://localhost:3000/api/users/edit-user/${user?.userId}`, // Include userId in the URL
@@ -122,11 +128,12 @@ const MyProfile = () => {
             );
             console.log('Success:', response.data);
             // Handle success (e.g., show a success message or redirect)
+            document.getElementById('modal_editProfile').close()
         } catch (error) {
             console.error('Error:', error.response?.data || error.message);
             // Handle error (e.g., show an error message)
         }
-    };
+      };
 
   return (
     <div className='w-full'>
