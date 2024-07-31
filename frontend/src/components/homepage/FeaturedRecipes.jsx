@@ -1,7 +1,7 @@
 import React from 'react';
 import Slider from 'react-slick';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBowlFood, faSpoon } from '@fortawesome/free-solid-svg-icons'; // Use appropriate icons
+import { faBowlFood } from '@fortawesome/free-solid-svg-icons'; // Use appropriate icons
 
 import strawberrySpinachSalad from '../../assets/recipe1.jpg';
 import bananaPancakes from '../../assets/recipe2.jpg';
@@ -81,9 +81,9 @@ const FeaturedRecipes = () => {
       <br />
       <Slider {...settings}>
         {featuredRecipes.map((recipe) => (
-          <div key={recipe.id} className="p-4">
-            <div className="flex flex-col items-center bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform duration-300 hover:scale-105"
-              style={{ height: '100%' }}
+          <div key={recipe.id} className="p-4 flex">
+            <div className="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform duration-300 hover:scale-105"
+              style={{ height: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column' }}
             >
               <img
                 src={recipe.imageUrl}
@@ -91,7 +91,7 @@ const FeaturedRecipes = () => {
                 className="w-full h-60 object-cover mb-1 rounded-t-lg"
                 style={{ borderBottom: '4px solid #0059B8' }}
               />
-              <div className="p-4 text-center">
+              <div className="p-4 flex flex-col justify-between flex-1">
                 <h4 className="text-lg font-semibold mb-2 text-green-800">{recipe.title}</h4>
                 <p className="text-sm text-gray-600">{recipe.description}</p>
               </div>

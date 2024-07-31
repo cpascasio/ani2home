@@ -3,7 +3,6 @@ import { FiMenu, FiArrowRight, FiX, FiChevronDown, FiShoppingCart, FiSearch } fr
 import { FaUserCircle } from 'react-icons/fa';
 import { useMotionValueEvent, AnimatePresence, useScroll, motion } from 'framer-motion';
 import useMeasure from 'react-use-measure';
-import Hero from '../components/homepage/Hero.jsx';
 import logoImage from '../assets/logo.png';
 import logoTitle from '../assets/logotitle.png';
 
@@ -11,7 +10,6 @@ const Header = () => {
   return (
     <>
       <FlyoutNav />
-      {location.pathname === '/' && <Hero />}
     </>
   );
 };
@@ -91,17 +89,13 @@ const SearchBar = () => (
     <input
       type="text"
       placeholder="What are you looking for?"
-      className="rounded-full px-6 py-3 outline-none w-full max-w-lg pl-4" //10
+      className="rounded-full px-6 py-3 outline-none w-full max-w-lg pl-4"
       style={{
         backgroundColor: '#EFEFEF',
         color: '#0B472D',
         placeholderColor: '#D9D9D9',
       }}
     />
-    {/* <FiSearch
-      className="absolute left-24 top-1/2 transform -translate-y-1/2 text-gray-400"
-      style={{ color: '#D9D9D9' }}
-    /> */}
   </div>
 );
 
@@ -142,11 +136,11 @@ const MobileMenu = () => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="block lg:hidden">
-      <button 
-        onClick={() => setOpen(true)} 
-        className="block text-3xl"
-        style={{ color: '#209D48' }} // Color for the menu button
+    <div className="block lg:hidden relative z-50">
+      <button
+        onClick={() => setOpen(true)}
+        className="absolute top-4 -left-6 transform -translate-x-1/2 -mt-7 text-3xl text-[#209D48]"
+        aria-label="Open menu"
       >
         <FiMenu />
       </button>
@@ -157,18 +151,19 @@ const MobileMenu = () => {
             animate={{ x: 0 }}
             exit={{ x: "100vw" }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="fixed left-0 top-0 flex h-screen w-full flex-col bg-[#072C1C]" // Background color
+            className="fixed left-0 top-0 flex h-screen w-full flex-col bg-[#072C1C] z-50"
           >
             <div className="flex items-center justify-between p-6">
               <Logo />
-              <button 
+              <button
                 onClick={() => setOpen(false)}
-                style={{ color: '#209D48' }} // Color for the close button
+                className="text-3xl text-[#209D48]"
+                aria-label="Close menu"
               >
-                <FiX className="text-3xl" />
+                <FiX />
               </button>
             </div>
-            <div className="flex-1 overflow-y-scroll bg-[#0b472d] p-6"> {/* Background color */}
+            <div className="flex-1 overflow-y-scroll bg-[#0b472d] p-6">
               <div className="mb-6">
                 <SearchBar />
               </div>
@@ -191,6 +186,7 @@ const MobileMenu = () => {
     </div>
   );
 };
+
 
 
 const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
