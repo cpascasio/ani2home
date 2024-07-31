@@ -286,12 +286,18 @@ const MyProfile = () => {
 
                             </div>
 
-                            <div className="flex space-x-8"> {/* container for flex */}
-                                <div className="w-3/4">
-                                    <table className="table-auto w-full"> {/* table for forms */}
+                            <div className="flex flex-col lg:flex-row lg:space-x-8 p-4"> {/* Container for flex with responsive direction */}
+                                {/* Right side with profile pic and buttons */}
+                                <div className="w-full lg:w-1/4 flex flex-col items-center justify-center mb-4 lg:mb-0">
+                                    <img src={userData.userProfilePic} alt="Profile Picture" className="w-28 h-28 rounded-full object-cover" />
+                                </div>
+
+                                {/* Table for forms */}
+                                <div className="w-full lg:w-3/4 overflow-x-auto"> {/* Added overflow-x-auto for responsive table */}
+                                    <table className="table-auto w-full">
                                         <tbody>
                                             <tr>
-                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium min-w-40">Name:</td>
+                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Name:</td>
                                                 <td className="text-left px-8 pb-2">{userData?.name}</td>
                                             </tr>
                                             <tr>
@@ -303,7 +309,7 @@ const MyProfile = () => {
                                                 <td className="text-left px-8 pb-2">{userData?.email}</td>
                                             </tr>
                                             <tr>
-                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium w-100">Phone Number:</td>
+                                                <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Phone Number:</td>
                                                 <td className="text-left px-8 pb-2">{userData?.phoneNumber}</td>
                                             </tr>
                                             <tr>
@@ -316,12 +322,9 @@ const MyProfile = () => {
                                             </tr>
                                         </tbody>
                                     </table>
-                                </div> {/* end of table for forms */}
+                                </div>
+                            </div>
 
-                                <div className="w-1/4 flex flex-col items-center justify-center"> {/* right side with prof pic and buttons */}
-                                    <img src={userData.userProfilePic} alt="Profile Picture" className="w-28 h-28 rounded-full object-cover mb-12" />
-                                </div> {/* end of box for prof pic and buttons */}
-                            </div>  {/* end of flex box */}
 
                             {/* ------ Account Settings Section ------  */}
                             <div className="w-1/4 mt-8"> 
