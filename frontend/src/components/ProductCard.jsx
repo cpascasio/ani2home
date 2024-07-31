@@ -3,7 +3,31 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { format } from 'date-fns';
+import Star from '../assets/Star.png';
+import StarFilled from '../assets/StarFilled.png';
 
+function generateStars(rating) {
+  const starElements = [];
+
+  for (let k = 0; k < rating; k++) {
+      starElements.push(
+          <img
+              alt="Star"
+              src={StarFilled}
+          />
+      );
+  }
+  for (let k = 0; k < 5 - rating; k++) {
+      starElements.push(
+          <img
+              alt="Star"
+              src={Star}
+          />
+      );
+  }
+
+  return starElements;
+}
 
 const ProductCard = (product) => {  
   const { addToCart } = useContext(CartContext);
@@ -12,8 +36,11 @@ const ProductCard = (product) => {
   const handleAddToCart = () => {
     addToCart(product);
     navigate('/cart');
+
+  
   };
 
+const yellowStars = generateStars(product.rating);
 
   return (
     // <div className="card bg-base-100 w-96 shadow-xl">
@@ -50,6 +77,9 @@ const ProductCard = (product) => {
           <p className="text-left text-xs text-gray-600 mt-1 line-clamp-2">
             {product.productDescription}
           </p>
+          <div className="stars-wrapper flex flex-wrap">
+            {yellowStars}
+          </div>
           <p className="text-left text-xs text-red-500 mt-1">Rating: {product.rating}</p>
         </div>
         <button
