@@ -1,80 +1,38 @@
-import Header from '../../components/Header.jsx'
-import Footer from '../../components/Footer.jsx'
-import useFetch from '../../../hooks/useFetch.js';
+import Header from '../../components/Header.jsx';
+import Footer from '../../components/Footer.jsx';
+import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
 import { useUser } from '../../context/UserContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const MyProfile = () => {
-
-    const  userLog = localStorage.getItem('user');
-
-    const {user} = useUser();
-
-    const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
-
+    const userLog = localStorage.getItem('user');
+    const { user } = useUser();
     const [userData, setUserData] = useState({});
-
-    const [editMode, setEditMode] = useState(false);
-
+    const [refetch, setRefetch] = useState(false);
     const navigate = useNavigate();
-    
 
-    // if button is pressed, editmode to true
-    // if editmode is true, show the edit form
+    const { data: userFetch } = useDynamicFetch(`/api/users/${user?.userId}`, refetch);
 
-
-
-    // if false, just display the user data
-
-    useEffect(() =>{
-        
-        console.log(user);
-        
-    }, []);
-
-    
-    
-
-    useEffect(() =>{
-        if(userLog != null) {
-        console.log(user);
-        }else{
+    useEffect(() => {
+        if (userLog == null) {
             navigate('/login');
         }
-    }, [userLog]);
+    }, [userLog, navigate]);
 
-    
-
-    useEffect(() =>{
-        if(userFetch != null) {
+    useEffect(() => {
+        if (userFetch != null) {
             setUserData(userFetch.data);
-        console.log(userFetch.data);
         }
     }, [userFetch]);
 
-
-    
-
-
-    useEffect(() =>{
-        if(userData != null) {
-        console.log("USERDATA: ");
-        console.log(userData);
+    useEffect(() => {
+        if (userData != null) {
+            console.log("USERDATA: ");
+            console.log(userData);
         }
     }, [userData]);
-
-
-
-
-
-    //TODO:
-    //1. conditionally render page if user is logged in from backend if not, redirect to login page
-    //2. display userdata by userData.blahblah and display it in the 
-    //3. make the edit user profile functionality work with backend endpoint.
-
-    // create the handleSubmit function that gets the value of formData then does an axios.put to the route http://localhost:3000/api/users/edit-user with headers type application json and token given the formdata. 
 
     const handleSubmit = async (event) => {
         event.preventDefault(); // Prevent the default form submission behavior
@@ -91,26 +49,6 @@ const MyProfile = () => {
         data.address = formData.get('newLocation') || "";
         data.phoneNumber = formData.get('newPhoneNumber') || "";
         data.bio = formData.get('newBio') || "";
-
-        // // Check if fields have been changed
-        // if (formData.get('newName') !== userData?.name) {
-        //     data.name = formData.get('newName') || "";
-        // }
-        // if (formData.get('newUsername') !== userData?.userName) {
-        //     data.userName = formData.get('newUsername');
-        // }
-        // if (formData.get('newEmail') !== userData?.email) {
-        //     data.email = formData.get('newEmail');
-        // }
-        // if (formData.get('newLocation') !== userData?.address) {
-        //     data.address = formData.get('newLocation') || "";
-        // }
-        // if (formData.get('newPhoneNumber') !== userData?.phoneNumber) {
-        //     data.phoneNumber = formData.get('newPhoneNumber') || "";
-        // }
-        // if (formData.get('newBio') !== userData?.bio) {
-        //     data.bio = formData.get('newBio') || "";
-        // }
       
         // Get the token from localStorage or any other source
         const token = user?.token; // Replace with your actual token retrieval method
@@ -126,14 +64,17 @@ const MyProfile = () => {
                     },
                 }
             );
+            // Update userData state with the response data
+            setRefetch(prev => !prev);
             console.log('Success:', response.data);
             // Handle success (e.g., show a success message or redirect)
-            document.getElementById('modal_editProfile').close()
+            document.getElementById('modal_editProfile')?.close();
         } catch (error) {
             console.error('Error:', error.response?.data || error.message);
             // Handle error (e.g., show an error message)
         }
-      };
+    };
+
 
   return (
     <div className='w-full'>
