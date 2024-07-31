@@ -51,28 +51,23 @@ const Seller = () => {
     // fetch the user data from firebase api endpoint
 
     return (
-        <div>
-            {
-                user ? (
-
-                    <div className="flex">
-                        <div className="menu-container">
-                            <Menu onSelectMenu={setSelectedMenu} />
-                        </div>
-                        <div className="content-container">
-                            {renderContent()}
-                        </div>
-                    </div>
-                ) : (
-                    <div>
-                        <h1>Welcome Seller</h1>
-                        <p>Here you can manage your products and orders</p>
-                    </div>
-                )
-            }
-
-        <h1>Seller Dashboard</h1>
+      <>
+      {user ? (
+        <div className="flex w-full font-sans">
+          <div className="flex-shrink-0 w-48">
+            <Menu onSelectMenu={setSelectedMenu} />
+          </div>
+          <div className="flex-1 p-5 bg-gray-200">
+            {renderContent()}
+          </div>
         </div>
+      ) : (
+        <div className="flex flex-col items-center">
+          <h1 className="text-gray-800">Welcome Seller</h1>
+          <p>Here you can manage your products and orders</p>
+        </div>
+      )}
+    </>
     );
 }
 

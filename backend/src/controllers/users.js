@@ -12,6 +12,33 @@ const userSchema = require('../models/userModels'); // Import the userSchema
 // Firestore database reference
 const db = admin.firestore();
 
+
+// GET route to fetch all users
+router.get('/', async (req, res) => {
+  try {
+    const usersSnapshot = await db.collection('users').get();
+    
+    if (usersSnapshot.empty) {
+      return res.status(404).json({ message: 'No users found', state: 'error' });
+    }
+
+    const usersList = usersSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.status(200).json({
+      message: 'Users retrieved successfully',
+      state: 'success',
+      data: usersList
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Error fetching users', state: 'error' });
+  }
+});
+
+
 // POST route to create a new user
 router.post('/', async (req, res) => {
   const { email, name } = req.body;
@@ -151,6 +178,35 @@ router.get('/:uid/isStore', async (req, res) => {
   } catch (error) {
     console.error('Error fetching user:', error);
     res.status(500).json({ message: 'Error fetching user', state: 'error' });
+  }
+});
+
+// PUT route to update a user by UID
+router.put('/edit-user/:uid', async (req, res) => {
+  const { uid } = req.params;
+  const { error, value } = userSchema.validate(req.body);
+
+  console.log(req.body);
+  if (error) {
+    return res.status(400).send(error.details[0].message);
+  }
+
+  try {
+    const userDocRef = db.collection('users').doc(uid);
+    const userDoc = await userDocRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: 'User not found', state: 'error' });
+    }
+
+    await userDocRef.update(value);
+    res.status(200).json({ 
+      message: 'User updated successfully',
+      state: 'success'
+    });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ message: 'Error updating user', state: 'error' });
   }
 });
 
