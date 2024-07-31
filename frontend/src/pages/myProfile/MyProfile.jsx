@@ -271,11 +271,11 @@ const MyProfile = () => {
                                             </div>
                                             <div className="flex justify-end space-x-2 mt-4">
                                                 <button type="button"
-                                                        className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none px-4"
+                                                        className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none w-auto h-auto"
                                                         onClick={() => document.getElementById('modal_editProfile').close()}>Cancel
                                                 </button>
                                                 <button type="submit"
-                                                        className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
+                                                        className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none w-auto h-auto"
                                                         onClick={() => console.log('Save logic here')}>Save
                                                 </button>
                                             </div>
@@ -358,14 +358,15 @@ const MyProfile = () => {
                                                     </div>
                                                     <div className="flex justify-end space-x-2">
                                                         <button type="button"
-                                                                className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none px-4"
+                                                                className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none flex items-center justify-center w-auto h-auto"
                                                                 onClick={() => document.getElementById('modal_ChangePass').close()}>Cancel
                                                         </button>
                                                         <button type="submit"
-                                                                className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
+                                                                className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none flex items-center justify-center w-auto h-auto"
                                                                 onClick={() => console.log('Save logic here')}>Save
                                                         </button>
                                                     </div>
+
                                                 </form>
                                             </div>
                                         </dialog>
@@ -399,18 +400,18 @@ const MyProfile = () => {
                                                                 const deleteBtn = document.getElementById('deleteBtn');
                                                                 deleteBtn.disabled = input.value !== 'CONFIRM';
                                                             }}/>
-                                                        <label htmlFor="confirmation" className="text-sm text-gray-600 text-center pb-5">
+                                                        <label htmlFor="confirmation" className="text-sm text-gray-600 text-center pb-auto">
                                                             Please type <span className="font-bold">"CONFIRM"</span> to continue deleting your account
                                                         </label>
                                                     </div>
                                                     <div className="flex justify-end space-x-2">
                                                         <button type="button"
-                                                                className="btn btn-sm bg-gray-500 rounded text-white hover:bg-gray-600 border-none px-4"
+                                                                className="btn btn-sm bg-gray-500 rounded text-white hover:bg-gray-600 border-none w-auto h-auto"
                                                                 onClick={() => document.getElementById('modal_DeleteAcc').close()}>Cancel
                                                         </button>
                                                         <button type="submit"
                                                                 id="deleteBtn"
-                                                                className="btn btn-sm bg-red-500 rounded text-white hover:bg-red-600 border-none px-5"
+                                                                className="btn btn-sm bg-red-500 rounded text-white hover:bg-red-600 border-none w-auto h-auto"
                                                                 disabled
                                                                 onClick={() => console.log('Delete logic here')}>Delete
                                                         </button>
