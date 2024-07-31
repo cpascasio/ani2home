@@ -1,18 +1,17 @@
-// Ensure only one import statement for React
-import React from 'react';
+import React, { useState } from 'react';
 import { FiMenu, FiArrowRight, FiX, FiChevronDown, FiShoppingCart, FiSearch } from 'react-icons/fi';
 import { FaUserCircle } from 'react-icons/fa';
 import { useMotionValueEvent, AnimatePresence, useScroll, motion } from 'framer-motion';
 import useMeasure from 'react-use-measure';
-import Hero from '/Users/shannyne/Documents/GitHub/ani2home/frontend/src/components/homepage/Hero.jsx'; 
-import logoImage from '/Users/shannyne/Documents/GitHub/ani2home/frontend/src/assets/logo.png';
-import logoTitle from '/Users/shannyne/Documents/GitHub/ani2home/frontend/src/assets/logotitle.png';
+import Hero from '../components/homepage/Hero.jsx';
+import logoImage from '../assets/logo.png';
+import logoTitle from '../assets/logotitle.png';
 
 const Header = () => {
   return (
     <>
       <FlyoutNav />
-      <Hero />
+      {location.pathname === '/' && <Hero />}
     </>
   );
 };
@@ -56,7 +55,7 @@ const Logo = () => (
       alt="Ani2Home Logo"
       className="w-10 h-auto"
     />
-        <img
+    <img
       src={logoTitle}
       alt="Ani2Home Title"
       className="w-13 h-12"
@@ -66,9 +65,9 @@ const Logo = () => (
 
 const NavLinks = () => (
   <div className="flex items-center gap-8 pl-8">
-    <NavLink href="#">Home</NavLink>
-    <NavLink href="#">About Us</NavLink>
-    <NavLink href="#">Shop</NavLink>
+    <NavLink href="/">Home</NavLink>
+    <NavLink href="/login">About Us</NavLink>
+    <NavLink href="/myShop">Shop</NavLink>
   </div>
 );
 
@@ -87,27 +86,24 @@ const NavLink = ({ children, href }) => (
   </a>
 );
 
-
-
 const SearchBar = () => (
   <div className="relative">
     <input
       type="text"
       placeholder="What are you looking for?"
-      className="rounded-full px-6 py-3 outline-none w-full max-w-lg pl-10"
+      className="rounded-full px-6 py-3 outline-none w-full max-w-lg pl-4" //10
       style={{
         backgroundColor: '#EFEFEF',
         color: '#0B472D',
         placeholderColor: '#D9D9D9',
       }}
     />
-    <FiSearch
+    {/* <FiSearch
       className="absolute left-24 top-1/2 transform -translate-y-1/2 text-gray-400"
       style={{ color: '#D9D9D9' }}
-    />
+    /> */}
   </div>
 );
-
 
 const CartIcon = () => {
   const [color, setColor] = React.useState('#209D48');
@@ -142,16 +138,71 @@ const ProfileIcon = () => {
   );
 };
 
-const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
-  const [ref, { height }] = useMeasure();
-  const [open, setOpen] = React.useState(false);
+const MobileMenu = () => {
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="relative text-neutral-950">
+    <div className="block lg:hidden">
+      <button 
+        onClick={() => setOpen(true)} 
+        className="block text-3xl"
+        style={{ color: '#209D48' }} // Color for the menu button
+      >
+        <FiMenu />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.nav
+            initial={{ x: "100vw" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100vw" }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="fixed left-0 top-0 flex h-screen w-full flex-col bg-[#072C1C]" // Background color
+          >
+            <div className="flex items-center justify-between p-6">
+              <Logo />
+              <button 
+                onClick={() => setOpen(false)}
+                style={{ color: '#209D48' }} // Color for the close button
+              >
+                <FiX className="text-3xl" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-scroll bg-[#0b472d] p-6"> {/* Background color */}
+              <div className="mb-6">
+                <SearchBar />
+              </div>
+              <div className="flex flex-col">
+                {LINKS.map((l) => (
+                  <MobileMenuLink
+                    key={l.text}
+                    href={l.href}
+                    FoldContent={l.component}
+                    setMenuOpen={setOpen}
+                  >
+                    {l.text}
+                  </MobileMenuLink>
+                ))}
+              </div>
+            </div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+
+const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
+  const [ref, { height }] = useMeasure();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative text-white">
       {FoldContent ? (
         <div
           className="flex w-full cursor-pointer items-center justify-between border-b border-neutral-300 py-6 text-start text-2xl font-semibold"
-          onClick={() => setOpen((pv) => !pv)}
+          onClick={() => setOpen((prev) => !prev)}
         >
           <a
             onClick={(e) => {
@@ -163,8 +214,11 @@ const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
             {children}
           </a>
           <motion.div
-            animate={{ rotate: open ? '180deg' : '0deg' }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
+            animate={{ rotate: open ? "180deg" : "0deg" }}
+            transition={{
+              duration: 0.3,
+              ease: "easeOut",
+            }}
           >
             <FiChevronDown />
           </motion.div>
@@ -186,9 +240,9 @@ const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
         <motion.div
           initial={false}
           animate={{
-            height: open ? height : '0px',
-            marginBottom: open ? '24px' : '0px',
-            marginTop: open ? '12px' : '0px',
+            height: open ? height : "0px",
+            marginBottom: open ? "24px" : "0px",
+            marginTop: open ? "12px" : "0px",
           }}
           className="overflow-hidden"
         >
@@ -201,64 +255,19 @@ const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
   );
 };
 
-const MobileMenu = () => {
-  const [open, setOpen] = React.useState(false);
-  return (
-    <div className="block lg:hidden">
-      <button onClick={() => setOpen(true)} className="block text-3xl">
-        <FiMenu />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.nav
-            initial={{ x: '100vw' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100vw' }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="fixed left-0 top-0 flex h-screen w-full flex-col bg-white"
-          >
-            <div className="flex items-center justify-between p-6">
-              <Logo color="black" />
-              <button onClick={() => setOpen(false)}>
-                <FiX className="text-3xl text-neutral-950" />
-              </button>
-            </div>
-            <div className="h-screen overflow-y-scroll bg-neutral-100 p-6">
-              <MobileMenuLink key="home" href="#" setMenuOpen={setOpen}>
-                Home
-              </MobileMenuLink>
-              <MobileMenuLink
-                key="about-us"
-                href="#"
-                FoldContent={AboutUsContent}
-                setMenuOpen={setOpen}
-              >
-                About Us
-              </MobileMenuLink>
-              <MobileMenuLink
-                key="shop"
-                href="#"
-                FoldContent={ShopContent}
-                setMenuOpen={setOpen}
-              >
-                Shop
-              </MobileMenuLink>
-            </div>
-            <div className="flex justify-end bg-neutral-950 p-6">
-              <CTAs />
-            </div>
-          </motion.nav>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
-
-const ShopContent = () => (
-  <div className="p-6">
-    <h2 className="text-xl font-semibold">Shop</h2>
-    {/* Add content for Shop here */}
-  </div>
-);
+const LINKS = [
+  {
+    text: "Home",
+    href: "/",
+  },
+  {
+    text: "About Us",
+    href: "/login",
+  },
+  {
+    text: "Shop",
+    href: "/myShop",
+  },
+];
 
 export default Header;

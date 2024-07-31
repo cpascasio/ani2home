@@ -5,6 +5,7 @@ import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, create
 import Sample from "./Sample";
 import { useUserContext } from "../../../hooks/useUserContext";
 import { useUser } from "../../../src/context/UserContext.jsx";
+// import Header from '../../components/Header.jsx';
 
 const Login = () => {
   const { user, dispatch } = useUser();
@@ -211,6 +212,7 @@ const Login = () => {
 
   return (
     <div className="w-full flex flex-col items-center justify-center">
+    {/* <Header/> */}
       <div>
         <input
           type="text"
