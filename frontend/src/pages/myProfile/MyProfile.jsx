@@ -190,11 +190,10 @@ const MyProfile = () => {
             </div> {/*banner end*/}
 
             {/* ----- start of body ----- */} 
-            <div className="px-40 bg-gray-200"> {/*main container for body*/}
-                <div className="flex"> {/* Main div with left and right child divs */}
-                    <div className="w-40% pr-40 pt-20"> {/* Left div */}
-                        <div className="text-lg font-bold mb-2 text-gray-600 pb-5">USER PROFILE</div>
-                        <ul className="space-y-4 text-left">
+            <div className="flex flex-col lg:flex-row lg:space-x-8 p-4 lg:p-8 bg-gray-200 min-h-screen"> {/* Main container */}
+                    <div className="w-full lg:w-1/3 lg:max-w-xs lg:pt-10 mx-auto flex flex-col items-center"> {/* Centered left div */}
+                        <div className="text-lg font-bold mb-2 text-gray-600 pb-5 text-left">USER PROFILE</div>
+                        <ul className="space-y-4 text-left lg:pr-11"> {/* Ensure the list takes full width */}
                             <li>
                                 <a href="#" className="text-gray-600 underline hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Profile</a>
                             </li>
@@ -206,10 +205,10 @@ const MyProfile = () => {
                             </li>
                         </ul>
                     </div>
-                    <div className="flex-1 pt-20"> {/* Right div */}
-                        <div className="text-lg font-bold mb-2 text-left text-gray-600 pb-5">My Profile</div>
+                    <div className="flex-1 lg:pt-10"> {/* Right div */}
+                        <div className="text-lg font-bold mb-2 text-left text-gray-600 pb-5 pl-5">My Profile</div>
 
-                        <div className="bg-white p-10 rounded shadow-md"> {/* white background */}
+                        <div className="bg-white p-4 md:p-6 lg:p-8 rounded shadow-md w-full max-w-full mx-auto overflow-auto"> {/* white background */}
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-lg font-bold text-gray-600">Personal Information</h2> 
                                 <button className="relative overflow-hidden flex"
@@ -326,12 +325,12 @@ const MyProfile = () => {
 
                             {/* ------ Account Settings Section ------  */}
                             <div className="w-1/4 mt-8"> 
-                            <h2 className="text-lg font-bold text-gray-600 text-left pb-5">Account Settings</h2>
+                            <h2 className="text-lg font-bold text-gray-600 text-left pb-5 whitespace-nowrap">Account Settings</h2>
                                 <ul className="space-y-4 text-left pl-8 pb-2">
 
                                     {/* ------------- Change Password ------------ */}
                                     <li>
-                                        <button className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out"
+                                        <button className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
                                                 onClick={() => document.getElementById('modal_ChangePass').showModal()}>Change Password
                                         </button>
                                         <dialog id="modal_ChangePass" className="modal">
@@ -374,7 +373,7 @@ const MyProfile = () => {
 
                                     {/* ------------- Delete Account ------------ */}
                                     <li>
-                                        <button className="text-gray-600 hover:text-red-500 hover:font-bold transition duration-800 ease-in-out"
+                                        <button className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
                                                 onClick={() => document.getElementById('modal_DeleteAcc').showModal()}>Delete Account
                                         </button>
                                         <dialog id="modal_DeleteAcc" className="modal">
@@ -424,7 +423,7 @@ const MyProfile = () => {
                                     {/* ------------- Delete Shop ------------ */}
                                     </li>
                                     <li>
-                                        <button className="text-gray-600 hover:text-red-500 hover:font-bold transition duration-800 ease-in-out"
+                                        <button className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
                                                 onClick={() => document.getElementById('modal_DeleteShop').showModal()}>Delete Shop
                                         </button>
                                         <dialog id="modal_DeleteShop" className="modal">
@@ -473,7 +472,7 @@ const MyProfile = () => {
 
                                     {/* ------------- Log Out ------------ */}
                                     <li>
-                                        <button className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out"
+                                        <button className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
                                                 onClick={() => document.getElementById('modal_Logout').showModal()}>Log Out
                                         </button>
                                         <dialog id="modal_Logout" className="modal">
@@ -500,7 +499,6 @@ const MyProfile = () => {
                                     </li>
                                 </ul>
                             </div> {/* END of Account Settings Section  */}
-                        </div>
                         </div>
                     </div>
                 </div>
