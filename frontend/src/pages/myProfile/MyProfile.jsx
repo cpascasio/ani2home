@@ -1,6 +1,133 @@
 import Header from '../../components/Header.jsx'
 import Footer from '../../components/Footer.jsx'
+import useFetch from '../../../hooks/useFetch.js';
+import { useUser } from '../../context/UserContext.jsx';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+
 const MyProfile = () => {
+
+    const  userLog = localStorage.getItem('user');
+
+    const {user} = useUser();
+
+    const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
+
+    const [userData, setUserData] = useState({});
+
+    const [editMode, setEditMode] = useState(false);
+
+    const navigate = useNavigate();
+    
+
+    // if button is pressed, editmode to true
+    // if editmode is true, show the edit form
+
+
+
+    // if false, just display the user data
+
+    useEffect(() =>{
+        
+        console.log(user);
+        
+    }, []);
+
+    
+    
+
+    useEffect(() =>{
+        if(userLog != null) {
+        console.log(user);
+        }else{
+            navigate('/login');
+        }
+    }, [userLog]);
+
+    
+
+    useEffect(() =>{
+        if(userFetch != null) {
+            setUserData(userFetch.data);
+        console.log(userFetch.data);
+        }
+    }, [userFetch]);
+
+
+    
+
+
+    useEffect(() =>{
+        if(userData != null) {
+        console.log("USERDATA: ");
+        console.log(userData);
+        }
+    }, [userData]);
+
+
+
+
+
+    //TODO:
+    //1. conditionally render page if user is logged in from backend if not, redirect to login page
+    //2. display userdata by userData.blahblah and display it in the 
+    //3. make the edit user profile functionality work with backend endpoint.
+
+    // create the handleSubmit function that gets the value of formData then does an axios.put to the route http://localhost:3000/api/users/edit-user with headers type application json and token given the formdata. 
+
+    const handleSubmit = async (event) => {
+        event.preventDefault(); // Prevent the default form submission behavior
+    
+        // Collect form data
+        const formData = new FormData(event.target);
+    
+        // Create an object to hold form values
+        const data = {};
+    
+        
+        // Check if fields have been changed
+        if (formData.get('newName') !== userData?.name) {
+            data.name = formData.get('newName') || "";
+        }
+        if (formData.get('newUsername') !== userData?.userName) {
+            data.userName = formData.get('newUsername');
+        }
+        if (formData.get('newEmail') !== userData?.email) {
+            data.email = formData.get('newEmail');
+        }
+        if (formData.get('newLocation') !== userData?.address) {
+            data.address = formData.get('newLocation') || "";
+        }
+        if (formData.get('newPhoneNumber') !== userData?.phoneNumber) {
+            data.phoneNumber = formData.get('newPhoneNumber') || "";
+        }
+        if (formData.get('newBio') !== userData?.bio) {
+            data.bio = formData.get('newBio') || "";
+        }
+    
+        // Get the token from localStorage or any other source
+        const token = user?.token; // Replace with your actual token retrieval method
+    
+        try {
+            const response = await axios.put(
+                `http://localhost:3000/api/users/edit-user/${user?.userId}`, // Include userId in the URL
+                data,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`, // Include the token in the Authorization header
+                    },
+                }
+            );
+            console.log('Success:', response.data);
+            // Handle success (e.g., show a success message or redirect)
+        } catch (error) {
+            console.error('Error:', error.response?.data || error.message);
+            // Handle error (e.g., show an error message)
+        }
+    };
+
   return (
     <div className='w-full'>
         <Header />
@@ -9,7 +136,7 @@ const MyProfile = () => {
                     <div className="flex flex-col items-center text-white"> {/*box for logo and stats*/}
                         <div className="flex justify-center items-center mb-4">
                             <div className="bg-white rounded-full"> {/* White background */}
-                                <img src="../src/assets/MyProfile pic.png" alt="Profile Pic" className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+                                <img src={userData.userProfilePic} alt="Profile Pic" className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
                             </div>
                         </div>
                         <div className="mt-[5%]"> {/*stats box */}
@@ -18,7 +145,7 @@ const MyProfile = () => {
                                     <img src="../src/assets/FollowersIcon.png" alt="Followers" />
                                 </div>
                                 <div className="text-left font-inter">
-                                    <strong>Followers:</strong> 1,203
+                                    <strong>Followers:</strong> {userData.followers}
                                 </div>
                             </div>
                             <div className="flex items-center mb-2"> {/*ratings */}
@@ -41,14 +168,13 @@ const MyProfile = () => {
                     </div> {/*end of box for logo and stats */}
                     <div className="flex flex-col flex-1 pl-[4%] pr-[4%] text-white items-start relative"> {/*Name, Location, Bio, Buttons */}
                         <h1 className="text-4xl font-bold font-inter mb-0">
-                            Fernando Lopez
+                            {userData.name}
                         </h1>
                         <div className="italic mb-4 font-inter">
-                            Dasmarinas, Cavite
+                            {userData.address}
                         </div>
                         <div className="mb-6 text-justify font-inter"> {/*CHARACTERS MAXIMUM: 439 */}
-                            Fernando is the proud owner of Pogi Farms where he passionately practices sustainable agriculture. He cultivates organiz produce on his
-                            expansive land and welcomes visitors for educational farm tours, promoting community engagement and environmental awareness.
+                            {userData.bio}
                         </div>
                         <button className="absolute bottom-0 right-0 rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold mr-7 
                         transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
@@ -93,60 +219,57 @@ const MyProfile = () => {
                                     <img src="../../src/assets/edit button hover.png" alt="Edit" className="w-6 h-6 mr-2 opacity-0 hover:opacity-100  absolute inset-0" />
                                 </button>
 
-                                <dialog id="modal_editProfile" className="modal">
-                                    <div className="modal-box w-11/12 max-w-lg bg-white shadow-lg rounded-md">
+                                <dialog id="modal_editProfile" className="modal fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                                    <div className="modal-box w-full max-w-lg bg-white shadow-lg rounded-md p-6 overflow-auto relative">
                                         <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                                                 onClick={() => document.getElementById('modal_editProfile').close()}>✕
                                         </button>
                                         <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Edit Profile</h3>
-                                        
-                                        
-                                        
-                                        <form method="dialog" className="space-y-4">
+
+                                        <form onSubmit={handleSubmit} className="space-y-4">
                                             <div className="flex flex-col items-center mb-6">
                                                 <label htmlFor="profilePicture" className="text-sm font-medium text-gray-600 mt-2 cursor-pointer text-left pb-4 w-full">
                                                     Change Profile Picture
                                                 </label>
-                                                <img src="../src/assets/MyProfile pic.png" alt="Profile Picture" className="w-28 h-auto rounded-full object-cover mb-4"/>
+                                                <img src={userData.userProfilePic} alt="Profile Picture" className="w-28 h-auto rounded-full object-cover mb-4"/>
                                                 <input type="file" id="profilePicture" name="profilePicture" accept="image/*" className="mt-2"
                                                     onChange={(e) => {
                                                         // Handle file upload here
                                                         console.log(e.target.files[0]);
-                                                        }}
+                                                    }}
                                                 />
-                                                
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newName" className="text-sm font-medium text-gray-600 text-left">Name</label>
-                                                <input type="text" id="newName" name="newName"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="text" id="newName" name="newName" defaultValue={userData?.name}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newUsername" className="text-sm font-medium text-gray-600 text-left">Username</label>
-                                                <input type="text" id="newUsername" name="newUsername"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="text" id="newUsername" name="newUsername" defaultValue={userData?.userName}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newEmail" className="text-sm font-medium text-gray-600 text-left">Email</label>
-                                                <input type="email" id="newEmail" name="newEmail"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="email" id="newEmail" name="newEmail" defaultValue={userData?.email}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newPhoneNumber" className="text-sm font-medium text-gray-600 text-left">Phone Number</label>
-                                                <input type="tel" id="newPhoneNumber" name="newPhoneNumber"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="tel" id="newPhoneNumber" pattern="(\+63|0)[1-9][0-9]{9}" name="newPhoneNumber" defaultValue={userData?.phoneNumber}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newLocation" className="text-sm font-medium text-gray-600 text-left">Location</label>
-                                                <input type="text" id="newLocation" name="newLocation"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="text" id="newLocation" name="newLocation" defaultValue={userData?.address}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newBio" className="text-sm font-medium text-gray-600 text-left">Bio</label>
-                                                <input type="textarea" id="newBio" name="newBio"
-                                                    className="input input-bordered bg-gray-200 text-gray-800" required/>
+                                                <input type="textarea" id="newBio" name="newBio" defaultValue={userData?.bio}
+                                                    className="input input-bordered bg-gray-200 text-gray-800" />
                                             </div>
-                                            <div className="flex justify-end space-x-2">
+                                            <div className="flex justify-end space-x-2 mt-4">
                                                 <button type="button"
                                                         className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none px-4"
                                                         onClick={() => document.getElementById('modal_editProfile').close()}>Cancel
@@ -159,6 +282,9 @@ const MyProfile = () => {
                                         </form>
                                     </div>
                                 </dialog>
+
+
+
                             </div>
 
                             <div className="flex space-x-8"> {/* container for flex */}
@@ -167,41 +293,34 @@ const MyProfile = () => {
                                         <tbody>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium min-w-40">Name:</td>
-                                                <td className="text-left px-8 pb-2">Fernando Lopez</td>
+                                                <td className="text-left px-8 pb-2">{userData?.name}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Username:</td>
-                                                <td className="text-left px-8 pb-2">fernando_lopez</td>
+                                                <td className="text-left px-8 pb-2">{userData?.userName}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Email:</td>
-                                                <td className="text-left px-8 pb-2">fernando@example.com</td>
+                                                <td className="text-left px-8 pb-2">{userData?.email}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium w-100">Phone Number:</td>
-                                                <td className="text-left px-8 pb-2">123-456-7890</td>
+                                                <td className="text-left px-8 pb-2">{userData?.phoneNumber}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium">Location:</td>
-                                                <td className="text-left px-8 pb-2">Dasmarinas, Cavite</td>
+                                                <td className="text-left px-8 pb-2">{userData?.address}</td>
                                             </tr>
                                             <tr>
                                                 <td className="text-left text-gray-500 pl-8 pb-2 font-medium align-top">Bio:</td>
-                                                <td className="text-justify px-8 pb-2">Fernando is the proud owner of Pogi Farms where he passionately practices sustainable agriculture. He cultivates organiz produce on his
-                                                expansive land and welcomes visitors for educational farm tours, promoting community engagement and environmental awareness.</td>
+                                                <td className="text-justify px-8 pb-2">{userData?.bio}</td>
                                             </tr>
                                         </tbody>
                                     </table>
                                 </div> {/* end of table for forms */}
 
                                 <div className="w-1/4 flex flex-col items-center justify-center"> {/* right side with prof pic and buttons */}
-                                    <img src="../src/assets/MyProfile pic.png" alt="Profile Picture" className="w-28 h-28 rounded-full object-cover mb-12" />
-                                    {/* <button className="bg-none text-gray-700 font-bold py-2 px-4 rounded hover:bg-gray-400 hover:text-white mb-3 w-full border border-slate-400">
-                                        Discard Changes
-                                    </button>
-                                    <button className="bg-green-900 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 w-full">
-                                        Save
-                                    </button> */}
+                                    <img src={userData.userProfilePic} alt="Profile Picture" className="w-28 h-28 rounded-full object-cover mb-12" />
                                 </div> {/* end of box for prof pic and buttons */}
                             </div>  {/* end of flex box */}
 
