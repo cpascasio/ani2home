@@ -206,7 +206,7 @@ const MyProfile = () => {
                         </ul>
                     </div>
                     <div className="flex-1 lg:pt-10"> {/* Right div */}
-                        <div className="text-lg font-bold mb-2 text-left text-gray-600 pb-5 pl-5">My Profile</div>
+                        <div className="text-lg font-bold mb-2 text-left text-gray-600 pb-5">My Profile</div>
 
                         <div className="bg-white p-4 md:p-6 lg:p-8 rounded shadow-md w-full max-w-full mx-auto overflow-auto"> {/* white background */}
                             <div className="flex items-center justify-between mb-4">
@@ -265,8 +265,10 @@ const MyProfile = () => {
                                             </div>
                                             <div className="flex flex-col">
                                                 <label htmlFor="newBio" className="text-sm font-medium text-gray-600 text-left">Bio</label>
-                                                <input type="textarea" id="newBio" name="newBio" defaultValue={userData?.bio}
-                                                    className="input input-bordered bg-gray-200 text-gray-800" />
+                                                <textarea id="newBio" name="newBio" defaultValue={userData?.bio}
+                                                    className="input input-bordered bg-gray-200 text-gray-800 resize-none h-auto"
+                                                    rows="8">
+                                                </textarea>
                                             </div>
                                             <div className="flex justify-end space-x-2 mt-4">
                                                 <button type="button"
@@ -458,12 +460,12 @@ const MyProfile = () => {
                                                     </div>
                                                     <div className="flex justify-end space-x-2">
                                                         <button type="button"
-                                                                className="btn btn-sm bg-gray-500 rounded text-white hover:bg-gray-600 border-none px-4"
+                                                                className="btn btn-sm bg-gray-500 rounded text-white hover:bg-gray-600 border-none px-4 w-auto h-auto"
                                                                 onClick={() => document.getElementById('modal_DeleteShop').close()}>Cancel
                                                         </button>
                                                         <button type="submit"
                                                                 id="deleteBtn"
-                                                                className="btn btn-sm bg-red-500 rounded text-white hover:bg-red-600 border-none px-5"
+                                                                className="btn btn-sm bg-red-500 rounded text-white hover:bg-red-600 border-none px-5 w-auto h-auto"
                                                                 disabled
                                                                 onClick={() => console.log('Delete logic here')}>Delete
                                                         </button>
@@ -479,24 +481,23 @@ const MyProfile = () => {
                                                 onClick={() => document.getElementById('modal_Logout').showModal()}>Log Out
                                         </button>
                                         <dialog id="modal_Logout" className="modal">
-                                            <div className="modal-box w-8/12 max-w-md p-6 bg-white shadow-lg rounded-md">
+                                            <div className="modal-box w-10/12 max-w-lg p-6 bg-white shadow-lg rounded-md">
                                                 <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                                                         onClick={() => document.getElementById('modal_Logout').close()}>✕
                                                 </button>
-                                                <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Delete Account</h3>
-                                                <p className="text-sm text-gray-600 mb-4">Are you sure you want to log out? </p>
-                                            
+                                                <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Log Out</h3>
+                                                <p className="text-sm text-gray-600 mb-4">Are you sure you want to log out?</p>
+
                                                 <div className="flex justify-end space-x-2">
                                                     <button type="button"
-                                                            className="btn btn-sm bg-gray-500 rounded text-white hover:bg-gray-600 border-none px-4"
+                                                            className="btn btn-sm bg-gray-500 rounded text-white hover:bg-gray-600 border-none w-auto h-auto"
                                                             onClick={() => document.getElementById('modal_Logout').close()}>Cancel
                                                     </button>
                                                     <button type="button"
-                                                            className="btn btn-sm bg-blue-500 rounded text-white hover:bg-red-600 border-none px-5"
+                                                            className="btn btn-sm bg-blue-500 rounded text-white hover:bg-red-600 border-none w-auto h-auto"
                                                             onClick={() => console.log('Delete logic here')}>Log Out
                                                     </button>
                                                 </div>
-                    
                                             </div>
                                         </dialog>
                                     </li>
