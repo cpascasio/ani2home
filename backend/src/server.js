@@ -3,7 +3,7 @@ const cors = require('cors'); // Import CORS module
 const middleware = require('./middleware'); // Import middleware
 const userRouters = require('./controllers/users'); // Import the user routes
 const productRoutes = require('./controllers/products'); // Import the product routes
-const lalamoveRoutes = require('./controllers/lalamove'); // Import the product routes
+const webhooksRoutes = require('./controllers/webhooks'); // Import the product routes
 
 require('dotenv').config();
 
@@ -24,7 +24,7 @@ const apiRouter = express.Router();
 apiRouter.use('/users', userRouters); // Use the user routes
 
 // product route
-apiRouter.use('/lalamove', lalamoveRoutes);
+apiRouter.use('/webhooks', webhooksRoutes);
 
 // product route
 apiRouter.use('/products', productRoutes);
