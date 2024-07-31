@@ -36,7 +36,7 @@ const Cart = () => {
     },[cartFetch]);
   
     useEffect(() => {
-      console.log(cartNew);
+      console.log("Cart Page: ", cartNew);
     }, [cartNew]);
 
   // useEffect(() => {
@@ -56,13 +56,13 @@ const Cart = () => {
     //     checkout(product);
     //     navigate('/checkout');
     //   };
-    const handleCheckout = () => {
+    const handleCheckout = ( ) => {
         if (cartNew?.length === 0) {
           alert('Your cart is empty');
           return;
         }
         navigate('/checkout', { state: { cartItems: cartNew}});
-        console.log('handleCheckout', cartNew);
+        // console.log('handleCheckout', cartNew);
         
 
       };

@@ -25,18 +25,18 @@ const Checkout = () => {
     if (itemsFetch) {
       setItems(itemsFetch);
     }
+    console.log("Checkout Items: ", itemsFetch);
   }
   , [itemsFetch]);
 
   useEffect(() => {
-    console.log("Items: ", items)
+    console.log("Checkout Items Items: ", items); // doesn't fetch the items correctly
   }
   , [items]);
 
   const navigate = useNavigate();
   const { cart } = useContext(CartContext);
   const location = useLocation();
-  const { quantity } = location.state || {};
   const { cartItems = [] } = location.state || {};
 
   const [editing, setEditing] = useState(false);
@@ -55,12 +55,6 @@ const Checkout = () => {
   const [originalProvince, setOriginalProvince] = useState(province);
   const [originalBarangay, setOriginalBarangay] = useState(barangay);
   const [originalCity, setOriginalCity] = useState(city);
-
-  console.log('handleCheckout', cartItems);
-
-
-
-  
 
   const handleEditToggle = () => {
     setEditing(!editing);
@@ -117,9 +111,20 @@ const Checkout = () => {
     setIsDropdownOpen(false);
   };
 
+  console.log("Items to Checkout: ", items);
+  
+  let totalPrice = 0;
 
-  // Calculate the total price
-  const totalPrice = cart.reduce((acc, product) => acc + (product.unitPrice * cartItems.quantity), 0);
+  if (items.length > 0) {
+    for (let i = 0; i < items.length; i++) {
+      console.log("Price: ", items[i].product.price); // debug
+      console.log("Quantity : ", items[i].quantity); // debug
+      totalPrice += items[i].product.price * items[i].quantity;
+    }
+  }
+  // const totalPrice = cartItems.reduce((acc, items) => acc + (items.product.price * items.quantity), 0);
+
+  console.log("Total Price : ", totalPrice );
 
   // Function to format numbers with commas
   const formatNumber = (number) => {
