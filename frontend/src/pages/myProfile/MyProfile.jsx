@@ -436,7 +436,7 @@ const MyProfile = () => {
                                                 <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
                                                         onClick={() => document.getElementById('modal_DeleteShop').close()}>✕
                                                 </button>
-                                                <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Delete Account</h3>
+                                                <h3 className="text-lg font-bold text-gray-600 text-left pb-5">Delete Shop</h3>
                                                 <p className="text-sm text-gray-600 mb-4">Are you sure you want to delete <span className="font-bold">Pogi Farms</span>? This action cannot be undone.</p>
                                                 <form method="dialog" className="space-y-4">
                                                     <div className="flex flex-col">
