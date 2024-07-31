@@ -3,7 +3,7 @@ import backgroundImage from '../../assets/product-categories-bg.svg';
 import category1Image from '../../assets/category1.png';
 import category2Image from '../../assets/category2.png';
 import category3Image from '../../assets/category3.png';
-import TopRated from "../../components/homepage/TopRated.jsx";
+import FeaturedRecipes from "../../components/homepage/FeaturedRecipes.jsx";
 
 
 const ProductCategories = () => {
@@ -97,8 +97,8 @@ const ProductCategories = () => {
         </div>
       </div>
 
-      {/* Top Rated - Overlapping */}
-        <TopRated />
+      {/* Featured Recipes - Overlapping */}
+        <FeaturedRecipes />
     </div>
   );
 };
