@@ -9,12 +9,12 @@ import WhyUs from '../../components/homepage/WhyUs.jsx';
 const HomePage = () => {
   return (
     <div className='w-full'>
-      <Header />
+      {/* <Header /> */}
       <Hero />
       <ProductCategories />
       <Empty/>
-      <WhyUs />
-      <Footer />
+      {/* <WhyUs /> */}
+      {/* <Footer /> */}
     </div>
   );
 };
