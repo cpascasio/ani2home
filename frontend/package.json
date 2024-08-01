@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-google-maps/api": "^2.19.3",
+    "@vis.gl/react-google-maps": "^1.1.0",
     "axios": "^1.7.2",
     "dotenv": "^16.4.5",
     "firebase": "^10.12.3",
