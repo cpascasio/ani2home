@@ -65,7 +65,7 @@ const NavLinks = () => (
   <div className="flex items-center gap-8 pl-8">
     <NavLink href="/">Home</NavLink>
     <NavLink href="/login">About Us</NavLink>
-    <NavLink href="/myShop">Shop</NavLink>
+    <NavLink href="/products">Shop</NavLink>
   </div>
 );
 
@@ -103,7 +103,8 @@ const CartIcon = () => {
   const [color, setColor] = React.useState('#209D48');
 
   return (
-    <div
+    <a 
+      href="/cart" 
       className="relative"
       onMouseEnter={() => setColor('#0059B8')} 
       onMouseLeave={() => setColor('#209D48')}
@@ -114,7 +115,7 @@ const CartIcon = () => {
       >
         3
       </span>
-    </div>
+    </a>
   );
 };
 
@@ -122,15 +123,17 @@ const ProfileIcon = () => {
   const [color, setColor] = React.useState('#209D48');
 
   return (
-    <div
+    <a 
+      href="/myProfile" 
       className="relative"
       onMouseEnter={() => setColor('#0059B8')} 
       onMouseLeave={() => setColor('#209D48')}
     >
       <FaUserCircle size={24} style={{ color }} />
-    </div>
+    </a>
   );
 };
+
 
 const MobileMenu = () => {
   const [open, setOpen] = useState(false);
@@ -139,7 +142,7 @@ const MobileMenu = () => {
     <div className="block lg:hidden relative z-50">
       <button
         onClick={() => setOpen(true)}
-        className="absolute top-4 -left-6 transform -translate-x-1/2 -mt-7 text-3xl text-[#209D48]"
+        className="absolute top-4 left-1/2 transform -translate-x-1/2 -mt-7 text-3xl text-[#209D48]"
         aria-label="Open menu"
       >
         <FiMenu />
@@ -155,13 +158,17 @@ const MobileMenu = () => {
           >
             <div className="flex items-center justify-between p-6">
               <Logo />
-              <button
-                onClick={() => setOpen(false)}
-                className="text-3xl text-[#209D48]"
-                aria-label="Close menu"
-              >
-                <FiX />
-              </button>
+              <div className="flex items-center gap-4">
+                <CartIcon />
+                <ProfileIcon />
+                <button
+                  onClick={() => setOpen(false)}
+                  className="text-3xl text-[#209D48]"
+                  aria-label="Close menu"
+                >
+                  <FiX />
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-y-scroll bg-[#0b472d] p-6">
               <div className="mb-6">
@@ -186,6 +193,7 @@ const MobileMenu = () => {
     </div>
   );
 };
+
 
 
 
@@ -262,7 +270,7 @@ const LINKS = [
   },
   {
     text: "Shop",
-    href: "/myShop",
+    href: "/products",
   },
 ];
 
