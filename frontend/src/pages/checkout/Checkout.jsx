@@ -136,14 +136,8 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = () => {
-        // navigate('/confirmation', { state: { cartItems: items}});
-        // console.log('handlePlaceOrder', items);
-
-        // add to firebase to order db
-
 
         const order = {
-
           userId: user?.userId,
           sellerId: "store345", // update card model to have a sellerId ty
           shippingFee: 50,
@@ -161,22 +155,65 @@ const Checkout = () => {
           paymentRefNo: '1234567890'
         };
 
+        // Extract order details from items
+      const orderDetails = items.map(item => ({
+        orderId: order.orderId,
+        productId: item.productId,
+        quantity: item.quantity
+      }));
+
+        // navigate('/confirmation', { state: { order: order}});
+        // console.log('handlePlaceOrder', items);
+
+        // add to firebase to order db
+
+       
+
 
         // Conditionally add the note property if it's not an empty string
-  if (note.trim() !== '') {
-    order.note = note;
-  }
+  // Conditionally add the note property if it's not an empty string
+if (note.trim() !== '') {
+  order.note = note;
+}
 
-        console.log('Order:', order);
-        axios.post('http://localhost:3000/api/orders/create-order', order)
-          .then((response) => {
-            console.log('Order placed:', response.data);
-            navigate('/confirmation');
-          })
-          .catch((error) => {
-            console.error('Error placing order:', error);
-          });  
+console.log('Order:', order);
+
+// First, create the order
+axios.post('http://localhost:3000/api/orders/create-order', order)
+  .then((response) => {
+    console.log('Order placed:', response.data);
+    
+     // Extract the orderId from the response if needed
+     const orderId = String(response.data.orderId);
+     console.log("OrderID: ", orderId);
+
+     // Map orderId to each item in orderDetails
+     const orderDetails = items.map(item => ({
+       orderId: response.data.orderId,
+       productId: item.productId,
+       quantity: item.quantity
+     }));
+
+     // console log the orderDetails
+      console.log("Order Details: ", orderDetails);
+    
+    // Then, create the order detail
+    return axios.post('http://localhost:3000/api/order-details/create-order-details', { orderDetails });
+  })
+  .then((response) => {
+    console.log('Order Details placed:', response.data);
+    console.log('ygugOrder:', order);
+    console.log('iugugjOrder Details:', orderDetails);
+    navigate('/confirmation');
+    
+  })
+  .catch((error) => {
+    console.error('Error placing order or order details:', error);
+  });
   };
+
+
+
 
  
 

@@ -1,8 +1,29 @@
 import Header from '../../components/Header.jsx';
 import Footer from '../../components/Footer.jsx';
 import ConfirmationIcon from '../../assets/confirmationIcon.png'; // Path to the confirmation icon
+import useFetch from '../../../hooks/useFetch.js';
+// import user contxt
+import { useUser } from '../../context/UserContext.jsx';
+import { useState, useContext, useEffect } from 'react';
 
 const Confirmation = () => {
+
+  const { user } = useUser();
+  const [orders, setOrders] = useState([]);
+  const { data: orderFetch } = useFetch(`/api/orders/${user?.userId}`);
+
+  useEffect(() => {
+    console.log(`Fetching orders for userId: ${user?.userId}`); // Log the userId
+    if (orderFetch) {
+      setOrders(orderFetch);
+    }
+    console.log(orderFetch);
+  },[orderFetch]);
+
+  useEffect(() => {
+    console.log("Confirmation Page: ", orderFetch);
+  }, [orders]);
+
   return (
     <div className='w-full'>
       <Header />
@@ -23,7 +44,7 @@ const Confirmation = () => {
               </div>
             </div>
             <div className="mt-4 ml-5 font-inter text-[15px] text-black text-left">
-              Your order number is: <span className="font-bold text-[#0000FF]">000000001</span>
+              Your order number is: <span className="font-bold text-[#0000FF]">{orders[0]?.orderId}</span>
             </div>
             <div className="mt-4 ml-5 font-inter text-[15px] text-black text-left">
               Billing & Shipping Information: <span>Fernando Lopez</span>
