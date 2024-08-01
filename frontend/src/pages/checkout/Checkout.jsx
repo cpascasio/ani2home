@@ -152,8 +152,14 @@ const Checkout = () => {
             phoneNumber
           },
           paymentOption: selectedPaymentOption,
-          paymentRefNo: '1234567890'
+          paymentRefNo: '1234567890',
+          items: items.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity
+          }))
         };
+
+
 
         // Extract order details from items
       const orderDetails = items.map(item => ({
@@ -178,8 +184,11 @@ if (note.trim() !== '') {
 
 console.log('Order:', order);
 
+
+
+
 // First, create the order
-axios.post('http://localhost:3000/api/orders/create-order', order)
+axios.post('http://localhost:3000/api/orders/place-order', order)
   .then((response) => {
     console.log('Order placed:', response.data);
     
@@ -187,25 +196,6 @@ axios.post('http://localhost:3000/api/orders/create-order', order)
      const orderId = String(response.data.orderId);
      console.log("OrderID: ", orderId);
 
-     // Map orderId to each item in orderDetails
-     const orderDetails = items.map(item => ({
-       orderId: response.data.orderId,
-       productId: item.productId,
-       quantity: item.quantity
-     }));
-
-     // console log the orderDetails
-      console.log("Order Details: ", orderDetails);
-    
-    // Then, create the order detail
-    return axios.post('http://localhost:3000/api/order-details/create-order-details', { orderDetails });
-  })
-  .then((response) => {
-    console.log('Order Details placed:', response.data);
-    console.log('ygugOrder:', order);
-    console.log('iugugjOrder Details:', orderDetails);
-    navigate('/confirmation');
-    
   })
   .catch((error) => {
     console.error('Error placing order or order details:', error);
