@@ -9,6 +9,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { useUser } from "../../../src/context/UserContext.jsx";
+import GoogleIcon from "../../assets/google-icon.png"; // Adjust the path as necessary
 
 const Login = () => {
   const { user, dispatch } = useUser();
@@ -18,6 +19,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
 
   useEffect(() => {
+    // Subscribe to authentication state changes
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         setAuthenticated(true);
@@ -49,15 +51,16 @@ const Login = () => {
       }
     });
 
+    // Clean up subscription on unmount
     return () => unsubscribe();
-  }, [dispatch]); //
+  }, [dispatch]);
 
   useEffect(() => {
-    console.log("AUTHENTICATED? " + user ? "true" : "false");
+    console.log("AUTHENTICATED? " + (user ? "true" : "false"));
   }, []);
 
   useEffect(() => {
-    console.log("USERACCOUNT " + user ? user?.username : "false");
+    console.log("USERACCOUNT " + (user ? user?.username : "false"));
   }, [user]);
 
   const handleLogout = () => {
@@ -204,8 +207,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#072C1C] flex items-center justify-center">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+    <div className="min-h-screen bg-[#072C1C] flex items-center justify-center px-4 sm:px-6 md:px-8">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6 sm:p-8">
         <h2 className="text-2xl font-bold text-center text-[#209D48] mb-6">Login to Your Account</h2>
         <div className="mb-4">
           <input
@@ -234,39 +237,29 @@ const Login = () => {
             className="w-full p-3 rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent"
           />
         </div>
-        <div className="flex flex-col space-y-4">
-          {authenticated ? (
-            <div>
-              <h1 className="text-center text-[#209D48] font-bold">Authenticated</h1>
-              <button
-                onClick={handleLogout}
-                className="w-full py-3 rounded-lg bg-[#209D48] text-white font-bold hover:bg-[#67B045] transition duration-300"
-              >
-                Logout
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-col space-y-4">
-              <button
-                onClick={handleLogin}
-                className="w-full py-3 rounded-lg bg-[#209D48] text-white font-bold hover:bg-[#67B045] transition duration-300"
-              >
-                Login
-              </button>
-              <button
-                onClick={handleEmailSignUp}
-                className="w-full py-3 rounded-lg bg-[#209D48] text-white font-bold hover:bg-[#67B045] transition duration-300"
-              >
-                Register
-              </button>
-              <button
-                onClick={handleGoogleLogin}
-                className="w-full py-3 rounded-lg bg-[#209D48] text-white font-bold hover:bg-[#67B045] transition duration-300"
-              >
-                Login with Google
-              </button>
-            </div>
-          )}
+        <button
+          onClick={handleLogin}
+          className="w-full p-3 bg-[#209D48] text-white rounded-lg hover:bg-[#67B045] focus:outline-none focus:ring focus:ring-[#67B045]"
+        >
+          Login
+        </button>
+        <div className="my-4 text-center">
+          <p className="text-sm text-gray-600">Or</p>
+        </div>
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full p-3 bg-[#209D48] text-white rounded-lg hover:bg-[#67B045] flex items-center justify-center"
+        >
+          <img src={GoogleIcon} alt="Google" className="w-5 h-5 mr-2" />
+          Log in with Google
+        </button>
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <a href="/register" className="text-[#209D48] hover:underline">
+              Register Here
+            </a>
+          </p>
         </div>
       </div>
     </div>
@@ -274,4 +267,3 @@ const Login = () => {
 };
 
 export default Login;
-
