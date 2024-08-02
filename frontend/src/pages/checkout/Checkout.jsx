@@ -268,7 +268,7 @@ useEffect(() => {
         </div>
         <div className="flex justify-center mt-6"> {/* container for white box */}
           <div className="bg-white w-[848px] h-[auto] p-4"> {/* white box with padding */}
-            <div className="flex items-center"> {/* container for location icon and text */}
+            <div className="flex items-center mb-3"> {/* container for location icon and text */}
               <img src={LocationIcon} alt="Location" className="w-[20px] h-[20px] mr-2" />
               <div className="font-inter text-[15px] text-[#737373]">Delivery Address</div>
             </div>
