@@ -34,8 +34,8 @@ const ProductCategories = () => {
             marginTop: '1%', // Adjust vertical position
           }}
         >
-          Explore a selection of fresh, local produce and artisanal food, directly sourced 
-          from nearby farmers and markets, and discover the essence of farm-to-table living.
+          Explore a selection of <strong> fresh, local produce and artisanal food</strong>, directly sourced 
+          from nearby farmers and markets, and discover the essence of <strong>farm-to-table living</strong>.
         </p>
 
         {/* Buttons Container */}

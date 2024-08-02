@@ -19,7 +19,7 @@ const FlyoutNav = () => {
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
-    setScrolled(latest > 250);
+    setScrolled(latest > 0);
   });
 
   return (
@@ -64,7 +64,7 @@ const Logo = () => (
 const NavLinks = () => (
   <div className="flex items-center gap-8 pl-8">
     <NavLink href="/">Home</NavLink>
-    <NavLink href="/login">About Us</NavLink>
+    <NavLink href="/aboutus">About Us</NavLink>
     <NavLink href="/products">Shop</NavLink>
   </div>
 );
@@ -77,7 +77,7 @@ const NavLink = ({ children, href }) => (
       color: '#209D48',
       transition: 'color 0.3s ease',
     }}
-    onMouseEnter={(e) => (e.currentTarget.style.color = '#0059B8')}
+    onMouseEnter={(e) => (e.currentTarget.style.color = '#67b045')}
     onMouseLeave={(e) => (e.currentTarget.style.color = '#209D48')}
   >
     {children}
@@ -91,7 +91,7 @@ const SearchBar = () => (
       placeholder="What are you looking for?"
       className="rounded-full px-6 py-3 outline-none w-full max-w-lg pl-4"
       style={{
-        backgroundColor: '#EFEFEF',
+        backgroundColor: '#d9d9d9',
         color: '#0B472D',
         placeholderColor: '#D9D9D9',
       }}
@@ -106,7 +106,7 @@ const CartIcon = () => {
     <a 
       href="/cart" 
       className="relative"
-      onMouseEnter={() => setColor('#0059B8')} 
+      onMouseEnter={() => setColor('#67b045')} 
       onMouseLeave={() => setColor('#209D48')}
     >
       <FiShoppingCart size={24} style={{ color }} />
@@ -126,7 +126,7 @@ const ProfileIcon = () => {
     <a 
       href="/myProfile" 
       className="relative"
-      onMouseEnter={() => setColor('#0059B8')} 
+      onMouseEnter={() => setColor('#67b045')} 
       onMouseLeave={() => setColor('#209D48')}
     >
       <FaUserCircle size={24} style={{ color }} />
@@ -266,7 +266,7 @@ const LINKS = [
   },
   {
     text: "About Us",
-    href: "/login",
+    href: "/aboutus",
   },
   {
     text: "Shop",
