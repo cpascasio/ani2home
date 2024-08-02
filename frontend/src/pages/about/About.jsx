@@ -1,8 +1,9 @@
 import React from 'react';
-import '/Users/shannyne/Documents/GitHub/ani2home/frontend/src/pages/about/About.css';
-import farmersImage from '/Users/shannyne/Documents/GitHub/ani2home/frontend/src/assets/farmers.png';
-import blobShapeImage from '/Users/shannyne/Documents/GitHub/ani2home/frontend/src/assets/shape.png';
-import logoImage from '/Users/shannyne/Documents/GitHub/ani2home/frontend/src/assets/logo-shadow.png';
+import './About.css'; 
+import farmersImage from '../../assets/farmers.png'; 
+import blobShapeImage from '../../assets/shape.png'; 
+import logoImage from '../../assets/logo-shadow.png'; 
+
 
 const AboutUs = () => {
   return (
