@@ -26,59 +26,51 @@ const MyProfile = () => {
 
   const map = useMap();
 
-  const [selectedPlace, setSelectedPlace] = useState(null);
+  const [markerPosition, setMarkerPosition] = useState(null);
+  const [addressDetails, setAddressDetails] = useState({});
 
-  const autocompleteRef = useRef(null);
-
-  const [center, setCenter] = useState({ lat: -33.860664, lng: 151.208138 });
-
-  /*
-    const [markerPosition, setMarkerPosition] = useState(null);
-const [addressDetails, setAddressDetails] = useState({});
+  const autocompleteContainerRef = useRef(null);
 
 
-const handleMapClick = async (event) => {
-    const latLng = event.latLng;
-    const lat = event.latLng.lat();
-    const lng = event.latLng.lng();
+
+
+  const handleMapClick = async (event) => {
+
+    const lat = event.detail.latLng.lat;
+    const lng = event.detail.latLng.lng;
     setMarkerPosition({ lat, lng });
-  
+    console.log("marker clicked:", event.detail.latLng);
+    event.map.panTo(event.detail.latLng);
     try {
-      const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`);
-      const address = response.data.results[0];
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+      );
+
+      console.log(response.data.results[0]);
+
+      const fulladdress = response.data.results[0].address_components[0].long_name + " " + response.data.results[0].address_components[1].long_name;
+      const city = response.data.results[0].address_components[2].long_name;
+        const province = response.data.results[0].address_components[3].long_name;
+        const region = response.data.results[0].address_components[4].long_name;
+        const country = response.data.results[0].address_components[5].long_name;
+        const lng = response.data.results[0].geometry.location.lng;
+        const lat = response.data.results[0].geometry.location.lat;
+
       setAddressDetails({
-        address: address.formatted_address,
-        city: address.address_components.find(component => component.types.includes('locality'))?.long_name,
-        province: address.address_components.find(component => component.types.includes('administrative_area_level_1'))?.long_name,
-        zipcode: address.address_components.find(component => component.types.includes('postal_code'))?.long_name
+        fulladdress,
+        city,
+        province,
+        region,
+        country,
+        lng,
+        lat,
       });
+
     } catch (error) {
       console.error('Error fetching address details:', error);
     }
   };
-    
-  */
 
-  const handlePlaceSelect = () => {
-    const addressObject = autocomplete.getPlace();
-    const address = addressObject.formatted_address;
-    const addressArray = addressObject.address_components;
-    const city = getCity(addressArray);
-    const province = getProvince(addressArray);
-    const zipcode = getZipcode(addressArray);
-    const lat = addressObject.geometry.location.lat();
-    const lng = addressObject.geometry.location.lng();
-    // Set these values in the state.
-    setCenter({ lat, lng });
-    setSelectedPlace({
-        address,
-        city,
-        province,
-        zipcode,
-        lat,
-        lng
-    });
-};
 
   useEffect(() => {
     if (!placesLib || !map) return;
@@ -88,37 +80,18 @@ const handleMapClick = async (event) => {
   }, [placesLib, map]);
 
 
-  useEffect(() => {
-    if (autocompleteRef.current) {
-      const autocomplete = new window.google.maps.places.Autocomplete(
-        autocompleteRef.current
-      );
-      autocomplete.addListener("place_changed", () => {
-        const place = autocomplete.getPlace();
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-        setMarkerPosition({ lat, lng });
-        setAddressDetails({
-          address: place.formatted_address,
-          city: place.address_components.find((component) =>
-            component.types.includes("locality")
-          )?.long_name,
-          province: place.address_components.find((component) =>
-            component.types.includes("administrative_area_level_1")
-          )?.long_name,
-          zipcode: place.address_components.find((component) =>
-            component.types.includes("postal_code")
-          )?.long_name,
-        });
-      });
-    }
-  }, [autocompleteRef]);
+
+  
 
   const handleClick = useCallback((ev) => {
-    if (!ev.latLng) return;
-    console.log("marker clicked:", ev.latLng.toString());
-    ev.map.panTo(ev.latLng);
+    if (!ev) return;
+    console.log("marker clicked:", ev.detail.latLng);
+    const lat = ev.detail.latLng.lat;
+    const lng = ev.detail.latLng.lng;
+    setMarkerPosition({ lat, lng });
+    ev.map.panTo(ev.detail.latLng);
   }, []);
+
 
   useEffect(() => {
     if (!map) return;
@@ -353,8 +326,8 @@ const handleMapClick = async (event) => {
             <Map
               mapId="profileMap"
               defaultZoom={13}
-              defaultCenter={center}
-              onClick={handleClick}
+              defaultCenter={{ lat: 14.3879953, lng: 120.9879423 }}
+              onClick={handleMapClick}
               onCameraChanged={(ev) => {
                 console.log(
                   "camera changed:",
@@ -366,7 +339,7 @@ const handleMapClick = async (event) => {
               options={{
                 gestureHandling: "greedy",
                 zoomControl: true,
-                fullscreenControl: true,
+                fullscreenControl: false,
                 mapTypeControl: false,
                 scaleControl: true,
                 streetViewControl: false,
@@ -374,8 +347,9 @@ const handleMapClick = async (event) => {
               }}
               style={{ width: "100%", height: "400px" }}
             >
-              <Marker position={center} />
+              <Marker position={markerPosition} />
             </Map>
+            <div id="place-autocomplete-container" ref={autocompleteContainerRef} />
             
             <div className="bg-white p-10 rounded shadow-md">
               {" "}
