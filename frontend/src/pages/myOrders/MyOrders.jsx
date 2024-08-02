@@ -195,7 +195,7 @@ const MyOrders = () => {
           <div className="w-full sm:w-[85%] px-4 lg:pb-12">
             <div className="text-lg font-bold mb-3 text-left text-gray-600 lg:my-5 lg:pb-3 lg:mt-8">My Orders</div>
 
-            <div className="bg-white rounded shadow-md w-full max-w-full mx-auto overflow-auto">
+            <button className="bg-white rounded shadow-md w-full max-w-full mx-auto overflow-auto hover:bg-gray-500">
             <div className="block md:hidden bg-white shadow rounded-lg overflow-hidden">
               
               {/* Mobile view */}
@@ -334,7 +334,7 @@ const MyOrders = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </button>
 
             {/* Order Received Modal */}
             <Dialog open={isOrderReceived} onClose={handleCloseOrderReceivedModal}>
