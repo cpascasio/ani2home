@@ -12,6 +12,7 @@ import MyShop from "../pages/myShop/MyShop";
 import Cart from "../pages/cart/Cart";
 import Checkout from "../pages/checkout/Checkout";
 import Confirmation from "../pages/confirmation/Confirmation";
+import PerOrder from "../pages/perOrder/PerOrder";
 
 const routes = [
     {/* CTRL + CLICK the elements to go to the file */ },
@@ -27,7 +28,8 @@ const routes = [
     { path: "/myShop", element: <MyShop />, name: "MyShop" },
     { path: "/cart", element: <Cart />, name: "Cart" },
     { path: "/checkout", element: <Checkout />, name: "Checkout" },
-    { path: "/confirmation", element: <Confirmation />, name: "Confirmation" }
+    { path: "/confirmation", element: <Confirmation />, name: "Confirmation" },
+    { path: "/perOrder", element: <PerOrder />, name: "PerOrder" }
 ];
 
 export default routes;
