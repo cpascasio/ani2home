@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { auth, provider } from "../../config/firebase-config"; // Adjust the path as necessary
+import { auth, provider } from "../../config/firebase-config"; 
 import {
   signInWithPopup,
   GoogleAuthProvider,
@@ -9,7 +9,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { useUser } from "../../../src/context/UserContext.jsx";
-import GoogleIcon from "../../assets/google-icon.png"; // Adjust the path as necessary
+import GoogleIcon from "../../assets/google-icon.png"; 
 
 const Login = () => {
   const { user, dispatch } = useUser();
