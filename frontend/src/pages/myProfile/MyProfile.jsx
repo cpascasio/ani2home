@@ -36,25 +36,40 @@ const MyProfile = () => {
 
   const handleMapClick = async (event) => {
 
-    const lat = event.detail.latLng.lat;
-    const lng = event.detail.latLng.lng;
-    setMarkerPosition({ lat, lng });
+    const latitude = event.detail.latLng.lat;
+    const longitude = event.detail.latLng.lng;
+    setMarkerPosition({ lat: latitude, lng: longitude });
     console.log("marker clicked:", event.detail.latLng);
     event.map.panTo(event.detail.latLng);
     try {
       const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
       );
 
       console.log(response.data.results[0]);
+      
+      const fulladdress = response.data.results[0].formatted_address;
+      const plusCode = response.data.results[0]?.address_components.find((address) => address.types.includes('plus_code'))?.short_name ?? "";
+      console.log("PLUS:" + plusCode);
+      const street = response.data.results[0]?.address_components.find((address) => address.types.includes('route'))?.short_name ?? "";
+      console.log("STREET:" + street);
+      const barangay = response.data.results[0]?.address_components.find((address) => address.types.includes('sublocality'))?.short_name ?? "";
+      console.log("BARANGAY:" + barangay);
+      const city = response.data.results[0]?.address_components.find((address) => address.types.includes('locality'))?.short_name ?? "";
+      console.log("CITY:" + city);
+      const province = response.data.results[0]?.address_components.find((address) => address.types.includes('administrative_area_level_2'))?.short_name ?? "";
+      console.log("PROVINCE:" + province);
+      const region = response.data.results[0]?.address_components.find((address) => address.types.includes('administrative_area_level_1'))?.short_name ?? "";
+      console.log("REGION:" + region);
+      const country = response.data.results[0]?.address_components.find((address) => address.types.includes('country'))?.short_name ?? "";
+      console.log("COUNTRY:" + country);
+      const postalCode = response.data.results[0]?.address_components.find((address) => address.types.includes('postal_code'))?.short_name ?? "";
+      console.log("POSTAL CODE:" + postalCode);
 
-      const fulladdress = response.data.results[0].address_components[0].long_name + " " + response.data.results[0].address_components[1].long_name;
-      const city = response.data.results[0].address_components[2].long_name;
-        const province = response.data.results[0].address_components[3].long_name;
-        const region = response.data.results[0].address_components[4].long_name;
-        const country = response.data.results[0].address_components[5].long_name;
         const lng = response.data.results[0].geometry.location.lng;
         const lat = response.data.results[0].geometry.location.lat;
+
+        
 
       setAddressDetails({
         fulladdress,
@@ -65,6 +80,8 @@ const MyProfile = () => {
         lng,
         lat,
       });
+
+      
 
     } catch (error) {
       console.error('Error fetching address details:', error);
@@ -325,7 +342,7 @@ const MyProfile = () => {
             </div>
             <Map
               mapId="profileMap"
-              defaultZoom={13}
+              defaultZoom={10}
               defaultCenter={{ lat: 14.3879953, lng: 120.9879423 }}
               onClick={handleMapClick}
               onCameraChanged={(ev) => {

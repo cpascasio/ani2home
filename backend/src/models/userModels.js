@@ -2,10 +2,10 @@ const Joi = require('joi');
 
   const userSchema = Joi.object({
     userId: Joi.string().optional(),
-    name: Joi.string().default(""),
+    name: Joi.string().optional(),
     userName: Joi.string().optional(),
     email: Joi.string().email().optional(),
-    dateOfBirth: Joi.date().iso().default(""),
+    dateOfBirth: Joi.date().iso().optional(),
     userProfilePic: Joi.string().default('../src/assets/MyProfile pic.png'),
     userCover: Joi.string().default('https://walker-web.imgix.net/cms/Gradient_builder_2.jpg?auto=format,compress&w=1920&h=1200&fit=crop&dpr=1.5'),
     address: Joi.object({
