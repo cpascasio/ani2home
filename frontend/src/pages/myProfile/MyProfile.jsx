@@ -36,35 +36,56 @@ const MyProfile = () => {
 
   const handleMapClick = async (event) => {
 
-    const lat = event.detail.latLng.lat;
-    const lng = event.detail.latLng.lng;
-    setMarkerPosition({ lat, lng });
+    const latitude = event.detail.latLng.lat;
+    const longitude = event.detail.latLng.lng;
+    setMarkerPosition({ lat: latitude, lng: longitude });
     console.log("marker clicked:", event.detail.latLng);
     event.map.panTo(event.detail.latLng);
+    console.log("marker clicked lat:", event.detail.latLng.lat);
+    console.log("marker clicked lng:", event.detail.latLng.lng);
     try {
       const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
       );
 
-      console.log(response.data.results[0]);
-
-      const fulladdress = response.data.results[0].address_components[0].long_name + " " + response.data.results[0].address_components[1].long_name;
-      const city = response.data.results[0].address_components[2].long_name;
-        const province = response.data.results[0].address_components[3].long_name;
-        const region = response.data.results[0].address_components[4].long_name;
-        const country = response.data.results[0].address_components[5].long_name;
-        const lng = response.data.results[0].geometry.location.lng;
-        const lat = response.data.results[0].geometry.location.lat;
-
-      setAddressDetails({
-        fulladdress,
-        city,
-        province,
-        region,
-        country,
-        lng,
-        lat,
-      });
+      if (response.data.results.length > 0) {
+        const result = response.data.results[0];
+  
+        const fulladdress = result.formatted_address;
+        const addressComponents = result.address_components;
+  
+        let city = '';
+        let province = '';
+        let region = '';
+        let country = '';
+  
+        for (const component of addressComponents) {
+          if (component.types.includes('locality')) {
+            city = component.long_name;
+          } else if (component.types.includes('administrative_area_level_1')) {
+            province = component.long_name;
+          } else if (component.types.includes('administrative_area_level_2')) {
+            region = component.long_name;
+          } else if (component.types.includes('country')) {
+            country = component.long_name;
+          }
+        }
+  
+        document.getElementById('newLocation').value = fulladdress;
+        document.getElementById('newProvice').value = province;
+        document.getElementById('newRegion').value = region;
+        document.getElementById('newCity').value = city;
+  
+        setAddressDetails({
+          fulladdress,
+          city,
+          province,
+          region,
+          country,
+          lng: longitude,
+          lat: latitude,
+        });
+      }
 
     } catch (error) {
       console.error('Error fetching address details:', error);
@@ -137,6 +158,52 @@ const MyProfile = () => {
 
   // create the handleSubmit function that gets the value of formData then does an axios.put to the route http://localhost:3000/api/users/edit-user with headers type application json and token given the formdata.
 
+  const handleSubmitAddress = async (event) => {
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    // Collect form data
+    const formData = new FormData(event.target);
+
+    // Create an object to hold form values
+    const data = {};
+    data.address = {};
+
+    // Check if fields have been changed
+    if (formData.get("newLocation") !== userData?.address?.fulladdress) {
+      data.address.fulladdress = formData.get("newLocation") || "";
+    }
+    if (formData.get("newProvice") !== userData?.address?.province) {
+      data.address.province = formData.get("newProvice") || "";
+    }
+    if (formData.get("newRegion") !== userData?.address?.region) {
+      data.address.region = formData.get("newRegion") || "";
+    }
+    if (formData.get("newCity") !== userData?.address?.city) {
+      data.address.city = formData.get("newCity") || "";
+    }
+
+    // Get the token from localStorage or any other source
+    const token = user?.token; // Replace with your actual token retrieval method
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/users/edit-user/${user?.userId}`, // Include userId in the URL
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
+        }
+      );
+      console.log("Success:", response.data);
+      // Handle success (e.g., show a success message or redirect)
+    } catch (error) {
+      console.error("Error:", error.response?.data || error.message);
+      // Handle error (e.g., show an error message)
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault(); // Prevent the default form submission behavior
 
@@ -156,14 +223,11 @@ const MyProfile = () => {
     if (formData.get("newEmail") !== userData?.email) {
       data.email = formData.get("newEmail");
     }
-    if (formData.get("newLocation") !== userData?.address) {
-      data.address = formData.get("newLocation") || "";
-    }
     if (formData.get("newPhoneNumber") !== userData?.phoneNumber) {
       data.phoneNumber = formData.get("newPhoneNumber") || "";
     }
     if (formData.get("newBio") !== userData?.bio) {
-      data.bio = formData.get("newBio") || "";
+      data.bio = formData.get("newBio") || "";  
     }
 
     // Get the token from localStorage or any other source
@@ -253,7 +317,7 @@ const MyProfile = () => {
             <h1 className="text-4xl font-bold font-inter mb-0">
               {userData.name}
             </h1>
-            <div className="italic mb-4 font-inter">{userData.address}</div>
+            <div className="italic mb-4 font-inter">{userData?.address?.fulladdress}</div>
             <div className="mb-6 text-justify font-inter">
               {" "}
               {/*CHARACTERS MAXIMUM: 439 */}
@@ -349,6 +413,86 @@ const MyProfile = () => {
             >
               <Marker position={markerPosition} />
             </Map>
+            <div className="bg-white p-5 mb-5">
+              <h2 className="text-lg text-left font-bold text-gray-600">
+                Edit Location
+              </h2>
+              <form onSubmit={handleSubmitAddress} className="space-y-4">
+              <div className="flex space-x-4 mb-2 mt-5">
+                  <label
+                    htmlFor="newLocation"
+                    className="w-full text-sm font-medium text-gray-600 text-left"
+                  >
+                    Full Address
+                  </label>
+                </div>
+                <div className="flex flex-col my-2">
+                  <input
+                    type="text"
+                    id="newLocation"
+                    name="newLocation"
+                    defaultValue={userData?.address?.fulladdress}
+                    required
+                    className="input input-bordered bg-gray-200 text-gray-800"
+                  />
+                </div>
+                <div className="flex space-x-4 mb-2 mt-5">
+                  <label
+                    htmlFor="newProvice"
+                    className="w-full text-sm font-medium text-gray-600 text-left"
+                  >
+                    Province
+                  </label>
+                  <label
+                    htmlFor="newRegion"
+                    className="w-full text-sm font-medium text-gray-600 text-left"
+                  >
+                    Region
+                  </label>
+                  <label
+                    htmlFor="newCity"
+                    className="w-full text-sm font-medium text-gray-600 text-left"
+                  >
+                    City
+                  </label>
+                </div>
+                <div className="flex space-x-4 mb-2">
+                  <input 
+                    type="text" 
+                    id="newProvice"
+                    name="newProvice"
+                    required
+                    defaultValue={userData?.address?.province} 
+                    className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                  />
+                  <input 
+                    type="text" 
+                    id="newRegion"
+                    name="newRegion"
+                    required
+                    defaultValue={userData?.address?.region} 
+                    className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                  />
+                  <input 
+                    type="text" 
+                    id="newCity"
+                    name="newCity"
+                    required
+                    defaultValue={userData?.address?.city} 
+                    className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                  />
+                </div>
+                <div className="flex justify-end space-x-4 mb-2 w-full">
+                  <button
+                    type="Submit"
+                    className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
+                  >
+                    Save
+                  </button>
+                </div>
+                
+              </form>
+            </div>
             <div id="place-autocomplete-container" ref={autocompleteContainerRef} />
             
             <div className="bg-white p-10 rounded shadow-md">
@@ -432,6 +576,7 @@ const MyProfile = () => {
                           type="text"
                           id="newName"
                           name="newName"
+                          required
                           defaultValue={userData?.name}
                           className="input input-bordered bg-gray-200 text-gray-800"
                         />
@@ -447,6 +592,7 @@ const MyProfile = () => {
                           type="text"
                           id="newUsername"
                           name="newUsername"
+                          required
                           defaultValue={userData?.userName}
                           className="input input-bordered bg-gray-200 text-gray-800"
                         />
@@ -462,6 +608,7 @@ const MyProfile = () => {
                           type="email"
                           id="newEmail"
                           name="newEmail"
+                          required
                           defaultValue={userData?.email}
                           className="input input-bordered bg-gray-200 text-gray-800"
                         />
@@ -478,25 +625,77 @@ const MyProfile = () => {
                           id="newPhoneNumber"
                           pattern="(\+63|0)[1-9][0-9]{9}"
                           name="newPhoneNumber"
+                          required
                           defaultValue={userData?.phoneNumber}
                           className="input input-bordered bg-gray-200 text-gray-800"
                         />
                       </div>
-                      <div className="flex flex-col">
+                      {/* <div className="flex flex-col">
                         <label
                           htmlFor="newLocation"
                           className="text-sm font-medium text-gray-600 text-left"
                         >
-                          Location
+                          Full Address
                         </label>
                         <input
                           type="text"
                           id="newLocation"
                           name="newLocation"
-                          defaultValue={userData?.address}
+                          defaultValue={userData?.address?.fulladdress}
                           className="input input-bordered bg-gray-200 text-gray-800"
                         />
+                      </div> */}
+                      {/* <div className="flex flex-col">
+                        <textarea 
+                          value={userData?.address} 
+                          className="input input-bordered bg-gray-200 text-gray-800"
+                          rows="3"
+                          placeholder="Address"
+                        />
+                      </div> */}
+                      {/* <div className="flex space-x-4 mb-2">
+                        <label
+                          htmlFor="newProvice"
+                          className="w-full text-sm font-medium text-gray-600 text-left"
+                        >
+                          Province
+                        </label>
+                        <label
+                          htmlFor="newBarangay"
+                          className="w-full text-sm font-medium text-gray-600 text-left"
+                        >
+                          Barangay
+                        </label>
+                        <label
+                          htmlFor="newCity"
+                          className="w-full text-sm font-medium text-gray-600 text-left"
+                        >
+                          City
+                        </label>
                       </div>
+                      <div className="flex space-x-4 mb-2">
+                        <input 
+                          type="text" 
+                          id="newProvice"
+                          value={userData?.address?.province} 
+                          className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                          placeholder="Province"
+                        />
+                        <input 
+                          type="text" 
+                          id="newBarangay"
+                          value={userData?.address?.region} 
+                          className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                          placeholder="Barangay"
+                        />
+                        <input 
+                          type="text" 
+                          id="newCity"
+                          value={userData?.address?.city} 
+                          className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                          placeholder="City"
+                        /> 
+                      </div>*/}
                       <div className="flex flex-col">
                         <label
                           htmlFor="newBio"
@@ -508,6 +707,7 @@ const MyProfile = () => {
                           type="textarea"
                           id="newBio"
                           name="newBio"
+                          required
                           defaultValue={userData?.bio}
                           className="input input-bordered bg-gray-200 text-gray-800"
                         />
@@ -578,7 +778,7 @@ const MyProfile = () => {
                           Location:
                         </td>
                         <td className="text-left px-8 pb-2">
-                          {userData?.address}
+                          {userData?.address?.fulladdress}
                         </td>
                       </tr>
                       <tr>
