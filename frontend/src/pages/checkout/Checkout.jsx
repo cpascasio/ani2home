@@ -3,12 +3,15 @@ import Footer from '../../components/Footer.jsx'
 import LocationIcon from '../../assets/location.png' // Path to the location icon
 import LogisticsIcon from '../../assets/logistics.png'; // Path to the logistics image
 import Billing from '../../assets/billing.png';
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useCallback, useRef  } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 
 import { useUser } from "../../context/UserContext.jsx";
 import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
+
+import axios from "axios";
+import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -34,6 +37,15 @@ const Checkout = () => {
   const [originalCountryCode, setOriginalCountryCode] = useState(countryCode);
   const [originalPhoneNumber, setOriginalPhoneNumber] = useState(phoneNumber);
   const [originalAddress, setOriginalAddress] = useState(address);
+
+  const map = useMap();
+
+  const [markerPosition, setMarkerPosition] = useState(null);
+  const [addressDetails, setAddressDetails] = useState({});
+
+  const autocompleteContainerRef = useRef(null);
+
+  const placesLib = useMapsLibrary('places');
 
   useEffect(() => {
     console.log('Quantity:', quantity);
@@ -102,6 +114,132 @@ useEffect(() => {
     setIsDropdownOpen(false);
   };
 
+  const handleMapClick = async (event) => {
+
+    const latitude = event.detail.latLng.lat;
+    const longitude = event.detail.latLng.lng;
+    setMarkerPosition({ lat: latitude, lng: longitude });
+    console.log("marker clicked:", event.detail.latLng);
+    event.map.panTo(event.detail.latLng);
+    console.log("marker clicked lat:", event.detail.latLng.lat);
+    console.log("marker clicked lng:", event.detail.latLng.lng);
+    try {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+      );
+
+      if (response.data.results.length > 0) {
+        const result = response.data.results[0];
+  
+        const fulladdress = result.formatted_address;
+        const addressComponents = result.address_components;
+  
+        let city = '';
+        let province = '';
+        let region = '';
+        let country = '';
+  
+        for (const component of addressComponents) {
+          if (component.types.includes('locality')) {
+            city = component.long_name;
+          } else if (component.types.includes('administrative_area_level_1')) {
+            province = component.long_name;
+          } else if (component.types.includes('administrative_area_level_2')) {
+            region = component.long_name;
+          } else if (component.types.includes('country')) {
+            country = component.long_name;
+          }
+        }
+  
+        document.getElementById('newLocation').value = fulladdress;
+        document.getElementById('newProvice').value = province;
+        document.getElementById('newRegion').value = region;
+        document.getElementById('newCity').value = city;
+  
+        setAddressDetails({
+          fulladdress,
+          city,
+          province,
+          region,
+          country,
+          lng: longitude,
+          lat: latitude,
+        });
+      }
+
+    } catch (error) {
+      console.error('Error fetching address details:', error);
+    }
+  };
+
+  const handleClick = useCallback((ev) => {
+    if (!ev) return;
+    console.log("marker clicked:", ev.detail.latLng);
+    const lat = ev.detail.latLng.lat;
+    const lng = ev.detail.latLng.lng;
+    setMarkerPosition({ lat, lng });
+    ev.map.panTo(ev.detail.latLng);
+  }, []);
+
+  useEffect(() => {
+    if (!placesLib || !map) return;
+
+    const svc = new placesLib.PlacesService(map);
+    // ...
+  }, [placesLib, map]);
+
+  useEffect(() => {
+    if (!map) return;
+
+    // here you can interact with the imperative maps API
+  }, [map]);
+
+  const handleSubmitAddress = async (event) => {
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    // Collect form data
+    const formData = new FormData(event.target);
+
+    // Create an object to hold form values
+    const data = {};
+    data.address = {};
+
+    // Check if fields have been changed
+    if (formData.get("newLocation") !== userData?.address?.fulladdress) {
+      data.address.fulladdress = formData.get("newLocation") || "";
+    }
+    if (formData.get("newProvice") !== userData?.address?.province) {
+      data.address.province = formData.get("newProvice") || "";
+    }
+    if (formData.get("newRegion") !== userData?.address?.region) {
+      data.address.region = formData.get("newRegion") || "";
+    }
+    if (formData.get("newCity") !== userData?.address?.city) {
+      data.address.city = formData.get("newCity") || "";
+    }
+
+    // Get the token from localStorage or any other source
+    const token = user?.token; // Replace with your actual token retrieval method
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/users/edit-user/${user?.userId}`, // Include userId in the URL
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+          },
+        }
+      );
+      console.log("Success:", response.data);
+      // Handle success (e.g., show a success message or redirect)
+    } catch (error) {
+      console.error("Error:", error.response?.data || error.message);
+      // Handle error (e.g., show an error message)
+    }
+  };
+
 
   // Calculate the total price
   const totalPrice = cart.reduce((acc, product) => acc + (product.unitPrice * quantity), 0);
@@ -134,53 +272,119 @@ useEffect(() => {
               <img src={LocationIcon} alt="Location" className="w-[20px] h-[20px] mr-2" />
               <div className="font-inter text-[15px] text-[#737373]">Delivery Address</div>
             </div>
+            <Map
+              mapId="profileMap"
+              defaultZoom={13}
+              defaultCenter={{ lat: 14.3879953, lng: 120.9879423 }}
+              onClick={handleMapClick}
+              onCameraChanged={(ev) => {
+                console.log(
+                  "camera changed:",
+                  ev.detail.center,
+                  "zoom:",
+                  ev.detail.zoom
+                );
+              }}
+              options={{
+                gestureHandling: "greedy",
+                zoomControl: true,
+                fullscreenControl: false,
+                mapTypeControl: false,
+                scaleControl: true,
+                streetViewControl: false,
+                rotateControl: true,
+              }}
+              style={{ width: "100%", height: "400px" }}
+            >
+              <Marker position={markerPosition} />
+            </Map>
             {editing ? (
-              <div className="mt-2">
-                <div className="flex items-center mb-2">
-                  <input 
-                    type="text" 
-                    value={fullName} 
-                    onChange={handleFullNameChange} 
-                    className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2 mr-2" 
-                    placeholder="Full Name"
-                  />
-                  <select 
-                    value={countryCode} 
-                    onChange={handleCountryCodeChange} 
-                    className="font-inter text-[15px] text-[#737373] border border-gray-300 p-2 mr-2"
-                  >
-                    <option value="+63">+63</option>
-                    <option value="+1">+1</option>
-                    <option value="+44">+44</option>
-                    {/* Add more country codes as needed */}
-                  </select>
-                  <input 
-                    type="text" 
-                    value={phoneNumber} 
-                    onChange={handlePhoneNumberChange} 
-                    className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2" 
-                    placeholder="Phone Number"
-                  />
-                </div>
-                <textarea 
-                  value={address} 
-                  onChange={handleAddressChange} 
-                  className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2 resize-none"
-                  rows="3"
-                  placeholder="Address"
-                />
-                <button 
-                  onClick={handleEditToggle}
-                  className="mt-2 px-4 py-2 bg-[#67B045] text-white font-inter text-[15px] border border-gray-300 hover:bg-[#55a03d]"
-                >
-                  Save
-                </button>
-                <button 
-                  onClick={handleCancelEdit}
-                  className="ml-4 px-4 py-2 bg-gray-200 text-[#737373] font-inter text-[15px] border border-gray-300 hover:bg-gray-300"
-                >
-                  Cancel
-                </button>
+
+              <div className="bg-white p-5 mb-5">
+                <h2 className="text-lg text-left font-bold text-gray-600">
+                  Edit Location
+                </h2>
+                <form onSubmit={handleSubmitAddress} className="space-y-4">
+                <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newLocation"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Full Address
+                    </label>
+                  </div>
+                  <div className="flex flex-col my-2">
+                    <input
+                      type="text"
+                      id="newLocation"
+                      name="newLocation"
+                      defaultValue={userData?.address?.fulladdress}
+                      required
+                      className="input input-bordered bg-gray-200 text-gray-800"
+                    />
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newProvice"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Province
+                    </label>
+                    <label
+                      htmlFor="newRegion"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Region
+                    </label>
+                    <label
+                      htmlFor="newCity"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      City
+                    </label>
+                  </div>
+                  <div className="flex space-x-4 mb-2">
+                    <input 
+                      type="text" 
+                      id="newProvice"
+                      name="newProvice"
+                      required
+                      defaultValue={userData?.address?.province} 
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                    <input 
+                      type="text" 
+                      id="newRegion"
+                      name="newRegion"
+                      required
+                      defaultValue={userData?.address?.region} 
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                    <input 
+                      type="text" 
+                      id="newCity"
+                      name="newCity"
+                      required
+                      defaultValue={userData?.address?.city} 
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-4 mb-2 w-full">
+                    <button 
+                      onClick={handleCancelEdit}
+                      className="btn btn-sm bg-gray-200 text-[#737373] rounded border border-gray-300 hover:bg-gray-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="Submit"
+                      className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  
+                </form>
               </div>
             ) : (
               <div 
