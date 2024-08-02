@@ -22,8 +22,8 @@ const Checkout = () => {
   const [refetch, setRefetch] = useState(false);
   const { data: userFetch } = useDynamicFetch(`/api/users/${user?.userId}`, refetch);
 
-  const [editing, setEditing] = useState(true);
-  const [fullName, setFullName] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [fullName, setFullName] = useState('asd');
   const [countryCode, setCountryCode] = useState('+63');
   const [phoneNumber, setPhoneNumber] = useState('987654321');
   const [address, setAddress] = useState('123 Main St, City, Country');
@@ -52,7 +52,7 @@ useEffect(() => {
     setFullName(userData.name || '');
     setCountryCode(userData.phoneNumber ? userData.phoneNumber.slice(0, 3) : '');
     setPhoneNumber(userData.phoneNumber ? userData.phoneNumber.slice(3) : '');
-    setAddress(userData.address || '');
+    setAddress(userData?.address?.fulladdress || '');
   }
 }, [userData]);
 
