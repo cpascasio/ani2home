@@ -170,7 +170,7 @@ const InventoryTable = () => {
         <tbody>
           {displayedData.map((item, index) => (
             <tr key={index} className="hover:bg-gray-50">
-              <td className="p-2 border-b break-all">{item.productId}</td>
+              <td className="p-2 border-b break-all">{item.id}</td>
               <td className="p-2 border-b break-all">{item.photo}</td>
               <td className="p-2 border-b break-all">{item.productName}</td>
               <td className="p-2 border-b break-all">{item.category}</td>
