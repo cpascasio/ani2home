@@ -184,7 +184,7 @@ useEffect(() => {
               </div>
             ) : (
               <div 
-                className="mt-2 p-2 cursor-pointer transition-all duration-300 hover:bg-gray-100"
+                className="mt-2 p-2 cursor-pointer hover:bg-gray-100"
                 onClick={handleEditToggle}
               >
                 <div className="font-inter text-[15px] text-[#737373]">{fullName} | {countryCode} {phoneNumber}</div>
