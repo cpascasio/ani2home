@@ -271,7 +271,7 @@ const MyProfile = () => {
             <h1 className="text-4xl font-bold font-inter mb-0">
               {userData.name}
             </h1>
-            <div className="italic mb-4 font-inter">{userData.address}</div>
+            <div className="italic mb-4 font-inter">{userData?.address?.fulladdress}</div>
             <div className="mb-6 text-justify font-inter">
               {" "}
               {/*CHARACTERS MAXIMUM: 439 */}
@@ -511,7 +511,7 @@ const MyProfile = () => {
                           type="text"
                           id="newLocation"
                           name="newLocation"
-                          defaultValue={userData?.address}
+                          defaultValue={userData?.address?.fulladdress}
                           className="input input-bordered bg-gray-200 text-gray-800"
                         />
                       </div>
@@ -596,7 +596,7 @@ const MyProfile = () => {
                           Location:
                         </td>
                         <td className="text-left px-8 pb-2">
-                          {userData?.address}
+                          {userData?.address?.fulladdress}
                         </td>
                       </tr>
                       <tr>
