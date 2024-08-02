@@ -35,6 +35,5 @@ module.exports = productSchema;
 // price per kilo or per piece
 // Stock
 
-
-// pictures
+// add picture that displays the pictures already added to be 
 
