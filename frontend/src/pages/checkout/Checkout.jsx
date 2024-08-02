@@ -7,7 +7,8 @@ import { useState, useContext, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 
-
+import { useUser } from "../../context/UserContext.jsx";
+import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -15,8 +16,14 @@ const Checkout = () => {
   const location = useLocation();
   const { quantity } = location.state || {};
 
-  const [editing, setEditing] = useState(false);
-  const [fullName, setFullName] = useState('Juan Dela Cruz');
+  const userLog = localStorage.getItem('user');
+  const { user } = useUser();
+  const [userData, setUserData] = useState({});
+  const [refetch, setRefetch] = useState(false);
+  const { data: userFetch } = useDynamicFetch(`/api/users/${user?.userId}`, refetch);
+
+  const [editing, setEditing] = useState(true);
+  const [fullName, setFullName] = useState('');
   const [countryCode, setCountryCode] = useState('+63');
   const [phoneNumber, setPhoneNumber] = useState('987654321');
   const [address, setAddress] = useState('123 Main St, City, Country');
@@ -33,7 +40,21 @@ const Checkout = () => {
 
 }, [quantity]);
 
+useEffect(() => {
+  if (userFetch != null) {
+      setUserData(userFetch.data);
+      console.log("Fetched Data:", userFetch.data);
+  }
+}, [userFetch]);
 
+useEffect(() => {
+  if (userData != null) {
+    setFullName(userData.name || '');
+    setCountryCode(userData.phoneNumber ? userData.phoneNumber.slice(0, 3) : '');
+    setPhoneNumber(userData.phoneNumber ? userData.phoneNumber.slice(3) : '');
+    setAddress(userData.address || '');
+  }
+}, [userData]);
 
   
 
