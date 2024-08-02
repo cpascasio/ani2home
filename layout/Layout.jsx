@@ -4,10 +4,6 @@ import { UserProvider } from "../src/context/UserContext";
 import { CartProvider } from "../src/context/CartContext";
 import PageRouter from "../src/components/PageRouter";
 import { BrowserRouter as Router } from "react-router-dom";
-// import header
-import Header from '../src/components/Header';
-// import footer
-import Footer from '../src/components/Footer';
 
 
 const Layout = () => {
@@ -15,9 +11,7 @@ const Layout = () => {
     <UserProvider>
     <CartProvider>
     <Router>
-    <Header/>
-      <PageRouter />
-    <Footer/>
+        <PageRouter />
     </Router>
     </CartProvider>
     </UserProvider>

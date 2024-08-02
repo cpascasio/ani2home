@@ -1,80 +1,46 @@
 import { useEffect, useState } from "react";
 
 const useFetch = (url) => {
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [data, setData] = useState(null);
 
     useEffect(() => {
+        let isMounted = true; // Track if the component is mounted
+
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const response = await fetch(
-                    `http://localhost:3000${url}`
-                );
+                setError(false); // Reset error state before fetching
+                const response = await fetch(`http://localhost:3000${url}`);
                 const consume = await response.json();
                 if (!response.ok) {
-                    setLoading(false);
-                    setError(true);
-                    return;
-                }
-                setLoading(false);
-                setData(consume);
-            } catch (e) {
-                setLoading(false);
-                setError(true);
-            }
-        };
-        fetchData();
-    }, [url]);
-    return { loading, error, data };
-};
-
-
-
-
-
-
-
-
-    /*
-    const useFetch = (url) => {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);
-    const [data, setData] = useState(null);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const response = await fetch(
-                    `${import.meta.env.VITE_BASE_URL}${url}`,
-                    {
-                        method: "POST",
-                        body: JSON.stringify(data),
+                    if (isMounted) {
+                        setLoading(false);
+                        setError(true);
                     }
-                );
-                const consume = await response.json();
-                if (!response.ok) {
-                    setLoading(false);
-                    setError(true);
                     return;
                 }
-                setLoading(false);
-                setData(consume);
+                if (isMounted) {
+                    setLoading(false);
+                    setData(consume);
+                }
             } catch (e) {
-                setLoading(false);
-                setError(true);
+                if (isMounted) {
+                    setLoading(false);
+                    setError(true);
+                }
             }
         };
+
         fetchData();
-        
+
+        return () => {
+            isMounted = false; // Cleanup function to set isMounted to false
+        };
     }, [url]);
+
     return { loading, error, data };
 };
-
-
-    */
-
 
 export default useFetch;

@@ -6,36 +6,55 @@ import Billing from '../../assets/billing.png';
 import { useState, useContext, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
+// import useFetch
+import useFetch from '../../../hooks/useFetch';
+// import user contxt
+import { useUser } from '../../context/UserContext.jsx';
+// import axios
+import axios from 'axios';
 
 
 
 const Checkout = () => {
+  const { user } = useUser();
+  const [items, setItems] = useState([]);
+  const { data: itemsFetch } = useFetch(`/api/cart/cart-items/${user?.userId}`);
+  
+
+  useEffect(() => {
+    if (itemsFetch) {
+      setItems(itemsFetch);
+    }
+    console.log("Checkout Items: ", itemsFetch);
+  }
+  , [itemsFetch]);
+
+  useEffect(() => {
+    console.log("Checkout Items Items: ", items); // doesn't fetch the items correctly
+  }
+  , [items]);
+
   const navigate = useNavigate();
   const { cart } = useContext(CartContext);
   const location = useLocation();
-  const { quantity } = location.state || {};
+  const { cartItems = [] } = location.state || {};
 
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState('Juan Dela Cruz');
-  const [countryCode, setCountryCode] = useState('+63');
-  const [phoneNumber, setPhoneNumber] = useState('987654321');
+  const [phoneNumber, setPhoneNumber] = useState('0987654321');
   const [address, setAddress] = useState('123 Main St, City, Country');
+  const [province, setProvince] = useState('Cavite');
+  const [barangay, setBarangay] = useState('Molino III');
+  const [city, setCity] = useState('Bacoor');
   const [note, setNote] = useState(''); // State for the note
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const [originalFullName, setOriginalFullName] = useState(fullName);
-  const [originalCountryCode, setOriginalCountryCode] = useState(countryCode);
   const [originalPhoneNumber, setOriginalPhoneNumber] = useState(phoneNumber);
   const [originalAddress, setOriginalAddress] = useState(address);
-
-  useEffect(() => {
-    console.log('Quantity:', quantity);
-
-}, [quantity]);
-
-
-
-  
+  const [originalProvince, setOriginalProvince] = useState(province);
+  const [originalBarangay, setOriginalBarangay] = useState(barangay);
+  const [originalCity, setOriginalCity] = useState(city);
 
   const handleEditToggle = () => {
     setEditing(!editing);
@@ -45,9 +64,6 @@ const Checkout = () => {
     setFullName(e.target.value);
   };
 
-  const handleCountryCodeChange = (e) => {
-    setCountryCode(e.target.value);
-  };
 
   const handlePhoneNumberChange = (e) => {
     setPhoneNumber(e.target.value);
@@ -57,13 +73,27 @@ const Checkout = () => {
     setAddress(e.target.value);
   };
 
+  const handleProvinceChange = (e) => {
+    setProvince(e.target.value);
+  };
+
+  const handleBarangayChange = (e) => {
+    setBarangay(e.target.value);
+  };
+
+  const handleCityChange = (e) => {
+    setCity(e.target.value);
+  };
+
   const handleCancelEdit = () => {
     setFullName(originalFullName);
-    setCountryCode(originalCountryCode);
     setPhoneNumber(originalPhoneNumber);
     setAddress(originalAddress);
+    setProvince(originalProvince);
+    setBarangay(originalBarangay);
+    setCity(originalCity);
     setEditing(false);
-  };  
+  };
 
   const handleNoteChange = (e) => {
     setNote(e.target.value);
@@ -81,9 +111,20 @@ const Checkout = () => {
     setIsDropdownOpen(false);
   };
 
+  console.log("Items to Checkout: ", items);
+  
+  let totalPrice = 0;
 
-  // Calculate the total price
-  const totalPrice = cart.reduce((acc, product) => acc + (product.unitPrice * quantity), 0);
+  if (items.length > 0) {
+    for (let i = 0; i < items.length; i++) {
+      console.log("Price: ", items[i].product.price); // debug
+      console.log("Quantity : ", items[i].quantity); // debug
+      totalPrice += items[i].product.price * items[i].quantity;
+    }
+  }
+  // const totalPrice = cartItems.reduce((acc, items) => acc + (items.product.price * items.quantity), 0);
+
+  console.log("Total Price : ", totalPrice );
 
   // Function to format numbers with commas
   const formatNumber = (number) => {
@@ -95,8 +136,74 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = () => {
-    navigate('/confirmation');
+
+        const order = {
+          userId: user?.userId,
+          sellerId: "store345", // update card model to have a sellerId ty
+          shippingFee: 50,
+          totalPrice,
+          status: "In Process",
+          deliveryAddress: {
+            fullName,
+            province,
+            barangay,
+            city,
+            address,
+            phoneNumber
+          },
+          paymentOption: selectedPaymentOption,
+          paymentRefNo: '1234567890',
+          items: items.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity
+          }))
+        };
+
+
+
+        // Extract order details from items
+      const orderDetails = items.map(item => ({
+        orderId: order.orderId,
+        productId: item.productId,
+        quantity: item.quantity
+      }));
+
+        // navigate('/confirmation', { state: { order: order}});
+        // console.log('handlePlaceOrder', items);
+
+        // add to firebase to order db
+
+       
+
+
+        // Conditionally add the note property if it's not an empty string
+  // Conditionally add the note property if it's not an empty string
+if (note.trim() !== '') {
+  order.note = note;
+}
+
+console.log('Order:', order);
+
+
+
+
+// First, create the order
+axios.post('http://localhost:3000/api/orders/place-order', order)
+  .then((response) => {
+    console.log('Order placed:', response.data);
+    
+     // Extract the orderId from the response if needed
+     const orderId = String(response.data.orderId);
+     console.log("OrderID: ", orderId);
+
+  })
+  .catch((error) => {
+    console.error('Error placing order or order details:', error);
+  });
   };
+
+
+
 
  
 
@@ -116,29 +223,49 @@ const Checkout = () => {
             {editing ? (
               <div className="mt-2">
                 <div className="flex items-center mb-2">
-                  <input 
+                <input 
                     type="text" 
                     value={fullName} 
                     onChange={handleFullNameChange} 
                     className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2 mr-2" 
                     placeholder="Full Name"
                   />
-                  <select 
-                    value={countryCode} 
-                    onChange={handleCountryCodeChange} 
-                    className="font-inter text-[15px] text-[#737373] border border-gray-300 p-2 mr-2"
-                  >
-                    <option value="+63">+63</option>
-                    <option value="+1">+1</option>
-                    <option value="+44">+44</option>
-                    {/* Add more country codes as needed */}
-                  </select>
                   <input 
                     type="text" 
                     value={phoneNumber} 
                     onChange={handlePhoneNumberChange} 
                     className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2" 
                     placeholder="Phone Number"
+                  />
+                </div>
+                <textarea 
+                  value={address} 
+                  onChange={handleAddressChange} 
+                  className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2 resize-none"
+                  rows="3"
+                  placeholder="Address"
+                />
+                <div className="flex space-x-4 mb-2">
+                  <input 
+                    type="text" 
+                    value={province} 
+                    onChange={handleProvinceChange} 
+                    className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2" 
+                    placeholder="Province"
+                  />
+                  <input 
+                    type="text" 
+                    value={barangay} 
+                    onChange={handleBarangayChange} 
+                    className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2" 
+                    placeholder="Barangay"
+                  />
+                  <input 
+                    type="text" 
+                    value={city} 
+                    onChange={handleCityChange} 
+                    className="w-full font-inter text-[15px] text-[#737373] border border-gray-300 p-2" 
+                    placeholder="City"
                   />
                 </div>
                 <textarea 
@@ -166,16 +293,18 @@ const Checkout = () => {
                 className="mt-2 p-2 cursor-pointer transition-all duration-300 hover:bg-gray-100"
                 onClick={handleEditToggle}
               >
-                <div className="font-inter text-[15px] text-[#737373]">{fullName} | {countryCode} {phoneNumber}</div>
+                <div className="font-inter text-[15px] text-[#737373]">{fullName} | {phoneNumber}</div>
                 <div className="font-inter text-[15px] text-[#737373]">{address}</div>
               </div>
             )}
           </div>
         </div>
         <div className="mt-1 flex flex-col items-center">
-          {cart.map((product, index) => {
+        {items.map((item, index) => {
+            const { product, quantity } = item;
             const totalProductPrice = product.price * quantity;
             return (
+              
               <div key={index} className="bg-white w-[848px] h-[91px] flex items-center p-4 mb-1">
                 <img src={product.pictures[0]} alt={product.productName} className="w-[69px] h-[63px]" />
                 <div className="ml-4 flex flex-col justify-between">
@@ -215,7 +344,7 @@ const Checkout = () => {
           </div>
           <div className="bg-white w-[848px] h-[46px] mt-1 flex items-center justify-between p-4">
             <div className="font-inter text-[15px] text-[#737373]">
-              Order Total ({cart.length} Items):
+              Order Total ({cartItems.length} Items):
             </div>
             <div className="font-inter text-[15px] text-[#E11919] mr-10">
               ₱{formatNumber(totalPrice.toFixed(2))}
