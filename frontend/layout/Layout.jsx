@@ -1,4 +1,3 @@
-// Layout.js
 import React from "react";
 import { UserProvider } from "../src/context/UserContext";
 import { CartProvider } from "../src/context/CartContext";
