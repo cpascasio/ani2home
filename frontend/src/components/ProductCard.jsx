@@ -40,14 +40,41 @@ const ProductCard = (product) => {
     navigate('/cart');
   };
 
+  const handleImageClick = () => {
+    // Navigate to itemPage with product ID or other identifier
+    navigate('/itemPage');
+  };
+
   const yellowStars = generateStars(product.rating);
 
   return (
+    // <div className="card bg-base-100 w-96 shadow-xl">
+    //   <figure className="px-10 pt-10">
+    //     <img
+    //       src={product.pictures[0]}
+    //       alt={product.productName}
+    //       className="rounded-xl"
+    //     />
+    //   </figure>
+    //   <div className="card-body items-center text-center">
+    //     <h2 className="card-title">{product.productName}</h2>
+    //     <p>{product.productDescription}</p>
+    //     <p>Php {product.price}</p>
+    //     <p>Rating: {product.rating}</p>
+    //     {/* <p>Date: {product.productDate}</p> */}
+    //     <div className="card-actions">
+    //     <button className="btn btn-primary" onClick={handleAddToCart}>
+    //         Add To Cart
+    //       </button>
+    //     </div>
+    //   </div>
+    // </div>
     <div className="bg-white flex flex-col border border-gray-300 rounded-lg overflow-hidden shadow-md w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto">
       <img
         src={product.pictures[0]}
         alt={product.productName}
-        className="w-full h-[178px] object-cover"
+        className="w-full h-[178px] object-cover cursor-pointer"
+        onClick={handleImageClick}
       />
       <div className="flex flex-col flex-grow p-3">
         <h2 className="text-left text-sm font-bold text-gray-900 truncate">{product.productName}</h2>
