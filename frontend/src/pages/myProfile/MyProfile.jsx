@@ -10,7 +10,7 @@ const MyProfile = () => {
 
     const  userLog = localStorage.getItem('user');
 
-    const {user} = useUser();
+    const {user, dispatch, logout} = useUser();
 
     const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
 
@@ -68,7 +68,9 @@ const MyProfile = () => {
     }, [userData]);
 
 
-
+    const handleLogout = () => {
+        logout();
+      };
 
 
     //TODO:
@@ -606,7 +608,7 @@ const MyProfile = () => {
                                                     </button>
                                                     <button type="button"
                                                             className="btn btn-sm bg-blue-500 rounded text-white hover:bg-red-600 border-none w-auto h-auto"
-                                                            onClick={() => console.log('Delete logic here')}>Log Out
+                                                            onClick={() => dispatch({ type: "LOGOUT" })}>Log Out
                                                     </button>
                                                 </div>
                                             </div>
