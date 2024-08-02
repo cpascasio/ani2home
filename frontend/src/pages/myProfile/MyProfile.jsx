@@ -388,55 +388,56 @@ const MyProfile = () => {
                                 </dialog>
                             </div>
 
-                            <div className="flex flex-col lg:flex-row lg:space-x-8 p-4"> {/* Container for flex with responsive direction */}
-                                {/* Right side with profile pic */}
-                                <div className="w-full lg:w-1/4 flex flex-col items-center justify-center mb-4 lg:mb-0">
-                                    <img 
-                                        src={userData.userProfilePic} 
-                                        alt="Profile Picture" 
-                                        className="w-28 h-28 lg:w-44 lg:h-44 rounded-full object-cover"
-                                    />
-                                </div>
-
-
-                                {/* Table for forms */}
-                                <div className="w-full lg:w-3/4">
-                                    <table className="table-auto w-full">
-                                        <tbody>
-                                            <tr>
-                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium whitespace-nowrap">Name:</td>
-                                                <td className="text-left px-4 pb-2">{userData?.name}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium whitespace-nowrap">Username:</td>
-                                                <td className="text-left px-4 pb-2">{userData?.userName}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium whitespace-nowrap">Email:</td>
-                                                <td className="text-left px-4 pb-2">{userData?.email}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium whitespace-nowrap">Phone Number:</td>
-                                                <td className="text-left px-4 pb-2">{userData?.phoneNumber}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium whitespace-nowrap">Location:</td>
-                                                <td className="text-left px-4 pb-2">{userData?.address}</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="text-left text-gray-500 pl-4 pb-2 font-medium align-top whitespace-nowrap">Bio:</td>
-                                                <td className="text-left px-4 pb-2">
-                                                    <div className="bio-content max-h-40 md:max-h-none overflow-auto md:overflow-visible">
-                                                        {userData?.bio}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                            <div className="flex flex-col lg:flex-row lg:space-x-8 p-4 px-0">
+                            {/* Right side with profile pic */}
+                            <div className="w-full lg:w-1/4 flex flex-col items-center justify-center mb-4 lg:mb-0">
+                                <img 
+                                    src={userData.userProfilePic} 
+                                    alt="Profile Picture" 
+                                    className="w-28 h-28 lg:w-44 lg:h-44 rounded-full object-cover"
+                                />
                             </div>
 
-
+                            {/* Table for forms */}
+                            <div className="w-full lg:w-3/4 overflow-x-auto">
+                                <div className="inline-block min-w-full align-middle">
+                                    <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
+                                        <table className="table-auto min-w-full divide-y divide-gray-200">
+                                            <tbody>
+                                                <tr>
+                                                    <td className="text-left text-gray-500 pl-2 md:pl-4 pb-2 font-medium whitespace-nowrap">Name:</td>
+                                                    <td className="text-left px-2 md:px-4 pb-2 break-words">{userData?.name}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="text-left text-gray-500 pl-2 md:pl-4 pb-2 font-medium whitespace-nowrap">Username:</td>
+                                                    <td className="text-left px-2 md:px-4 pb-2 break-words">{userData?.userName}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="text-left text-gray-500 pl-2 md:pl-4 pb-2 font-medium whitespace-nowrap">Email:</td>
+                                                    <td className="text-left px-2 md:px-4 pb-2 break-words">{userData?.email}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="text-left text-gray-500 pl-2 md:pl-4 pb-2 font-medium whitespace-nowrap">Phone Number:</td>
+                                                    <td className="text-left px-2 md:px-4 pb-2 break-words">{userData?.phoneNumber}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="text-left text-gray-500 pl-2 md:pl-4 pb-2 font-medium whitespace-nowrap">Location:</td>
+                                                    <td className="text-left px-2 md:px-4 pb-2 break-words">{userData?.address}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="text-left text-gray-500 pl-2 md:pl-4 pb-2 font-medium align-top whitespace-nowrap">Bio:</td>
+                                                    <td className="text-left px-2 md:px-4 pb-2">
+                                                        <div className="bio-content max-h-40 overflow-auto">
+                                                            {userData?.bio}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                             {/* ------ Account Settings Section ------  */}
                             <div className="w-1/4 mt-8"> 
