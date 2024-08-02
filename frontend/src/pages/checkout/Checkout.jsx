@@ -183,9 +183,9 @@ const Checkout = () => {
                   <div className="font-inter text-base text-[#737373] text-left line-clamp-2" style={{ maxWidth: '60%' }}>{product.description}</div>
                 </div>
                 <div className="lg:mr-24 mr-7 font-inter text-lg text-[#737373]">x {quantity}</div>
-                <div className="ml-auto flex flex-col items-center justify-center mx-8 ">
-                  <div className="font-inter text-lg text-[#737373] mx-2">Price</div>
-                  <div className="font-inter text-base text-[#E11919]">₱{formatNumber(totalProductPrice.toFixed(2))}</div>
+                <div className="ml-auto flex flex-col items-center justify-center mx-10">
+                  <div className="font-inter text-[17px] text-[#737373] mx-2">Price</div>
+                  <div className="font-inter text-[15px] text-[#E11919]">₱{formatNumber(totalProductPrice.toFixed(2))}</div>
                 </div>
               </div>
             );
@@ -193,9 +193,9 @@ const Checkout = () => {
           <div className="bg-[#D5FAFF] w-full max-w-full h-[119px] mt-1 flex flex-wrap items-start p-4">
             <img src={LogisticsIcon} alt="Logistics" className="w-[36px] h-[23px]" />
             <div className="ml-4 flex flex-col justify-between">
-              <div className="font-inter text-[15px] text-black mb-0.5 mt-[-3px]">Shipping Details</div>
-              <div className="font-inter text-[15px] text-black">Standard Local</div>
-              <div className="font-inter text-[15px] text-black">SPX Express</div>
+              <div className="font-inter text-[15px] text-black ml-[-70px] mb-0.5 mt-[-3px]">Shipping Details</div>
+              <div className="font-inter text-[15px] text-black ml-[-80px]">Standard Local</div>
+              <div className="font-inter text-[15px] text-black ml-[-100px]">SPX Express</div>
               <div className="font-inter text-[13px] text-black mt-1">Guaranteed to get by 5 - 8 Aug</div>
             </div>
             <div className="ml-auto flex flex-col items-center justify-center mt-5 mx-12">
@@ -220,7 +220,7 @@ const Checkout = () => {
             <div className="font-inter text-[15px] text-[#737373]">
               Order Total ({cart.length} Items):
             </div>
-            <div className="font-inter text-[15px] text-[#E11919] mr-10">
+            <div className="font-inter text-[15px] text-[#E11919] mr-12">
               ₱{formatNumber(totalPrice.toFixed(2))}
             </div>
           </div>
