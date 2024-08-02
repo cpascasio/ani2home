@@ -3,6 +3,9 @@ const cors = require('cors'); // Import CORS module
 const middleware = require('./middleware'); // Import middleware
 const userRouters = require('./controllers/users'); // Import the user routes
 const productRoutes = require('./controllers/products'); // Import the product routes
+const cartRoutes = require('./controllers/cart'); // Import the product routes
+const orderRoutes = require('./controllers/order'); // Import the order routes
+const orderDetailsRoutes = require('./controllers/orderDetails'); // Import the order routes
 
 const app = express();
 
@@ -22,6 +25,15 @@ apiRouter.use('/users', userRouters); // Use the user routes
 
 // product route
 apiRouter.use('/products', productRoutes);
+
+// product route
+apiRouter.use('/cart', cartRoutes);
+
+// product route
+apiRouter.use('/orders', orderRoutes);
+
+// product route
+apiRouter.use('/order-details', orderDetailsRoutes);
 
 // Middleware to parse JSON bodies
 app.use(express.json());

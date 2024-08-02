@@ -1,13 +1,38 @@
 // import useState
 import { useState, useContext } from 'react';
 import { Link, useNavigate} from 'react-router-dom';
-
+// import useEffect
+import { useEffect } from 'react';
+// import useFetch
+import useFetch from '../../hooks/useFetch';
 import StarFilled from '../assets/StarFilled.png'; // path to the star images
 import StarHalfEmpty from '../assets/StarHalfEmpty.png'; // path to the star images
 import Star from '../assets/Star.png'; // path to the star images
-import { CartContext } from '../context/CartContext';
+// import axios
+import axios from 'axios';
+import { useUser } from '../context/UserContext';
 
 const CartItem = ({ product }) => {
+    const { user } = useUser();
+    const [products, setProducts] = useState('');
+    const { data: productsFetch } = useFetch(`/api/products/${product.productId}`);
+  
+
+  useEffect(() => {
+    if (productsFetch) {
+      setProducts(productsFetch);
+    }
+  }
+  , [productsFetch]);
+
+
+  useEffect(() => {
+    console.log("Products: ", products)
+  }
+  , [products]);
+
+    console.log('Product Data: ', product);
+
     // const [quantity, setQuantity] = useState(1);
     const [showModal, setShowModal] = useState(false);
 
@@ -15,7 +40,7 @@ const CartItem = ({ product }) => {
     // const handleDecrease = () => setQuantity(prevQuantity => Math.max(prevQuantity - 1, 1));
 
     const [quantity, setQuantity] = useState(product.quantity || 1);
-  const { updateQuantity } = useContext(CartContext);
+  //const { updateQuantity } = useContext(CartContext);
 
   const handleIncrease = () => {
     const newQuantity = quantity + 1;
@@ -37,14 +62,49 @@ const CartItem = ({ product }) => {
     };
 
     // Calculate total price
-    const totalPrice = product.price * quantity;
+    const totalPrice = products?.price * product.quantity;
+
+    // const handleRemoveFromCart = async () => {
+    //     try {
+    //       // Create Axios DELETE request
+    //       await axios.delete(`http://localhost:3000/api/cart/remove-from-cart`, {
+    //         data: {
+    //           userId: user?.userId,
+    //           productId: product?.id
+    //         }
+    //       });
+    //       console.log('user id: ', userId);
+    //       console.log('Product removed from cart');
+    //     } catch (error) {
+    //       console.error('Error removing from cart:', error);
+    //     }
+    //   };
+
+    const handleRemoveFromCart = async () => {
+        try {
+            const payload = {
+                userId: user?.userId,
+                productId: product?.productId
+            };
+            console.log('Payload:', payload);
+    
+            // Create Axios DELETE request
+            await axios.delete(`http://localhost:3000/api/cart/remove-from-cart`, {
+                data: payload
+            });
+            console.log('Product removed from cart');
+         
+        } catch (error) {
+            console.error('Error removing from cart:', error);
+        }
+    };
 
     return (
         <div className="bg-white w-[1225px] h-[133px] mt-4 flex items-center p-4 relative"> {/* white box */}
-            <img src={product.image} alt="Product" className="w-[100px] h-[100px]" /> {/* product image */}
+            <img src={products.pictures} alt="Product" className="w-[100px] h-[100px]" /> {/* product image */}
             <div className="flex flex-col justify-between ml-4"> {/* container for description and ratings */}
                 <div className="p-2 w-[224px] h-[53px] line-clamp-2 text-[15px] font-inter text-[#737373] text-left"> {/* description text box */}
-                    {product.description}
+                    {products.description}
                 </div>
                 <div className="flex items-center mt-1 ml-1.5"> {/* container for star ratings */}
                     <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
@@ -58,7 +118,7 @@ const CartItem = ({ product }) => {
             <div className="ml-20 flex items-center"> {/* container for unit price, quantity, and total price */}
                 <div className="flex flex-col mr-20"> {/* container for unit price */}
                     <div className="text-[17px] font-inter text-[#737373] mt-[-24px]">Unit Price</div>
-                    <div className="text-[15px] font-inter text-[#E11919] mt-5">₱{product.price.toFixed(2)}</div>
+                    <div className="text-[15px] font-inter text-[#E11919] mt-5">₱{products.price}</div>
                 </div>
                 <div className="flex flex-col items-center mr-20"> {/* container for quantity */}
                     <div className="text-[17px] font-inter text-[#737373] mt-[-24px]">Quantity</div>
@@ -96,7 +156,7 @@ const CartItem = ({ product }) => {
             </div>
             <div className="absolute right-4 top-1/2 transform -translate-y-1/2 mx-10"> {/* Remove text */}
                 <button 
-                    onClick={handleRemoveClick} 
+                    onClick={handleRemoveFromCart} 
                     className="text-[15px] font-inter text-[#737373] underline hover:text-blue-500"
                 >
                     Remove
