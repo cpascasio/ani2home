@@ -427,7 +427,7 @@ const MyProfile = () => {
                                                 <tr>
                                                     <td className="text-left text-gray-500 pl-2 md:pl-4 pb-2 font-medium align-top whitespace-nowrap">Bio:</td>
                                                     <td className="text-left px-2 md:px-4 pb-2">
-                                                        <div className="bio-content max-h-40 overflow-auto">
+                                                        <div className="bio-content overflow-auto md:overflow-visible max-h-[200px] md:max-h-none">
                                                             {userData?.bio}
                                                         </div>
                                                     </td>
