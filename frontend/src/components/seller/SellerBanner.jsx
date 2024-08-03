@@ -1,68 +1,86 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import useFetch from '../../../hooks/useFetch';
+import { useUser } from '../../context/UserContext';
 
 const SellerBanner = () => {
+  const { user } = useUser();
+  const [userData, setUserData] = useState({});
+  const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
+
+  useEffect(() => {
+    if (userFetch) {
+      setUserData(userFetch.data);
+    }
+  }, [userFetch]);
+
   return (
-    <div className="flex w-full h-auto bg-gradient-to-r from-green-900"> {/*banner */}
-      <div className="flex flex-1 pl-[3%] pt-[2%] pb-[2%]"> {/*banner left side */}
-        <div className="flex flex-col items-center text-white"> {/*box for logo and stats*/}
+    <div style={{ backgroundColor: '#e5e7eb'}} className='w-full pt-24'>
+    <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900 pt-4 md:pt-0">
+    <div className="flex flex-col md:flex-row md:pl-[3%] md:pt-[2%] md:pb-[2%] w-full md:w-1/2">
+        <div className="flex flex-col items-center text-white mb-4 md:mb-0">
           <div className="flex justify-center items-center mb-4">
-            <div className="bg-white rounded-full"> {/* White background */}
+            <div className="bg-white rounded-full">
               <img
-                src="../src/assets/MyProfile pic.png"
+                src={userData.userProfilePic || "../src/assets/MyProfile pic.png"}
                 alt="Profile Pic"
-                className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover"
+                className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover"
               />
             </div>
           </div>
-          <div className="mt-[5%]"> {/*stats box */}
-            <div className="flex items-center mb-2"> {/*followers */}
+          <div className="mt-4">
+            <div className="flex items-center mb-2">
               <div className="mr-2">
                 <img src="../src/assets/FollowersIcon.png" alt="Followers" />
               </div>
-              <div className="text-left font-inter">
-                <strong>Followers:</strong> 1,203
+              <div className="text-left font-inter text-sm">
+                <strong>Followers:</strong> {userData.followers || '0'}
               </div>
             </div>
-            <div className="flex items-center mb-2"> {/*ratings */}
+            <div className="flex items-center mb-2">
               <div className="mr-2">
                 <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
               </div>
-              <div className="text-left font-inter">
-                <strong>Rating:</strong> 4.4 (1,304)
+              <div className="text-left font-inter text-sm">
+                <strong>Rating:</strong> {userData.rating || '4.4'} (1,304)
               </div>
             </div>
-            <div className="flex items-center mb-2"> {/*products */}
+            <div className="flex items-center mb-2">
               <div className="mr-2">
                 <img src="../src/assets/ProductsIcon.png" alt="Products" />
               </div>
-              <div className="text-left font-inter">
-                <strong>Products:</strong> 67
+              <div className="text-left font-inter text-sm">
+                <strong>Products:</strong> {userData.products || '0'}
               </div>
             </div>
+            {/* Get Verified Button in Mobile View */}
+            <button className="block md:hidden rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold mb-4 
+              transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
+              Get Verified
+            </button>
           </div>
-        </div> {/*end of box for logo and stats */}
-        <div className="flex flex-col flex-1 pl-[4%] pr-[4%] text-white items-start relative"> {/*Name, Location, Bio, Buttons */}
-          <h1 className="text-4xl font-bold font-inter mb-0">
-            Fernando Lopez
+        </div>
+        <div className="flex flex-col flex-1 pl-0 md:pl-[4%] pr-0 md:pr-[4%] text-white items-start relative">
+          <h1 className="text-2xl md:text-4xl font-bold font-inter mb-2 md:mb-0 pl-5 pr-5">
+            {userData.name || 'Fernando Lopez'}
           </h1>
-          <div className="italic mb-4 font-inter">
-            Dasmarinas, Cavite
+          <div className="italic mb-2 md:mb-4 font-inter text-sm md:text-base pl-5 pr-5">
+            {userData.address || 'Dasmarinas, Cavite'}
           </div>
-          <div className="mb-6 text-justify font-inter"> {/*CHARACTERS MAXIMUM: 439 */}
-            Fernando is the proud owner of Pogi Farms where he passionately practices sustainable agriculture. He cultivates organic produce on his
-            expansive land and welcomes visitors for educational farm tours, promoting community engagement and environmental awareness.
+          <div className="mb-4 md:mb-6 text-justify font-inter text-sm md:text-base pl-5 pr-5">
+            {userData.bio || 'Fernando is the proud owner of Pogi Farms where he passionately practices sustainable agriculture. He cultivates organic produce on his expansive land and welcomes visitors for educational farm tours, promoting community engagement and environmental awareness.'}
           </div>
-          <button className="absolute bottom-0 right-0 rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold mr-7 
-          transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
+          {/* Get Verified Button in Desktop View */}
+          <button className="hidden md:block absolute bottom-0 right-0 rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold mr-4 md:mr-7 
+            transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
             Get Verified
           </button>
-        </div> {/*end of name etc of user profile */}
-      </div> {/*banner left side end*/}
-
-      <div className="flex flex-1 w-full"> {/*banner right side */}
-        {/* should insert cover photo here --> use FarmCover1.jpg */}
-      </div> {/*banner right side end*/}
-    </div> 
+        </div>
+      </div>
+      <div className="flex flex-1 w-full md:w-1/2">
+        <img src="../src/assets/FarmCover1.jpg" alt="Cover Photo" className="w-full h-auto object-cover" />
+      </div>
+    </div>
+    </div>
   );
 };
 

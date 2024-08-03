@@ -227,7 +227,7 @@ const MyProfile = () => {
                                 </a>
                             </li>
                             <li>
-                                <a href="/myShop" className="block text-[16px] text-gray-200 hover:text-blue-300">
+                                <a href="/seller" className="block text-[16px] text-gray-200 hover:text-blue-300">
                                 My Shop
                                 </a>
                             </li>
@@ -247,7 +247,7 @@ const MyProfile = () => {
                             <a href="/myOrders" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4">My Orders</a>
                         </li>
                         <li>
-                            <a href="/myShop" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4">My Shop</a>
+                            <a href="/seller" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4">My Shop</a>
                         </li>
                         </ul>
                     </div>
