@@ -78,7 +78,7 @@ const MyOrders = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full pt-24">
       <Header />
       <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900">
         <div className="flex flex-col md:flex-row md:pl-[3%] md:pt-[2%] md:pb-[2%] p-4 w-full md:w-1/2">
