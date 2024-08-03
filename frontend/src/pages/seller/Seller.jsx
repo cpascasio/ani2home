@@ -3,9 +3,9 @@ import { useUser } from "../../context/UserContext";
 import useFetch from "../../../hooks/useFetch";
 import InventoryTable from "../../components/seller/InventoryTable";
 import Menu from "../../components/seller/Menu";
+import SellerBanner from "../../components/seller/SellerBanner";
 
 
-// this component contains the Seller Dashboard
 const Seller = () => {
 
     const [selectedMenu, setSelectedMenu] = useState('dashboard');
@@ -52,6 +52,7 @@ const Seller = () => {
 
     return (
       <>
+      {user && <SellerBanner />}
       {user ? (
         <div className="flex w-full font-sans">
           <div className="flex-shrink-0 w-48">
