@@ -1,39 +1,43 @@
-import React, { useState } from 'react';
-import './InventoryTable.css';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useUser } from "../../context/UserContext";
+import useFetch from "../../../hooks/useFetch";
 
 const InventoryTable = () => {
+  const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const initialFormData = {
+    productName: '',
+    productDescription: '',
     category: '',
-    item: '',
+    type: '',
+    isKilo: false,
     unit: 'kilo',
     price: '',
     stock: '',
-    photo: ''
-  });
+    pictures: []
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+
+  const { data: fetchProducts } = useFetch("/api/products/");
+  const [products, setProducts] = useState([]);
 
   const itemsPerPage = 10;
 
-  const inventoryData = [
-    { code: 'V01456', photo: '🥦', name: 'Broccoli', group: 'Vegetable', lastPurchase: '03 May 2021', onHand: '10 Kg' },
-    { code: 'V01457', photo: '🍆', name: 'Aubergine', group: 'Vegetable', lastPurchase: '04 May 2021', onHand: '8 Kg' },
-    { code: 'V01458', photo: '🥕', name: 'Carrot', group: 'Vegetable', lastPurchase: '04 May 2021', onHand: '12 Kg' },
-    { code: 'V01459', photo: '🌶️', name: 'Chili', group: 'Vegetable', lastPurchase: '05 May 2021', onHand: '4.5 Kg' },
-    { code: 'V01460', photo: '🍋', name: 'Lemon', group: 'Vegetable', lastPurchase: '03 May 2021', onHand: '1 Kg' },
-    { code: 'M01461', photo: '🍗', name: 'Chicken', group: 'Meat', lastPurchase: '02 May 2021', onHand: '56 P' },
-    { code: 'M01462', photo: '🥩', name: 'Beef Liver', group: 'Meat', lastPurchase: '03 May 2021', onHand: '4 Kg' },
-    { code: 'M01463', photo: '🥩', name: 'Beef', group: 'Meat', lastPurchase: '02 May 2021', onHand: '43 Kg' },
-    { code: 'F01464', photo: '🐟', name: 'Salmon Fish', group: 'Fish', lastPurchase: '06 May 2021', onHand: '23 Kg' },
-    { code: 'F01465', photo: '🍤', name: 'Shrimp', group: 'Fish', lastPurchase: '02 May 2021', onHand: '13 Kg' },
-    // Add more items as needed
-  ];
+  useEffect(() => {
+    if (fetchProducts != null) {
+      setProducts(fetchProducts);
+    }
+  }, [fetchProducts]);
 
-  const filteredData = inventoryData.filter(item =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredData = products.filter(item =>
+    item.productName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -47,135 +51,316 @@ const InventoryTable = () => {
     const { name, value } = e.target;
     setFormData(prevState => ({
       ...prevState,
-      [name]: value
+      [name]: value,
+      isKilo: name === 'unit' ? value === 'kilo' : prevState.isKilo
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    setShowModal(false);
+    const { unit, ...rest } = formData;
+    try {
+      const response = await axios.post("http://localhost:3000/api/products/create-product", rest, {
+        headers: {
+          'Authorization': `Bearer ${user?.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const newProduct = response.data.product;
+      setProducts(prevProducts => [...prevProducts, newProduct]);
+      setFormData(initialFormData);
+      setShowModal(false);
+    } catch (error) {
+      console.error("There was an error!", error);
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    const { unit, productId, ...rest } = formData;
+    try {
+      await axios.put(`http://localhost:3000/api/products/${selectedProduct.productId}`, rest, {
+        headers: {
+          'Authorization': `Bearer ${user?.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      setProducts(products.map(product =>
+        product.productId === selectedProduct.productId ? { ...product, ...rest } : product
+      ));
+      setFormData(initialFormData);
+      setShowEditModal(false);
+    } catch (error) {
+      console.error("There was an error!", error);
+    }
+  };
+
+  const handleEdit = (product) => {
+    setSelectedProduct(product);
+    setFormData(product);
+    setShowEditModal(true);
+  };
+
+  const handleDelete = async (productId) => {
+    try {
+      await axios.delete(`http://localhost:3000/api/products/${productId}`, {
+        headers: {
+          'Authorization': `Bearer ${user?.token}`
+        }
+      });
+      setProducts(products.filter(product => product.productId !== productId));
+    } catch (error) {
+      console.error("There was an error!", error);
+    }
   };
 
   const vegetables = ['Broccoli', 'Aubergine', 'Carrot', 'Chili', 'Lemon'];
   const fruits = ['Apple', 'Banana', 'Orange', 'Strawberry', 'Grapes'];
 
   return (
-    <div className="inventory-table">
-      <div className="header">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button className="add-button" onClick={() => setShowModal(true)}>+ Add Item</button>
+    <div className="p-4 md:p-5 bg-white rounded-lg shadow-lg mt-5 md:mt-10">
+     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5">
+        <div className="flex-grow mr-4">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="p-2 w-full rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent"
+          />
+        </div>
+        <button
+          className="px-4 py-2 bg-[#67b045] text-white rounded-lg hover:bg-green-700"
+          onClick={() => setShowModal(true)}
+        >
+          + Add Item
+        </button>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Item Code</th>
-            <th>Photo</th>
-            <th>Item Name</th>
-            <th>Item Group</th>
-            <th>Last Purchase</th>
-            <th>On Hand</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {displayedData.map((item, index) => (
-            <tr key={index}>
-              <td>{item.code}</td>
-              <td>{item.photo}</td>
-              <td>{item.name}</td>
-              <td>{item.group}</td>
-              <td>{item.lastPurchase}</td>
-              <td>{item.onHand}</td>
-              <td>
-                <button>Edit</button>
-                <button>Delete</button>
-              </td>
+
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr>
+              <th className="p-2 rounded-l-lg border-b text-white bg-green-900">Product Code</th>
+              <th className="p-2 border-b text-white bg-green-900">Photo</th>
+              <th className="p-2 border-b text-white bg-green-900">Product Name</th>
+              <th className="p-2 border-b text-white bg-green-900">Category</th>
+              <th className="p-2 border-b text-white bg-green-900">Type</th>
+              <th className="p-2 border-b text-white bg-green-900">Stock</th>
+              <th className="p-2 rounded-r-lg border-b text-white bg-green-900">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="pagination">
+          </thead>
+          <tbody>
+            {displayedData.map((item, index) => (
+              <tr key={index} className="hover:bg-gray-50">
+                <td className="p-2 border-b break-words">{item.productId}</td>
+                <td className="p-2 border-b break-words">{item.photo}</td>
+                <td className="p-2 border-b break-words">{item.productName}</td>
+                <td className="p-2 border-b break-words">{item.category}</td>
+                <td className="p-2 border-b break-words">{item.type}</td>
+                <td className="p-2 border-b break-words">{item.stock} {item.isKilo ? "kg" : "pcs"}</td>
+                <td className="p-2 border-b break-words">
+                  <button className="px-3 py-1 bg-blue-500 text-white rounded-lg mr-2" onClick={() => handleEdit(item)}>Edit</button>
+                  <button className="px-3 py-1 bg-red-500 text-white rounded-lg" onClick={() => handleDelete(item.productId)}>Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex justify-center mt-5 flex-wrap">
         {Array.from({ length: totalPages }, (_, index) => (
           <button
             key={index}
-            className={currentPage === index + 1 ? 'active' : ''}
+            className={`px-3 py-1 border rounded-lg mx-1 my-1 ${currentPage === index + 1 ? 'bg-green-900 text-white' : 'bg-white text-black'}`}
             onClick={() => handlePageChange(index + 1)}
           >
             {index + 1}
           </button>
         ))}
       </div>
-      
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={() => setShowModal(false)}>&times;</span>
-            <h2>Add New Item</h2>
+      {showModal && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
+          <div className="bg-white p-4 md:p-5 rounded-lg shadow-lg w-11/12 md:w-1/3 relative">
+            <span className="absolute top-2 right-2 text-2xl cursor-pointer" onClick={() => { setShowModal(false); setFormData(initialFormData); }}>&times;</span>
+            <h2 className="text-xl mb-5">Add New Item</h2>
             <form onSubmit={handleSubmit}>
-              <label>
-                Name:
-                <input type="text" name="name" value={formData.name} onChange={handleChange} required />
-              </label>
-              <label>
-                Description:
-                <input type="text" name="description" value={formData.description} onChange={handleChange} required />
-              </label>
-              <label>
-                Category:
-                <select name="category" value={formData.category} onChange={handleChange} required>
-                  <option value="">Select Category</option>
-                  <option value="vegetable">Vegetable</option>
-                  <option value="fruit">Fruit</option>
-                </select>
-              </label>
-              {formData.category && (
-                <label>
-                  Item:
-                  <select name="item" value={formData.item} onChange={handleChange} required>
-                    <option value="">Select Item</option>
-                    {formData.category === 'vegetable' ? vegetables.map((veg, index) => (
-                      <option key={index} value={veg}>{veg}</option>
-                    )) : fruits.map((fruit, index) => (
-                      <option key={index} value={fruit}>{fruit}</option>
-                    ))}
-                  </select>
-                  {formData.item === '' && (
-                    <input type="text" name="item" placeholder="Other" onChange={handleChange} required />
-                  )}
-                </label>
-              )}
-              <label>
-                Unit:
-                <select name="unit" value={formData.unit} onChange={handleChange} required>
+              <div className="mb-4">
+                <label htmlFor="productName" className="block text-gray-700">Product Name</label>
+                <input
+                  type="text"
+                  id="productName"
+                  name="productName"
+                  value={formData.productName}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="productDescription" className="block text-gray-700">Description</label>
+                <textarea
+                  id="productDescription"
+                  name="productDescription"
+                  value={formData.productDescription}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="category" className="block text-gray-700">Category</label>
+                <input
+                  type="text"
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="type" className="block text-gray-700">Type</label>
+                <input
+                  type="text"
+                  id="type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="unit" className="block text-gray-700">Unit</label>
+                <select
+                  id="unit"
+                  name="unit"
+                  value={formData.unit}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                >
                   <option value="kilo">Kilo</option>
-                  <option value="pieces">Pieces</option>
+                  <option value="pcs">Pieces</option>
                 </select>
-              </label>
-              <label>
-                Price per {formData.unit}:
-                <input type="number" name="price" value={formData.price} onChange={handleChange} required />
-              </label>
-              <label>
-                Stock:
-                <input type="number" name="stock" value={formData.stock} onChange={handleChange} required />
-              </label>
-              <label>
-                Photo:
-                <input type="file" name="photo" onChange={handleChange} />
-              </label>
-              {formData.photo && (
-                <img src={URL.createObjectURL(formData.photo)} alt="Item" />
-              )}
-              <button type="submit">Add Item</button>
+              </div>
+              <div className="mb-4">
+                <label htmlFor="price" className="block text-gray-700">Price</label>
+                <input
+                  type="text"
+                  id="price"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="stock" className="block text-gray-700">Stock</label>
+                <input
+                  type="text"
+                  id="stock"
+                  name="stock"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              {/* Add other fields as necessary */}
+              <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Add Product</button>
             </form>
           </div>
         </div>
-      
+      )}
+      {showEditModal && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
+          <div className="bg-white p-4 md:p-5 rounded-lg shadow-lg w-11/12 md:w-1/3 relative">
+            <span className="absolute top-2 right-2 text-2xl cursor-pointer" onClick={() => { setShowEditModal(false); setFormData(initialFormData); }}>&times;</span>
+            <h2 className="text-xl mb-5">Edit Item</h2>
+            <form onSubmit={handleEditSubmit}>
+              <div className="mb-4">
+                <label htmlFor="productName" className="block text-gray-700">Product Name</label>
+                <input
+                  type="text"
+                  id="productName"
+                  name="productName"
+                  value={formData.productName}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="productDescription" className="block text-gray-700">Description</label>
+                <textarea
+                  id="productDescription"
+                  name="productDescription"
+                  value={formData.productDescription}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="category" className="block text-gray-700">Category</label>
+                <input
+                  type="text"
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="type" className="block text-gray-700">Type</label>
+                <input
+                  type="text"
+                  id="type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="unit" className="block text-gray-700">Unit</label>
+                <select
+                  id="unit"
+                  name="unit"
+                  value={formData.unit}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                >
+                  <option value="kilo">Kilo</option>
+                  <option value="pcs">Pieces</option>
+                </select>
+              </div>
+              <div className="mb-4">
+                <label htmlFor="price" className="block text-gray-700">Price</label>
+                <input
+                  type="text"
+                  id="price"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="stock" className="block text-gray-700">Stock</label>
+                <input
+                  type="text"
+                  id="stock"
+                  name="stock"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              {/* Add other fields as necessary */}
+              <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Update Product</button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
