@@ -101,14 +101,14 @@ const Checkout = () => {
  
 
   return (
-    <div className='w-full'>
+    <div  style={{ backgroundColor: '#e5e7eb', minHeight: '100vh' }} className='w-full pt-24'>
       <Header />
-      <div className="px-40 bg-gray-200 min-h-screen"> {/* main container for body */}
+      <div className="px-5 sm:px-10 md:px-20 lg:px-40 bg-gray-200 min-h-screen"> {/* main container for body */}
         <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-10">
           YOUR CART
         </div>
         <div className="flex justify-center mt-6"> {/* container for white box */}
-          <div className="bg-white w-[848px] h-[auto] p-4"> {/* white box with padding */}
+          <div className="bg-white w-full max-w-4xl p-4"> {/* white box with padding */}
             <div className="flex items-center"> {/* container for location icon and text */}
               <img src={LocationIcon} alt="Location" className="w-[20px] h-[20px] mr-2" />
               <div className="font-inter text-[15px] text-[#737373]">Delivery Address</div>
@@ -172,17 +172,17 @@ const Checkout = () => {
             )}
           </div>
         </div>
-        <div className="mt-1 flex flex-col items-center">
+        <div className="mt-1 flex flex-col items-center space-y-1 max-w-4xl mx-auto">
           {cart.map((product, index) => {
             const totalProductPrice = product.price * quantity;
             return (
-              <div key={index} className="bg-white w-[848px] h-[91px] flex items-center p-4 mb-1">
-                <img src={product.pictures[0]} alt={product.productName} className="w-[69px] h-[63px]" />
-                <div className="ml-4 flex flex-col justify-between">
-                  <div className="font-inter font-bold text-[18px] text-[#737373] text-left">{product.productName}</div>
-                  <div className="font-inter text-[15px] text-[#737373] text-left line-clamp-1" style={{ width: '356px', height: '25px' }}>{product.description}</div>
+              <div key={index} className="bg-white w-full max-w-4xl h-24 flex items-center p-4">
+                <img src={product.pictures[0]} alt={product.productName} className="w-16 h-16" />
+                <div className="ml-4 flex flex-col justify-between flex-1">
+                  <div className="font-inter font-bold text-lg text-[#737373] text-left">{product.productName}</div>
+                  <div className="font-inter text-base text-[#737373] text-left line-clamp-2" style={{ maxWidth: '60%' }}>{product.description}</div>
                 </div>
-                <div className="ml-20 font-inter text-[17px] text-[#737373]">x {quantity}</div>
+                <div className="lg:mr-24 mr-7 font-inter text-lg text-[#737373]">x {quantity}</div>
                 <div className="ml-auto flex flex-col items-center justify-center mx-10">
                   <div className="font-inter text-[17px] text-[#737373] mx-2">Price</div>
                   <div className="font-inter text-[15px] text-[#E11919]">₱{formatNumber(totalProductPrice.toFixed(2))}</div>
@@ -190,7 +190,7 @@ const Checkout = () => {
               </div>
             );
           })}
-          <div className="bg-[#D5FAFF] w-[848px] h-[119px] mt-1 flex items-start p-4">
+          <div className="bg-[#D5FAFF] w-full max-w-full h-[119px] mt-1 flex flex-wrap items-start p-4">
             <img src={LogisticsIcon} alt="Logistics" className="w-[36px] h-[23px]" />
             <div className="ml-4 flex flex-col justify-between">
               <div className="font-inter text-[15px] text-black ml-[-70px] mb-0.5 mt-[-3px]">Shipping Details</div>
@@ -203,7 +203,9 @@ const Checkout = () => {
               <div className="font-inter text-[15px] text-black">₱{formatNumber(50.00.toFixed(2))}</div>
             </div>
           </div>
-          <div className="bg-white w-[848px] h-[auto] mt-1 p-4">
+
+
+          <div className="bg-white w-full h-[auto] mt-1 p-4">
             <div className="font-inter text-[15px] text-[#737373]">Note</div>
             <textarea
               value={note}
@@ -213,16 +215,17 @@ const Checkout = () => {
               style={{ minHeight: '40px' }}
             />
           </div>
-          <div className="bg-white w-[848px] h-[46px] mt-1 flex items-center justify-between p-4">
+
+          <div className="bg-white w-full h-[46px] mt-1 flex items-center justify-between p-4">
             <div className="font-inter text-[15px] text-[#737373]">
               Order Total ({cart.length} Items):
             </div>
-            <div className="font-inter text-[15px] text-[#E11919] mr-10">
+            <div className="font-inter text-[15px] text-[#E11919] mr-12">
               ₱{formatNumber(totalPrice.toFixed(2))}
             </div>
           </div>
 
-          <div className="bg-white w-[848px] h-[46px] mt-1 flex items-center justify-between p-4 border border-gray-300 relative">
+          <div className="bg-white w-full h-[46px] mt-1 flex items-center justify-between p-4 border border-gray-300 relative">
           <div className="font-inter text-[15px] text-[#737373]">
             Payment Option
           </div>
@@ -265,7 +268,7 @@ const Checkout = () => {
         </div>
 
           {/* Payment Details Section */} 
-          <div className="bg-white w-[848px] p-4 flex flex-col mt-1">
+          <div className="bg-white w-full p-4 flex flex-col mt-1">
             <div className="flex items-center mb-4">
               <img src={Billing} alt="Billing" className="w-[20px] h-[32px] mr-2" />
               <div className="font-inter text-[15px] text-[#737373]">Payment Details</div>
@@ -285,20 +288,21 @@ const Checkout = () => {
             </div>
           </div>
           
-          <div className="flex justify-between mt-4 mb-20">
-            <button 
-              onClick={handleCancel} 
-              className="w-[122px] h-[40px] bg-white border border-gray-300 text-[#737373] font-inter font-bold text-[16px] hover:bg-gray-100 mr-4" // Added mr-4 for spacing
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={handlePlaceOrder} 
-              className="w-[122px] h-[40px] bg-white border border-gray-300 text-[#737373] font-inter font-bold text-[16px] hover:bg-gray-100"
-            >
-              Place Order
-            </button>
-          </div>
+          <div className="flex justify-between border p-2" style={{ marginBottom: 'auto'}}> {/* Inline style for margin-bottom */}
+  <button 
+    onClick={handleCancel} 
+    className="w-[122px] h-[40px] bg-white border border-gray-300 text-[#737373] font-inter font-bold text-[16px] hover:bg-gray-100 mr-4"
+  >
+    Cancel
+  </button>
+  <button 
+    onClick={handlePlaceOrder} 
+    className="w-[122px] h-[40px] bg-white border border-gray-300 text-[#737373] font-inter font-bold text-[16px] hover:bg-gray-100"
+  >
+    Place Order
+  </button>
+</div>
+
 
         </div>
       </div>

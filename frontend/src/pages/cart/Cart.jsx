@@ -1,70 +1,53 @@
-import { useState, useEffect } from 'react';
-import React, { useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Header from '../../components/Header.jsx';
 import Footer from '../../components/Footer.jsx';
 import CartItem from '../../components/CartItem';
 import { CartContext } from '../../context/CartContext';
-import useFetch from '../../../hooks/useFetch'
-
+import useFetch from '../../../hooks/useFetch';
 import { useNavigate } from 'react-router-dom';
 
-
-
 const Cart = () => {
-
     const { data: cartFetch } = useFetch('https://fakestoreapi.com/products');
-
     const [cartNew, setCartNew] = useState([]);
-
     const { cart } = useContext(CartContext);
     const { checkout } = useContext(CartContext);
     const navigate = useNavigate();
   
+    useEffect(() => {
+        if (cartFetch) {
+            setCartNew(cartFetch);
+        }
+    }, [cartFetch]);
 
-  useEffect(() => {
-    if (cartFetch) {
-      setCartNew(cartFetch);
-    }
-  }
-  , [cartFetch]);
+    useEffect(() => {
+        console.log(cartNew);
+    }, [cartNew]);
 
-
-  useEffect(() => {
-    console.log(cartNew)
-  }
-  , [cartNew]);
-
-    // const handleCheckout = () => {
-    //     checkout(product);
-    //     navigate('/checkout');
-    //   };
     const handleCheckout = () => {
         if (cart.length === 0) {
-          alert('Your cart is empty');
-          return;
+            alert('Your cart is empty');
+            return;
         }
         navigate('/checkout');
-       // add console log
-        console.log('checkout', cart
-        );
-        
-
-      };
+        console.log('checkout', cart);
+    };
 
     return (
-        <div className='w-full'>
+        <div  style={{ backgroundColor: '#e5e7eb', minHeight: '100vh' }} className="w-full pt-24">
             <Header />
-            <div className="px-40 bg-gray-200"> {/* main container for body */}
+            <div className="px-4 md:px-20 lg:px-40 bg-gray-200 min-h-screen"> {/* main container for body */}
                 <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-10">
                     YOUR CART
                 </div>
-                {cart.map((product, index) => (
-                    <CartItem key={index} product={product} />
-                ))}
+                <div className="space-y-4">
+                    {cart.map((product, index) => (
+                        <CartItem key={index} product={product} />
+                    ))}
+                </div>
                 <div className="flex justify-center mt-10"> {/* container for checkout button */}
                     <button 
                         onClick={handleCheckout}
-                        className="w-[212px] h-[40px] bg-white text-[16px] font-inter font-bold text-[#737373] border border-gray-300 hover:bg-gray-200"
+                        className="w-full max-w-[212px] h-[40px] bg-green-900 text-[16px] font-inter font-bold text-white border border-gray-300 hover:bg-gray-900"
                     >
                         Proceed to Checkout
                     </button>

@@ -1,36 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../../components/Header.jsx';
 import Footer from '../../components/Footer.jsx';
-import Carrot from '../../assets/carrot.png';
-import Cabbage from '../../assets/cabbage.png';
-import Onion from '../../assets/onion.png';
-import Garlic from '../../assets/garlic.png';
-import StarFilled from '../../assets/StarFilled.png';
-import StarHalfEmpty from '../../assets/StarHalfEmpty.png';
-import Star from '../../assets/Star.png';
 import HorizontalLines from '../../assets/horizontallines.png';
 import SortUp from '../../assets/SortUp.png'; // Assuming you have these images
 import SortDown from '../../assets/SortDown.png'; // Assuming you have these images
+import LeftArrow from '../../assets/LeftArrow.png';
+import RightArrow from '../../assets/RightArr.png';
+import useFetch from '../../../hooks/useFetch';
+import ProductCard from '../../components/ProductCard';
 
 const ShopProfile = () => {
+    const [products, setProducts] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedButton, setSelectedButton] = useState('default');
-    const [isAscending, setIsAscending] = useState(true); // State for sorting direction
-    const [selectedCategory, setSelectedCategory] = useState('All'); // State for selected category
+    const [isAscending, setIsAscending] = useState(true);
+    const [isCollapseOpen, setIsCollapseOpen] = useState(false);
+    const [isSortOptionsOpen, setIsSortOptionsOpen] = useState(false);
+    const [currentProductIndex, setCurrentProductIndex] = useState(0);
+
+    const { data: productsFetch } = useFetch("/api/products");
+
+    useEffect(() => {
+        if (productsFetch) {
+            setProducts(productsFetch);
+        }
+    }, [productsFetch]);
+
+    const handleCategoryClick = (category) => {
+        setSelectedCategory(category);
+        setIsCollapseOpen(false);
+    };
 
     const getButtonClassName = (buttonType) => {
-        return `text-[12px] font-inter rounded px-4 py-2 ml-4 w-[86px] h-[32px] flex items-center justify-center cursor-pointer transition-colors duration-300 ${
+        return `text-base font-inter rounded px-4 py-2 w-auto h-auto flex items-center justify-center cursor-pointer transition-colors duration-300 ${
             selectedButton === buttonType ? 'bg-[#67B045] text-white' : 'bg-white text-[#1E1E1E]'
         }`;
     };
 
-    const handleCategoryClick = (category) => {
-        setSelectedCategory(category);
+    const handlePrevProduct = () => {
+        setCurrentProductIndex((prevIndex) => (prevIndex > 0 ? prevIndex - 1 : 3));
     };
 
-    useEffect(() => {
-        // Redirect to the category section when the component mounts
-        window.location.hash = '#category1'; // Modified line: Automatically add '#category1' to the URL
-    }, []);
+    const handleNextProduct = () => {
+        setCurrentProductIndex((prevIndex) => (prevIndex < 3 ? prevIndex + 1 : 0));
+    };
+
 
     return (
         <div className="w-full">
@@ -98,202 +112,192 @@ const ShopProfile = () => {
 
 
             {/* ----- start of body ----- */} 
-            <div className="px-40 bg-gray-200"> {/* main container for body */}
-                <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-5">
-                    BEST SELLERS
-                </div>
-                <div className="mt-4 flex justify-between"> {/* container for white boxes */}
-                    <div className="w-[244px] h-[364px] bg-white flex flex-col items-center"> {/* white box */}
-                        <img src={Carrot} alt="Carrot" className="w-[244px] h-[244px] object-cover mb-2" />
-                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] line-clamp-2 font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
-                            Fresh Carrot 18 inch harvested last night 800mg sale emeru...
-                        </div>
-                        <div className="p-2 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
-                            ₱695.00
-                        </div>
-                        <div className="flex items-center justify-start w-full pl-4 mt-[-px]"> {/* star ratings */}
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4 mx-0.1" />
-                            <img src={Star} alt="Star" className="w-4 h-4 mx-0.1" />
-                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">4.5k sold</div>
-                        </div>
+            <div className="flex flex-col min-h-screen bg-gray-200">
+                
+                {/* Best Seller Section */}
+                <div className="flex flex-col w-full sm:px-40 mb-4">
+                    <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-5 mb-3">
+                        BEST SELLERS
                     </div>
-                    <div className="w-[244px] h-[364px] bg-white flex flex-col items-center"> {/* white box */}
-                        <img src={Cabbage} alt="Cabbage" className="w-[244px] h-[244px] object-cover mb-2" />
-                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] line-clamp-2 font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
-                            Fresh Carrot 18 inch harvested last night 800mg sale emeru...
-                        </div>
-                        <div className="p-2 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
-                            ₱695.00
-                        </div>
-                        <div className="flex items-center justify-start w-full pl-4 mt-[-px]"> {/* star ratings */}
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4 mx-0.1" />
-                            <img src={Star} alt="Star" className="w-4 h-4 mx-0.1" />
-                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">3.2k sold</div>
-                        </div>
+                    {/* Desktop view */}
+                    <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {products.slice(0, 4).map((product) => (
+                            <ProductCard key={product._id} {...product} />
+                        ))}
                     </div>
-                    <div className="w-[244px] h-[364px] bg-white flex flex-col items-center"> {/* white box */}
-                        <img src={Onion} alt="Onion" className="w-[244px] h-[244px] object-cover mb-2" />
-                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] line-clamp-2 font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
-                            Fresh Carrot 18 inch harvested last night 800mg sale emeru...
+                    {/* Mobile view */}
+                    <div className="sm:hidden relative flex items-center justify-center">
+                        <button
+                            onClick={handlePrevProduct}
+                            className="absolute left-0 z-10 p-2 bg-gray-200 rounded-full shadow-md"
+                        >
+                            <img src={LeftArrow} alt="Previous" className="w-8 h-8" />
+                        </button>
+                        <div className="w-full flex justify-center">
+                            {products.length > 0 && (
+                                <ProductCard {...products[currentProductIndex]} />
+                            )}
                         </div>
-                        <div className="p-2 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
-                            ₱695.00
-                        </div>
-                        <div className="flex items-center justify-start w-full pl-4 mt-[-px]"> {/* star ratings */}
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4 mx-0.1" />
-                            <img src={Star} alt="Star" className="w-4 h-4 mx-0.1" />
-                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">1.1k sold</div>
-                        </div>
-                    </div>
-                    <div className="w-[244px] h-[364px] bg-white flex flex-col items-center"> {/* white box */}
-                        <img src={Garlic} alt="Garlic" className="w-[244px] h-[244px] object-cover mb-2" />
-                        <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[15px] font-inter text-[#737373] text-left mt-[-5px]"> {/* description text box */}
-                            Fresh Carrot 18 inch harvested last night 800mg sale emeru...
-                        </div>
-                        <div className="p-2 pb-1 pl-5 pr-3 w-full text-[15px] line-clamp-2 font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
-                            ₱695.00
-                        </div>
-                        <div className="flex items-center justify-start w-full pl-4 mt-[-px]"> {/* star ratings */}
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                            <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4 mx-0.1" />
-                            <img src={Star} alt="Star" className="w-4 h-4 mx-0.1" />
-                            <div className="text-[10px] font-inter text-[#737373] ml-1 mt-1">2.5k sold</div>
-                        </div>
+                        <button
+                            onClick={handleNextProduct}
+                            className="absolute right-0 z-10 p-2 bg-gray-200 rounded-full shadow-md"
+                        >
+                            <img src={RightArrow} alt="Next" className="w-8 h-8" />
+                        </button>
                     </div>
                 </div>
 
-
-
-                <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-10">
-                    ALL PRODUCTS
-                </div>
+                <div className="flex flex-col sm:flex-row w-full max-w-screen-xl mx-auto p-4">
                 {/* Categories Section */}
-                <div className="flex mt-7">
-                    <div className="w-[200px]">
-                        <div className="flex items-center text-gray-600 mb-3">
-                            <img src={HorizontalLines} alt="Categories Icon" className="w-[20px] h-[20px]" />
-                            <span className="text-[18px] font-inter font-bold pl-2">Categories</span>
+                <div className="w-full sm:w-[15%] p-4">
+                    {/* Mobile Collapse */}
+                    <div className="block sm:hidden">
+                    <button
+                        onClick={() => setIsCollapseOpen(!isCollapseOpen)}
+                        className="flex items-center cursor-pointer bg-[#0B472D] text-white p-2 rounded-md w-full text-left"
+                    >
+                        <span className="flex-1">Categories</span>
+                        <svg
+                        className={`w-4 h-4 transition-transform ${isCollapseOpen ? 'rotate-180' : 'rotate-0'}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    {isCollapseOpen && (
+                        <div className="bg-[#67B045] text-white p-4 w-auto max-w-md mx-auto"> {/* Adjusted width */}
+                        {['All Products', 'Vegetables', 'Meat', 'Fruits'].map((category) => (
+                            <a
+                            key={category}
+                            href={`#${category.toLowerCase()}`}
+                            className={`block text-[16px] ${selectedCategory === category ? 'font-bold text-gray-200' : 'text-gray-200'} mb-3 hover:text-blue-300`}
+                            onClick={() => handleCategoryClick(category)}
+                            >
+                            {category}
+                            </a>
+                        ))}
                         </div>
-                        <div className="flex flex-col text-left mx-3">
-                            <a
-                                href="#category1"
-                                className={`text-[16px] ${selectedCategory === 'All' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:text-blue-500`}
-                                onClick={() => handleCategoryClick('All')}
-                            >
-                                All
-                            </a>
-                            <a
-                                href="#category2"
-                                className={`text-[16px] ${selectedCategory === 'Vegetables' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:text-blue-500`}
-                                onClick={() => handleCategoryClick('Vegetables')}
-                            >
-                                Vegetables
-                            </a>
-                            <a
-                                href="#category3"
-                                className={`text-[16px] ${selectedCategory === 'Meat' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:text-blue-500`}
-                                onClick={() => handleCategoryClick('Meat')}
-                            >
-                                Meat
-                            </a>
-                            <a
-                                href="#category4"
-                                className={`text-[16px] ${selectedCategory === 'Fruits' ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:text-blue-500`}
-                                onClick={() => handleCategoryClick('Fruits')}
-                            >
-                                Fruits
-                            </a>
-                        </div>
+                    )}
                     </div>
-                    <div className="flex flex-col ml-6 w-full"> {/* Flex column for sorting and boxes */}
-                        <div className="w-[1010px] h-[55px] bg-[#0B472D] flex items-center pl-4 mb-4"> {/* rectangle */}
-                            <span className="text-white text-2xl font-inter mx-2">Sort by</span>
+                    {/* Desktop Categories */}
+                    <div className="hidden sm:block">
+                    <div className="flex items-center text-gray-600 mb-3">
+                        <img src={HorizontalLines} alt="Categories Icon" className="w-5 h-5" />
+                        <span className="text-xl font-bold pl-2">Categories</span>
+                    </div>
+                    <div className="flex flex-col text-left">
+                        {['All Products', 'Vegetables', 'Meat', 'Fruits'].map((category) => (
+                        <a
+                            key={category}
+                            href={`#${category.toLowerCase()}`}
+                            className={`text-[16px] ${selectedCategory === category ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:text-blue-500`}
+                            onClick={() => handleCategoryClick(category)}
+                        >
+                            {category}
+                        </a>
+                        ))}
+                    </div>
+                    </div>
+                </div>
+                {/* Product Section */}
+                <div className="w-full sm:w-[85%] px-4">
+                    <div className="flex items-center justify-between px-4 py-2 mb-4 rounded-lg bg-[#0B472D] shadow-md">
+                    {/* Sort by and Collapse */}
+                    <div className="flex items-center space-x-4">
+                        <span className="text-white text-lg sm:text-2xl font-inter">Sort by</span>
+                        {/* Container for sort options */}
+                        <div className="relative flex items-center space-x-2">
+                        {/* Mobile Sort Options Toggle Button */}
+                        <button
+                            onClick={() => setIsSortOptionsOpen(!isSortOptionsOpen)}
+                            className="block sm:hidden text-white bg-[#67B045] rounded px-4 py-2"
+                        >
+                            {selectedButton}
+                        </button>
+                        {/* Mobile Sort Options Menu */}
+                        {isSortOptionsOpen && (
+                            <div className="absolute top-full left-0 w-auto max-w-md bg-[#67B045] text-white rounded mt-2 p-2"> {/* Adjusted width and padding */}
                             <div
                                 className={getButtonClassName('default')}
-                                onClick={() => setSelectedButton('default')}
+                                onClick={() => {
+                                setSelectedButton('default');
+                                setIsSortOptionsOpen(false);
+                                }}
                             >
                                 Default
                             </div>
                             <div
                                 className={getButtonClassName('topSales')}
-                                onClick={() => setSelectedButton('topSales')}
+                                onClick={() => {
+                                setSelectedButton('topSales');
+                                setIsSortOptionsOpen(false);
+                                }}
                             >
                                 Top Sales
                             </div>
                             <div
                                 className={getButtonClassName('topRated')}
-                                onClick={() => setSelectedButton('topRated')}
+                                onClick={() => {
+                                setSelectedButton('topRated');
+                                setIsSortOptionsOpen(false);
+                                }}
                             >
                                 Top Rated
                             </div>
-                            <div className="flex-1 flex items-center justify-end"> {/* Container for the search bar */}
-                                <form className="flex items-center">
-                                    <input
-                                        className="w-[286px] h-[30px] bg-white rounded-full px-4 mr-3"
-                                        type="text"
-                                        placeholder="Vegetables, Fruits, Meat..."
-                                        style={{ fontSize: '11px' }} // Inline style for placeholder text size
-                                    />
-                                    <div className="flex items-center ml-4">
-                                        <span className="text-white font-inter text-[18px] mr-2" style={{ minWidth: '100px' }}>
-                                            {isAscending ? 'Ascending' : 'Descending'}
-                                        </span>
-                                        <button
-                                            onClick={(e) => {
-                                                e.preventDefault(); // Prevent the default form submission
-                                                setIsAscending(!isAscending);
-                                            }}
-                                            className="flex items-center p-1"
-                                        >
-                                            <img
-                                                src={isAscending ? SortUp : SortDown}
-                                                alt={isAscending ? 'Sort Ascending' : 'Sort Descending'}
-                                                className="w-8 h-8 mr-4"
-                                            />
-                                        </button>
-                                    </div>
-                                </form>
                             </div>
-                        </div> {/* rectangle end */}
-                        <div className="overflow-y-auto max-h-[calc(2*284px+16px)] mb-20"> {/* Scrollable container with max height */}
-                            {[...Array(3)].map((_, rowIndex) => ( /* Create 2 rows of boxes */
-                                <div key={rowIndex} className="w-[1010px] flex justify-between mb-4"> {/* Container for white boxes */}
-                                    {[...Array(5)].map((_, boxIndex) => ( /* Create 5 white boxes per row */
-                                        <div key={boxIndex} className="w-[178px] h-[284px] bg-white flex flex-col items-center border-2 border-gray-300"> {/* white box */}
-                                            <img src={Carrot} alt="Carrot" className="w-[178px] h-[178px] object-cover mb-2" />
-                                            <div className="p-2 pt-3 pb-1 pl-5 pr-3 w-full text-[13px] line-clamp-2 font-inter text-[#737373] text-left mt-[-10px]"> {/* description text box */}
-                                            Fresh Carrot 18 inch harvested last night 800mg sale emeru
-                                            </div>
-                                            <div className="p-2 pb-1 pl-5 pr-3 w-full text-[11px] font-inter text-[#E11919] text-left mt-[-10px]"> {/* price text box */}
-                                                ₱695.00
-                                            </div>
-                                            <div className="flex items-center justify-start w-full pl-4 mt-[-px]"> {/* star ratings */}
-                                                <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                                                <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                                                <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.1" />
-                                                <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4 mx-0.1" />
-                                                <img src={Star} alt="Star" className="w-4 h-4 mx-0.1" />
-                                                <div className="text-[8px] font-inter text-[#737373] ml-1 mt-1">4.5k sold</div>
-                                            </div>
-                                        </div>
-                                        
-                                    ))}
-                                </div>
-                            ))}
+                        )}
+                        {/* Desktop Sort Options */}
+                        <div className="hidden sm:flex items-center space-x-2">
+                            <div
+                            className={getButtonClassName('default')}
+                            onClick={() => setSelectedButton('default')}
+                            >
+                            Default
+                            </div>
+                            <div
+                            className={getButtonClassName('topSales')}
+                            onClick={() => setSelectedButton('topSales')}
+                            >
+                            Top Sales
+                            </div>
+                            <div
+                            className={getButtonClassName('topRated')}
+                            onClick={() => setSelectedButton('topRated')}
+                            >
+                            Top Rated
+                            </div>
+                        </div>
                         </div>
                     </div>
-                </div> {/* main container end */}
+                    {/* Ascending/Descending */}
+                    <div className="flex items-center space-x-2">
+                        <span className="text-white font-inter text-sm sm:text-lg">
+                        {isAscending ? 'Ascending' : 'Descending'}
+                        </span>
+                        <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setIsAscending(!isAscending);
+                        }}
+                        className="flex items-center p-1"
+                        >
+                        <img
+                            src={isAscending ? SortUp : SortDown}
+                            alt={isAscending ? 'Sort Ascending' : 'Sort Descending'}
+                            className="w-6 h-6"
+                        />
+                        </button>
+                    </div>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {products?.map((product) => (
+                        <ProductCard key={product._id} {...product} />
+                    ))}
+                    </div>
+                </div>
+                </div>
 
             </div>
             <Footer />
