@@ -4,6 +4,12 @@ import './Menu.css';
 const Menu = ({ onSelectMenu }) => {
   const [isCollapseOpen, setIsCollapseOpen] = useState(false);
   const [isShopCollapseOpen, setIsShopCollapseOpen] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState('overview');
+
+  const handleMenuClick = (menu) => {
+    setSelectedMenu(menu);
+    onSelectMenu(menu); // Call the prop function to handle menu selection
+  };
 
   return (
     <div className="menu-container w-full min-h-screen bg-gray-200">
@@ -55,13 +61,19 @@ const Menu = ({ onSelectMenu }) => {
               <div className="header">USER PROFILE</div>
               <ul className="space-y-4">
                 <li>
-                  <a href="#" className="text-gray-600 underline hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Profile</a>
+                  <a href="#" className="text-gray-600 underline hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
+                    My Profile
+                  </a>
                 </li>
                 <li>
-                  <a href="/myOrders" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Orders</a>
+                  <a href="/myOrders" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
+                    My Orders
+                  </a>
                 </li>
                 <li>
-                  <a href="/seller" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">My Shop</a>
+                  <a href="/seller" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
+                    My Shop
+                  </a>
                 </li>
               </ul>
             </div>
@@ -86,20 +98,23 @@ const Menu = ({ onSelectMenu }) => {
             {isShopCollapseOpen && (
               <div className="bg-[#67B045] text-white p-4 w-auto max-w-md mx-auto">
                 <ul className="space-y-4 text-left lg:pr-11">
-                  <li onClick={() => onSelectMenu('overview')}>
-                    <a href="#" className="block text-[16px] text-gray-200 hover:text-blue-300">
-                      Overview
-                    </a>
+                  <li
+                    onClick={() => handleMenuClick('overview')}
+                    className={`block text-[16px] ${selectedMenu === 'overview' ? 'text-blue-300 font-bold' : 'text-gray-200'} hover:text-blue-300`}
+                  >
+                    Overview
                   </li>
-                  <li onClick={() => onSelectMenu('inventory')}>
-                    <a href="/inventory" className="block text-[16px] text-gray-200 hover:text-blue-300">
-                      Product Inventory
-                    </a>
+                  <li
+                    onClick={() => handleMenuClick('inventory')}
+                    className={`block text-[16px] ${selectedMenu === 'inventory' ? 'text-blue-300 font-bold' : 'text-gray-200'} hover:text-blue-300`}
+                  >
+                    Product Inventory
                   </li>
-                  <li onClick={() => onSelectMenu('orders')}>
-                    <a href="/orders" className="block text-[16px] text-gray-200 hover:text-blue-300">
-                      Orders
-                    </a>
+                  <li
+                    onClick={() => handleMenuClick('orders')}
+                    className={`block text-[16px] ${selectedMenu === 'orders' ? 'text-blue-300 font-bold' : 'text-gray-200'} hover:text-blue-300`}
+                  >
+                    Orders
                   </li>
                 </ul>
               </div>
@@ -112,12 +127,28 @@ const Menu = ({ onSelectMenu }) => {
           <div className="menu">
             <h2>MY SHOP</h2>
             <ul>
-              <li onClick={() => onSelectMenu('overview')}>Overview</li>
-              <li onClick={() => onSelectMenu('inventory')}>Product Inventory</li>
-              <li onClick={() => onSelectMenu('orders')}>Orders</li>
+              <li
+                onClick={() => handleMenuClick('overview')}
+                className={`${selectedMenu === 'overview' ? 'text-[#a3d75d] font-bold' : 'text-[#d9d9d9]'} hover:text-white cursor-pointer`}
+              >
+                Overview
+              </li>
+              <li
+                onClick={() => handleMenuClick('inventory')}
+                className={`${selectedMenu === 'inventory' ? 'text-[#a3d75d] font-bold' : 'text-[#d9d9d9]'} hover:text-white cursor-pointer`}
+              >
+                Product Inventory
+              </li>
+              <li
+                onClick={() => handleMenuClick('orders')}
+                className={`${selectedMenu === 'orders' ? 'text-[#a3d75d] font-bold' : 'text-[#d9d9d9]'} hover:text-white cursor-pointer`}
+              >
+                Orders
+              </li>
             </ul>
           </div>
         </div>
+        
       </div>
     </div>
   );

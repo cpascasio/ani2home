@@ -5,18 +5,20 @@ import InventoryTable from "../../components/seller/InventoryTable";
 import Menu from "../../components/seller/Menu";
 import SellerBanner from "../../components/seller/SellerBanner";
 import OrdersTable from "../../components/seller/OrdersTable";
+import Overview from "../../components/seller/Overview";
 
 const Seller = () => {
-  const [selectedMenu, setSelectedMenu] = useState('dashboard');
+  // Initialize selectedMenu to 'overview' to display it by default
+  const [selectedMenu, setSelectedMenu] = useState('overview');
 
   const renderContent = () => {
     switch (selectedMenu) {
       case 'overview':
-        return <div>Overview Content</div>;
+        return <Overview />;
       case 'inventory':
         return <InventoryTable />;
       case 'orders':
-        return <OrdersTable/>;
+        return <OrdersTable />;
       default:
         return null;
     }
