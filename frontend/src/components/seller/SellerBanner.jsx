@@ -81,69 +81,7 @@ const SellerBanner = () => {
           <img src="../src/assets/FarmCover1.jpg" alt="Cover Photo" className="w-full h-auto object-cover" />
         </div>
       </div>
-
-      {/* Menu */}
-      <div className="w-full flex flex-col lg:flex-row lg:justify-center lg:items-center bg-[#e5e7eb] p-4">
-        {/* Mobile Collapse */}
-        <div className="block lg:hidden w-full">
-          <button
-            onClick={() => setIsCollapseOpen(!isCollapseOpen)}
-            className="flex items-center cursor-pointer bg-[#0B472D] text-white p-2 rounded-md w-full text-left mb-3"
-          >
-            <span className="flex-1">USER PROFILE</span>
-            <svg
-              className={`w-4 h-4 transition-transform ${isCollapseOpen ? 'rotate-180' : 'rotate-0'}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          {isCollapseOpen && (
-            <div className="bg-[#67B045] text-white p-4 w-auto max-w-md mx-auto">
-              <ul className="space-y-4 text-left">
-                <li>
-                  <a href="#" className="block text-[16px] text-gray-200 underline hover:text-blue-300">
-                    My Profile
-                  </a>
-                </li>
-                <li>
-                  <a href="/myOrders" className="block text-[16px] text-gray-200 hover:text-blue-300">
-                    My Orders
-                  </a>
-                </li>
-                <li>
-                  <a href="/seller" className="block text-[16px] text-gray-200 hover:text-blue-300">
-                    My Shop
-                  </a>
-                </li>
-              </ul>
-            </div>
-          )}
-        </div>
-
-        {/* Desktop View */}
-        <div className="hidden lg:flex lg:justify-center lg:items-center lg:w-full bg-[#e5e7eb] p-4">
-          <div className="w-full lg:w-auto">
-            <div className="text-lg font-bold text-gray-600 pb-5 text-center">USER PROFILE</div>
-            <div className="bg-white p-4 rounded-lg shadow-lg">
-              <ul className="flex justify-center space-x-8">
-                <li>
-                  <a href="#" className="text-gray-600 text-lg font-semibold hover:text-blue-500 transition duration-300 ease-in-out">My Profile</a>
-                </li>
-                <li>
-                  <a href="/myOrders" className="text-gray-600 text-lg font-semibold hover:text-blue-500 transition duration-300 ease-in-out">My Orders</a>
-                </li>
-                <li>
-                  <a href="/seller" className="text-gray-600 text-lg font-semibold hover:text-blue-500 transition duration-300 ease-in-out">My Shop</a>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
   );
 };
 
