@@ -4,6 +4,7 @@ import useFetch from "../../../hooks/useFetch";
 import InventoryTable from "../../components/seller/InventoryTable";
 import Menu from "../../components/seller/Menu";
 import SellerBanner from "../../components/seller/SellerBanner";
+import OrdersTable from "../../components/seller/OrdersTable";
 
 const Seller = () => {
   const [selectedMenu, setSelectedMenu] = useState('dashboard');
@@ -15,7 +16,7 @@ const Seller = () => {
       case 'inventory':
         return <InventoryTable />;
       case 'orders':
-        return <div>Order Content</div>;
+        return <OrdersTable/>;
       default:
         return null;
     }

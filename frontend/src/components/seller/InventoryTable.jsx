@@ -120,33 +120,36 @@ const InventoryTable = () => {
   const fruits = ['Apple', 'Banana', 'Orange', 'Strawberry', 'Grapes'];
 
   return (
-    <div className="p-4 md:p-5 bg-white rounded-lg shadow-lg mt-5 md:mt-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="p-2 w-full md:w-1/3 border border-gray-300 rounded-lg mb-3 md:mb-0"
-        />
+    <div className="p-4 md:p-5 bg-white rounded-lg shadow-lg mt-5 md:mt-10">
+     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5">
+        <div className="flex-grow mr-4">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="p-2 w-full rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent"
+          />
+        </div>
         <button
-          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+          className="px-4 py-2 bg-[#67b045] text-white rounded-lg hover:bg-green-700"
           onClick={() => setShowModal(true)}
         >
           + Add Item
         </button>
       </div>
+
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
             <tr>
-              <th className="p-2 border-b bg-gray-100">Product Code</th>
-              <th className="p-2 border-b bg-gray-100">Photo</th>
-              <th className="p-2 border-b bg-gray-100">Product Name</th>
-              <th className="p-2 border-b bg-gray-100">Category</th>
-              <th className="p-2 border-b bg-gray-100">Type</th>
-              <th className="p-2 border-b bg-gray-100">Stock</th>
-              <th className="p-2 border-b bg-gray-100">Actions</th>
+              <th className="p-2 rounded-l-lg border-b text-white bg-green-900">Product Code</th>
+              <th className="p-2 border-b text-white bg-green-900">Photo</th>
+              <th className="p-2 border-b text-white bg-green-900">Product Name</th>
+              <th className="p-2 border-b text-white bg-green-900">Category</th>
+              <th className="p-2 border-b text-white bg-green-900">Type</th>
+              <th className="p-2 border-b text-white bg-green-900">Stock</th>
+              <th className="p-2 rounded-r-lg border-b text-white bg-green-900">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -171,7 +174,7 @@ const InventoryTable = () => {
         {Array.from({ length: totalPages }, (_, index) => (
           <button
             key={index}
-            className={`px-3 py-1 border rounded-lg mx-1 my-1 ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-white text-black'}`}
+            className={`px-3 py-1 border rounded-lg mx-1 my-1 ${currentPage === index + 1 ? 'bg-green-900 text-white' : 'bg-white text-black'}`}
             onClick={() => handlePageChange(index + 1)}
           >
             {index + 1}
