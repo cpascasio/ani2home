@@ -6,6 +6,9 @@ import Star from '../../assets/Star.png';
 import StarFilled from '../../assets/StarFilled.png';
 import MyProfilePic from '../../assets/MyProfile pic.png'; // Update with your profile pic
 import StorefrontIcon from '../../assets/storefront.png'; // Add your storefront icon import
+import VerifiedUserIcon from '../../assets/verifiedUser.png'; // Add your verified user icon import
+import SortIcon from '../../assets/sort.png'; // Add sort icon import
+import FilterIcon from '../../assets/filter.png'; // Add filter icon import
 import { useNavigate } from 'react-router-dom';
 
 // Function to generate star elements based on the rating
@@ -38,11 +41,24 @@ const generateStars = (rating, isProductCard = false) => {
 const ItemPage = () => {
     const navigate = useNavigate();
     const [quantity, setQuantity] = useState(1); // State for quantity
-    const rating = 4.9; // Example rating
+    const [sortOrder, setSortOrder] = useState('Ascending'); // State for sorting
+    const [filterRating, setFilterRating] = useState('All Stars'); // State for filtering
+    const rating = 4.9; // Example product rating
+    const shopRating = 4.7; // Example shop rating
     const price = 100; // Example price
     const productName = "Carrot"; // Example product name
     const numberOfRatings = 100; // Example number of received ratings
+    const numberOfProducts = 50; // Example number of products in the shop
+    const numberOfFollowers = 1200; // Example number of followers
 
+    const [ratingCounts, setRatingCounts] = useState({
+        5: 10,  // Example count for 5-star reviews
+        4: 4,   // Example count for 4-star reviews
+        3: 1,   // Example count for 3-star reviews
+        2: 7,   // Example count for 2-star reviews
+        1: 0    // Example count for 1-star reviews
+    });
+    
     const handleAddToCart = () => {
         navigate('/cart');
     };
@@ -57,6 +73,14 @@ const ItemPage = () => {
 
     const handleViewShop = () => {
         window.location.href = 'http://localhost:5173/shopProfile';
+    };
+
+    const handleSortChange = (e) => {
+        setSortOrder(e.target.value);
+    };
+
+    const handleFilterChange = (e) => {
+        setFilterRating(e.target.value);
     };
 
     return (
@@ -109,7 +133,7 @@ const ItemPage = () => {
                                         <span className="text-black">Price: </span>
                                         ₱{price.toFixed(2)}
                                     </div>
-                                    <div className="flex items-center space-x-2">
+                                    <div className="flex items-center space-x-2 lg:mr-6">
                                         <div className="text-left text-[15px] text-[#737373] mr-2">Quantity</div>
                                         <button
                                             onClick={handleDecrease}
@@ -146,34 +170,78 @@ const ItemPage = () => {
                             </div>
                         </div>
                     </div>
+
                     {/* White Rectangle with Profile Pic and Shop Info */}
-                    <div className="my-6 bg-white border border-gray-300 rounded-lg shadow-md p-4 flex items-center">
-                        <div className="flex items-center">
+                    <div className="my-6 bg-white border border-gray-300 rounded-lg shadow-md p-4 flex flex-col md:flex-row items-start md:items-center justify-between">
+                        <div className="flex items-start md:items-center flex-1">
                             <img
                                 src={MyProfilePic}
                                 alt="Profile"
                                 className="w-12 h-12 bg-gray-300 rounded-full object-cover"
                             />
                             <div className="ml-4">
-                                <div className="text-gray-900 text-md font-semibold">Shop Name</div>
-                                <button
-                                    onClick={handleViewShop}
-                                    className="mt-1 flex items-center bg-blue-500 text-white text-xs py-1 px-2 rounded-md hover:bg-blue-700 transition-colors duration-300"
-                                >
+                                <div className="text-gray-900 text-md font-semibold truncate w-48 md:w-auto">Shop Name</div>
+                                <div className="flex items-center mt-1">
+                                    <span className="text-sm text-[#2979FF]">Verified</span>
                                     <img
-                                        src={StorefrontIcon}
-                                        alt="Storefront"
-                                        className="w-4 h-4 mr-1"
+                                        src={VerifiedUserIcon}
+                                        alt="Verified"
+                                        className="w-5 h-5 ml-2"
                                     />
-                                    View Shop
-                                </button>
+                                </div>
                             </div>
                         </div>
+
+                        <div className="border-l border-gray-500 h-8 mr-10 md:my-0 md:ml-4"></div>
+
+                        <div className="flex flex-col md:flex-row text-gray-600 text-sm md:w-2/3 w-full">
+                            {/* Products and Followers Column */}
+                            <div className="flex flex-col md:flex-row mb-4 md:mb-0 md:ml-5 md:mr-7 w-full md:w-auto">
+                                <div className="flex items-center mb-2 md:mb-0 md:mr-7">
+                                    <span className="mr-2">Products:</span>
+                                    <span className="text-[#E11919] font-bold">{numberOfProducts}</span>
+                                </div>
+                                <div className="flex items-center mb-2 md:mb-0">
+                                    <span className="mr-2">Followers:</span>
+                                    <span className="text-[#E11919] font-bold">{numberOfFollowers}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col md:flex-row w-full md:w-auto">
+                                {/* Ratings and Shop Rating Column */}
+                                <div className="flex items-center mb-2 md:mb-0 md:mr-7">
+                                    <span className="mr-2">Ratings:</span>
+                                    <span className="text-[#E11919] font-bold">{numberOfRatings}</span>
+                                </div>
+                                <div className="flex items-center mb-2 md:mb-0">
+                                    <span className="mr-2">Shop Rating:</span>
+                                    <div className="flex items-center">
+                                        {generateStars(shopRating)}
+                                        <span className="ml-2 text-xs text-gray-700">{shopRating.toFixed(1)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleViewShop}
+                            className="bg-blue-500 text-white text-xs py-1 px-2 rounded-md hover:bg-blue-700 transition-colors duration-300 mt-4 md:mt-0"
+                        >
+                            <img
+                                src={StorefrontIcon}
+                                alt="Storefront"
+                                className="w-4 h-4 inline-block mr-1"
+                            />
+                            View Shop
+                        </button>
                     </div>
+
+
+
                     {/* Additional Details Box */}
                     <div className="mt-4 bg-white border border-gray-300 rounded-lg shadow-md">
-                        <div className="bg-gray-200 p-3 rounded-t-lg text-left">
-                            <h3 className="text-base font-semibold text-gray-900 ml-2">Ratings and Reviews of {productName}</h3>
+                        <div className="bg-green-900 p-3 rounded-t-lg text-left">
+                            <h3 className="text-base font-semibold text-white ml-2">Ratings and Reviews of {productName}</h3>
                         </div>
                         <div className="p-5">
                             {/* Rating Number Container */}
@@ -186,14 +254,99 @@ const ItemPage = () => {
                                 {generateStars(rating)}
                             </div>
                             {/* Number of Ratings Container */}
-                            <div className="flex items-left text-xs text-gray-600">
+                            <div className="flex items-left text-xs text-gray-600 mb-4">
                                 {numberOfRatings} Ratings
                             </div>
+                            
+                            {/* Sorting and Filtering Dropdowns */}
                             <hr className="my-4 border-gray-300" />
-                            <div className="flex items-left mt-4 text-sm font-semibold text-black">
-                                Product Reviews
+                            <div className="flex flex-col md:flex-row items-center justify-between mt-4">
+                                <div className="text-sm font-semibold text-black mb-2 md:mb-0">
+                                    Product Reviews
+                                </div>
+
+                                {/* Sorting and Filtering Dropdowns */}
+                                <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-4">
+                                    <div className="flex items-center space-x-2">
+                                        <img src={SortIcon} alt="Sort" className="w-5 h-5" />
+                                        <select
+                                            value={sortOrder}
+                                            onChange={handleSortChange}
+                                            className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                        >
+                                            <option value="Ascending">Sort by Rating (Low to High)</option>
+                                            <option value="Descending">Sort by Rating (High to Low)</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <img src={FilterIcon} alt="Filter" className="w-5 h-5" />
+                                        <select
+                                            value={filterRating}
+                                            onChange={handleFilterChange}
+                                            className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                        >
+                                            <option value="All Stars">Filter by Rating</option>
+                                            {Object.entries(ratingCounts).map(([stars, count]) => (
+                                                <option key={stars} value={`${stars} Stars`}>
+                                                    {stars} Stars ({count})
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
+
                             <hr className="my-4 border-gray-300" />
+                            
+
+                            {/* Customer Reviews */}
+                            <div className="space-y-4">
+                                {/* Review 1 */}
+                                <div className="flex items-start space-x-4">
+                                    <img
+                                        src={MyProfilePic}  // Using the imported profile picture
+                                        alt="Customer"
+                                        className="w-10 h-10 bg-gray-300 rounded-full object-cover"
+                                    />
+                                    <div className="flex-1">
+                                        <div className="text-gray-900 font-semibold mb-1 text-left">
+                                            {/* Name here */}John Doe
+                                        </div>
+                                        <div className="flex items-center mb-2">
+                                            {generateStars(Math.floor(Math.random() * 5) + 1)} {/* Random rating */}
+                                        </div>
+                                        <div className="text-gray-800 text-left">
+                                            {/* Comment here */}
+                                            This product is amazing! The quality exceeded my expectations, and the customer service was top-notch.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Review 2 */}
+                                <div className="flex items-start space-x-4">
+                                    <img
+                                        src={MyProfilePic}  // Using the imported profile picture
+                                        alt="Customer"
+                                        className="w-10 h-10 bg-gray-300 rounded-full object-cover"
+                                    />
+                                    <div className="flex-1">
+                                        <div className="text-gray-900 font-semibold mb-1 text-left">
+                                            {/* Name here */}Jane Smith
+                                        </div>
+                                        <div className="flex items-center mb-2">
+                                            {generateStars(Math.floor(Math.random() * 5) + 1)} {/* Random rating */}
+                                        </div>
+                                        <div className="text-gray-800 text-left">
+                                            {/* Comment here */}
+                                            I had a great experience with this product. It’s exactly what I needed and works perfectly.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Add more reviews as needed */}
+                            </div>
+
+
                         </div>
                     </div>
                 </div>
