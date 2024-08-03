@@ -326,7 +326,7 @@ const MyProfile = () => {
               </li>
               <li>
                 <a
-                  href="/myShop"
+                  href="/seller"
                   className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out"
                 >
                   My Shop

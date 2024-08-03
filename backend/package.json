@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@headlessui/react": "^2.1.2",
     "@lalamove/lalamove-js": "^1.1.0",
     "@react-google-maps/api": "^2.19.3",
     "cors": "^2.8.5",
