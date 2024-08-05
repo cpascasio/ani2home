@@ -21,8 +21,8 @@ const MyOrders = () => {
     followers: 1234,
     name: 'Placeholder name',
     address: "1234 Elm St, Springfield, IL",
-    // max: 422 cHARACTERS
-    bio: "I was supposed to be sent away But they forgot to come and get me I was a functioning alcoholic Til nobody noticed my new aesthetic All of this to say I hope you're okay But you're the reason And no one here's to blame But what about your quiet treason? And for a fortnight there, we were forever Run into you sometimes, ask about the weather Now you're in my backyard, turned into good neighbors Your wife waters flowers"
+    // max: 448 cHARACTERS
+    bio: "I was supposed to be sent away But they forgot to come and get me I was a functioning alcoholic Til nobody noticed my new aesthetic All of this to say I hope you're okay But you're the reason And no one here's to blame But what about your quiet treason? And for a fortnight there, we were forever Run into you sometimes, ask about the weather Now you're in my backyard, turned into good neighbors Your wife waters flowers Your wife waters flowers"
   };
 
   const handleOrderReceivedClick = () => {
@@ -80,37 +80,70 @@ const MyOrders = () => {
 
   return (
     <div className="w-full">
-      <Header />
+      
       <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900 md:pt-[6%]">
-  <div className="flex flex-col md:flex-row md:pl-[3%] p-4 w-full md:w-1/2">
-    <div className="flex flex-col items-center text-white mb-4 md:mb-0">
-      <div className="flex justify-center items-center mb-4">
-        <div className="bg-white rounded-full">
-          <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+        {/* <!-- Mobile View: First Row --> */}
+        <div className="flex flex-row md:hidden w-full p-4 pt-[22%]">
+          <div className="flex justify-center items-center w-1/3 sm:mb-0">
+            <div className="bg-white rounded-full">
+              <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+            </div>
+          </div>
+          <div className="flex flex-col justify-center text-white w-2/3 pl-4">
+            <h1 className="text-2xl font-bold font-inter mb-2">
+              {userData.name}
+            </h1>
+            <div className="italic mb-2 font-inter text-sm">
+              {userData.address}
+            </div>
+            <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 mx-[20%] font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
+              Get Verified
+            </button>
+          </div>
+        </div>
+
+        {/* <!-- Mobile View: Second Row --> */}
+        <div className="md:hidden flex flex-col p-6 pt-0 text-white">
+          <div className="text-justify font-inter text-sm">
+            {userData.bio}
+          </div>
+        </div>
+
+        {/* <!-- Desktop View --> */}
+        <div className="hidden md:flex flex-col md:flex-row md:pl-[3%] p-4 w-full md:w-1/2">
+          <div className="flex flex-col items-center text-white mb-4 md:mb-0">
+            <div className="flex justify-center items-center mb-4">
+              <div className="bg-white rounded-full">
+                <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+              </div>
+            </div>
+            <div className="mt-4 w-full flex justify-center">
+              <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
+                Get Verified
+              </button>
+            </div>
+          </div>
+          <div className="flex flex-col flex-1 pl-0 md:pl-[4%] pr-0 md:pr-[4%] text-white items-start relative">
+            <h1 className="text-2xl md:text-4xl font-bold font-inter mb-2 md:mb-0">
+              {userData.name}
+            </h1>
+            <div className="italic mb-2 md:mb-4 font-inter text-sm md:text-base">
+              {userData.address}
+            </div>
+            <div className="md:mb-6 text-justify font-inter text-sm md:text-base">
+              {userData.bio}
+            </div>
+          </div>
+        </div>
+        
+        {/* <!-- Desktop View: Cover Photo --> */}
+        <div className="hidden md:flex flex-1 w-full md:w-1/2">
+          <img src="../src/assets/FarmCover1.jpg" alt="Cover Photo" className="w-full h-auto object-cover" />
         </div>
       </div>
-      <div className="mt-4 w-full flex justify-center">
-        <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
-          Get Verified
-        </button>
-      </div>
-    </div>
-    <div className="flex flex-col flex-1 pl-0 md:pl-[4%] pr-0 md:pr-[4%] text-white items-start relative">
-      <h1 className="text-2xl md:text-4xl font-bold font-inter mb-2 md:mb-0">
-        {userData.name}
-      </h1>
-      <div className="italic mb-2 md:mb-4 font-inter text-sm md:text-base">
-        {userData.address}
-      </div>
-      <div className="md:mb-6 text-justify font-inter text-sm md:text-base">
-        {userData.bio}
-      </div>
-    </div>
-  </div>
-  <div className="flex flex-1 w-full md:w-1/2">
-    <img src="../src/assets/FarmCover1.jpg" alt="Cover Photo" className="w-full h-auto object-cover" />
-  </div>
-</div>
+
+
+
 
 
       <div className="w-full min-h-screen bg-gray-200">
@@ -449,7 +482,6 @@ const MyOrders = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };
