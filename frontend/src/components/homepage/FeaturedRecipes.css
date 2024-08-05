@@ -1,0 +1,36 @@
+/* FeaturedRecipes.css */
+
+/* Center the slider container */
+.slick-list {
+    margin: 0 auto; /* Center slider container */
+    padding: 0; /* Remove padding */
+  }
+  
+  /* Center the slides within the track */
+  .slick-track {
+    display: flex;
+    justify-content: center; /* Center the slides horizontally */
+  }
+  
+  /* Ensure that each slide is centered and adjust margin */
+  .slick-slide {
+    display: flex;
+    justify-content: center;
+    padding: 0 20px; /* Adjust padding to create space for arrows */
+  }
+  
+  /* Ensure arrows stay on top */
+  .slick-prev,
+  .slick-next {
+    z-index: 20; /* Ensure arrows stay on top */
+  }
+  
+  /* Adjust positioning to avoid overlap */
+  .slick-prev {
+    left: 10px; /* Adjust as needed to ensure no overlap */
+  }
+  
+  .slick-next {
+    right: 10px; /* Adjust as needed to ensure no overlap */
+  }
+  

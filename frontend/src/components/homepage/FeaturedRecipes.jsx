@@ -1,7 +1,7 @@
 import React from 'react';
 import Slider from 'react-slick';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBowlFood } from '@fortawesome/free-solid-svg-icons'; // Use appropriate icons
+import { faBowlFood } from '@fortawesome/free-solid-svg-icons';
 
 import strawberrySpinachSalad from '../../assets/recipe1.jpg';
 import bananaPancakes from '../../assets/recipe2.jpg';
@@ -54,7 +54,7 @@ const FeaturedRecipes = () => {
         height: '700px',
       }}
     >
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center mb-4">
         <FontAwesomeIcon icon={faBowlFood} className="text-white text-4xl mr-4" />
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center"
           style={{
@@ -67,22 +67,19 @@ const FeaturedRecipes = () => {
         </h1>
         <FontAwesomeIcon icon={faBowlFood} className="text-white text-4xl ml-4" />
       </div>
-      <br />
-      <p className="text-md md:text-lg lg:text-xl text-center max-w-2xl"
+      <p className="text-md md:text-lg lg:text-xl text-center max-w-2xl mx-auto mb-8"
         style={{
           color: '#D2E5B9',
           fontFamily: 'Arial, sans-serif',
           lineHeight: '1.5',
-          margin: '0 auto',
         }}
       >
         Discover our curated selection of recipes featuring the freshest fruits and vegetables from Ani2Home's local farmers and markets. Perfect for a wholesome and delightful meal experience.
       </p>
-      <br />
-      <div className="relative overflow-hidden pl-24">
-        <Slider {...settings} className="relative z-10">
+      <div className="relative overflow-hidden">
+        <Slider {...settings} className="relative">
           {featuredRecipes.map((recipe) => (
-            <div key={recipe.id} className="p-4 flex">
+            <div key={recipe.id} className="p-4 flex justify-center">
               <div className="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform duration-300 hover:scale-105"
                 style={{ height: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column' }}
               >
@@ -97,7 +94,6 @@ const FeaturedRecipes = () => {
                   <p className="text-sm text-gray-600">{recipe.description}</p>
                 </div>
               </div>
-              <br />
             </div>
           ))}
         </Slider>
@@ -110,7 +106,7 @@ const NextArrow = (props) => {
   const { onClick } = props;
   return (
     <div
-      className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-20"
+      className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg"
       onClick={onClick}
     >
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -124,9 +120,8 @@ const PrevArrow = (props) => {
   const { onClick } = props;
   return (
     <div
-      className="absolute top-1/2 left-0 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-20"
+      className="absolute top-1/2 left-4 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg"
       onClick={onClick}
-      style={{ left: '-80px' }} 
     >
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
@@ -134,6 +129,5 @@ const PrevArrow = (props) => {
     </div>
   );
 };
-
 
 export default FeaturedRecipes;
