@@ -146,7 +146,7 @@ const MyProfile = () => {
         {/* <!-- START OF BANNER --> */}
         <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900 pt-[6%]">
         {/* <!-- Mobile View: First Row --> */}
-        <div className="flex flex-row md:hidden w-full p-4 pt-[8vh]">
+        <div className="flex flex-row md:hidden w-full p-6 pt-[8vh]">
           <div className="flex justify-center items-center w-1/3 sm:mb-0">
             <div className="bg-white rounded-full">
               <img src={userData.userProfilePic || "../src/assets/MyProfile pic.png"} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />

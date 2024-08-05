@@ -48,67 +48,78 @@ const ShopProfile = () => {
 
     return (
         <div className="w-full">
-            <Header />
-            <div className="flex w-full h-auto bg-gradient-to-r from-green-900"> {/* banner */}
-                <div className="flex flex-1 pl-[3%] pt-[2%] pb-[2%]"> {/* banner left side */}
-                    <div className="flex flex-col items-center text-white"> {/* box for logo and stats */}
-                        <div className="flex justify-center items-center mb-4"> {/* logo */}
-                            <img src="../src/assets/FarmShop1.jpg" alt="Shop Logo" className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
-                        </div>
-                        <div className="mt-[5%]"> {/* stats box */}
-                            <div className="flex items-center mb-2"> {/* followers */}
-                                <div className="mr-2">
-                                    <img src="../src/assets/FollowersIcon.png" alt="Followers" />
-                                </div>
-                                <div className="text-left font-inter">
-                                    <strong>Followers:</strong> 1,203
-                                </div>
-                            </div>
-                            <div className="flex items-center mb-2"> {/* ratings */}
-                                <div className="mr-2">
-                                    <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
-                                </div>
-                                <div className="text-left font-inter">
-                                    <strong>Rating:</strong> 4.4 (1,304)
-                                </div>
-                            </div>
-                            <div className="flex items-center mb-2"> {/* products */}
-                                <div className="mr-2">
-                                    <img src="../src/assets/ProductsIcon.png" alt="Products" />
-                                </div>
-                                <div className="text-left font-inter">
-                                    <strong>Products:</strong> 67
-                                </div>
-                            </div>
-                        </div>
-                    </div> {/* end of box for logo and stats */}
-                    
-                    
-                    <div className="flex flex-col flex-1 pl-[4%] pr-[4%] text-white items-start"> {/* Name, Location, Bio, Buttons */}
-                        <h1 className="text-2xl font-bold font-inter mb-0">
-                            Pogi Farms
-                        </h1>
-                        <div className="italic mb-4 font-inter">
-                            Dasmarinas, Cavite
-                        </div>
-                        <div className="mb-6 text-left font-inter"> {/* CHARACTERS MAXIMUM: 439 */}
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed doxeee ands eiusmod tempor incididunt ut 
-                            labore et dolore magna aliqua.Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut 
-                            aliquip ex ea commodo co.Duis aute irure dolor in reprehenderit in voluptate velita esse cillum dolore eu 
-                            fugiat nulla pariatur. Excepteur sint occaecatellicid cupidatat non proident what is loooove.Maybe this
-                        </div>
-                        <button className="rounded border-2 border-white p-2 px-5 w-full font-inter hover:bg-white hover:text-green-900 transition-colors duration-300">
-                            Follow+
-                        </button>
-                    </div> {/* end of name etc of user profile */}
-                </div> {/* banner left side end */}
-                <div className="flex flex-1 items-end justify-end pr-[4%] pb-[2%]"> {/* banner right side */}
-                    {/* should insert cover photo here --> use FarmCover1.jpg */}
-                    <button className="bg-blue-500 text-white font-inter font-bold rounded px-4 py-2">
-                        View Seller
-                    </button>
-                </div> {/* banner right side end */}
-            </div> {/* banner end */}
+        {/* ----- START BANNER ------ */}
+        <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900 pt-[6%]">
+            {/* Mobile View: First Row */}
+            <div className="flex flex-row md:hidden w-full p-6 pt-[8vh]">
+                <div className="flex justify-center items-center w-1/3 sm:mb-0">
+                <div className="bg-white rounded-full">
+                    <img src="../src/assets/FarmShop1.jpg" alt="Shop Logo" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+                </div>
+                </div>
+                <div className="flex flex-col justify-center text-white w-2/3 pl-4">
+                <h1 className="text-2xl font-bold font-inter mb-2">Pogi Farms</h1>
+                <div className="italic mb-2 font-inter text-sm">Dasmarinas, Cavite</div>
+                <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 mx-[20%] font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
+                    Follow+
+                </button>
+                </div>
+            </div>
+
+            {/* Mobile View: Second Row */}
+            <div className="md:hidden flex flex-col p-6 pt-0 text-white">
+                <div className="text-justify font-inter text-sm">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
+                </div>
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden md:flex flex-1 pl-[3%] pt-[2%] pb-[2%]">
+                <div className="flex flex-col items-center text-white w-1/2">
+                <div className="flex justify-center items-center mb-4">
+                    <img src="../src/assets/FarmShop1.jpg" alt="Shop Logo" className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+                </div>
+                <div className="mt-[5%]">
+                    <div className="flex items-center mb-2">
+                    <div className="mr-2">
+                        <img src="../src/assets/FollowersIcon.png" alt="Followers" />
+                    </div>
+                    <div className="text-left font-inter">
+                        <strong>Followers:</strong> 1,203
+                    </div>
+                    </div>
+                    <div className="flex items-center mb-2">
+                    <div className="mr-2">
+                        <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
+                    </div>
+                    <div className="text-left font-inter">
+                        <strong>Rating:</strong> 4.4 (1,304)
+                    </div>
+                    </div>
+                    <div className="flex items-center mb-2">
+                    <div className="mr-2">
+                        <img src="../src/assets/ProductsIcon.png" alt="Products" />
+                    </div>
+                    <div className="text-left font-inter">
+                        <strong>Products:</strong> 67
+                    </div>
+                    </div>
+                </div>
+                </div>
+                
+                <div className="flex flex-col flex-1 pl-[4%] pr-[4%] text-white items-start">
+                <h1 className="text-2xl font-bold font-inter mb-0">Pogi Farms</h1>
+                <div className="italic mb-4 font-inter">Dasmarinas, Cavite</div>
+                <div className="mb-6 text-left font-inter">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
+                </div>
+                <button className="rounded border-2 border-white p-2 px-5 w-full font-inter hover:bg-white hover:text-green-900 transition-colors duration-300">
+                    Follow+
+                </button>
+                </div>
+            </div>
+            </div>
+
 
 
             {/* ----- start of body ----- */} 
@@ -300,7 +311,7 @@ const ShopProfile = () => {
                 </div>
 
             </div>
-            <Footer />
+            
         </div>
     );
 };

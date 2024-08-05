@@ -99,7 +99,7 @@ const MyOrders = () => {
       
       <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900 pt-[6%]">
         {/* <!-- Mobile View: First Row --> */}
-        <div className="flex flex-row md:hidden w-full p-4 pt-[8vh]">
+        <div className="flex flex-row md:hidden w-full p-6 pt-[8vh]">
           <div className="flex justify-center items-center w-1/3 sm:mb-0">
             <div className="bg-white rounded-full">
               <img src={userData.userProfilePic || "../src/assets/MyProfile pic.png"} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
@@ -184,7 +184,7 @@ const MyOrders = () => {
                 <div className="bg-[#67B045] text-white p-4 w-auto max-w-md mx-auto">
                   <ul className="space-y-4 text-left lg:pr-11">
                     <li>
-                      <a href="#" className="block text-[16px] text-gray-200 underline hover:text-blue-300">
+                      <a href="/myProfile" className="block text-[16px] text-gray-200 hover:text-blue-300">
                         My Profile
                       </a>
                     </li>
@@ -194,7 +194,7 @@ const MyOrders = () => {
                       </a>
                     </li>
                     <li>
-                      <a href="/seller" className="block text-[16px] text-gray-200 hover:text-blue-300">
+                      <a href="/seller" className="block text-[16px] text-gray-200 underline hover:text-blue-300">
                         My Shop
                       </a>
                     </li>
