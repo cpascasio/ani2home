@@ -15,7 +15,7 @@ const Menu = ({ onSelectMenu }) => {
     <div className="menu-container w-full min-h-screen bg-gray-200">
       <div className="flex flex-col w-full max-w-screen-xl mx-auto p-4 bg-gray-200">
         {/* Sidebar Section */}
-        <div className="sidebar w-full sm:w-[15%] p-4 flex flex-col space-y-4">
+        <div className="sidebar w-full lg:w-1/5 p-4 flex flex-col space-y-4">
           {/* Mobile Collapse for User Profile */}
           <div className="block lg:hidden w-full">
             <button
@@ -61,7 +61,7 @@ const Menu = ({ onSelectMenu }) => {
               <div className="header">USER PROFILE</div>
               <ul className="space-y-4">
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
+                  <a href="/myProfile" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
                     My Profile
                   </a>
                 </li>
@@ -123,7 +123,7 @@ const Menu = ({ onSelectMenu }) => {
         </div>
 
         {/* Desktop View for My Shop */}
-        <div className="hidden lg:block w-full sm:w-[85%] p-4">
+        <div className="hidden lg:block w-full lg:w-4/5 p-4">
           <div className="menu">
             <h2>MY SHOP</h2>
             <ul>

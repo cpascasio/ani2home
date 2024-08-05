@@ -1,5 +1,3 @@
-import Header from '../../components/Header.jsx'
-import Footer from '../../components/Footer.jsx'
 import LocationIcon from '../../assets/location.png' // Path to the location icon
 import LogisticsIcon from '../../assets/logistics.png'; // Path to the logistics image
 import Billing from '../../assets/billing.png';

@@ -3,7 +3,26 @@
   margin: 0 auto;
   padding: 2rem; */
   text-align: center;
+  min-height: 100vh; /* Ensures root takes full viewport height */
+  display: flex;
+  flex-direction: column;
 }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+}
+
 
 .logo {
   height: 6em;
@@ -43,19 +62,6 @@
   color: #888;
 }
 
-#searchHeaderForm {
-  background: #D9D9D9;
-  color: #737373;
-}
-
-#headerLinks a, #footer a {
-  color: #737373;
-}
-
-#headerLinks a:hover, #footer a:hover {
-  text-decoration: underline;
-}
-
 .search-form {
   position: relative;
   display: flex;
@@ -63,42 +69,30 @@
   flex: 1; 
 }
 
-.search-icon {
-  position: absolute;
-  left: 16px; 
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 18px; 
-}
-
-.search-icon {
-  margin-left: 650px;  
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 18px; 
-}
-
-
-
 
 form:focus {
   border: none !important;
 }
 
 #footer {
-  background-color: #D9D9D9;
-  color: #737373;
+  background-color: #f5f0ec;
+  color: #0b472d;
+  margin-top: auto;
 }
 
 #footer a {
   display: grid;
   font-weight: normal;
+  color: #0b472d;
+}
+
+#footer a:hover {
+  text-decoration: underline;
+  color: #0059b8;
 }
 
 #footerLogo {
-  background: url('../src/assets/Ani2Home Logo.png');
+  background: url('../src/assets/Ani2Home-Logo.png');
   background-size: cover;
 }
 

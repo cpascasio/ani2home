@@ -19,7 +19,7 @@ const Layout = () => {
           <Router>
             <Header />
             <PageRouter />
-            {/* <Footer /> */}
+            <Footer />
           </Router>
         </CartProvider>
       </UserProvider>
