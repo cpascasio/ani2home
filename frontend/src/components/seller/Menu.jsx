@@ -36,7 +36,7 @@ const Menu = ({ onSelectMenu }) => {
               <div className="bg-[#67B045] text-white p-4 w-auto max-w-md mx-auto">
                 <ul className="space-y-4 text-left lg:pr-11">
                   <li>
-                    <a href="#" className="block text-[16px] text-gray-200 underline hover:text-blue-300">
+                    <a href="#" className="block text-[16px] text-gray-200 hover:text-blue-300">
                       My Profile
                     </a>
                   </li>
@@ -46,7 +46,7 @@ const Menu = ({ onSelectMenu }) => {
                     </a>
                   </li>
                   <li>
-                    <a href="/seller" className="block text-[16px] text-gray-200 hover:text-blue-300">
+                    <a href="/seller" className="block text-[16px] text-gray-200 underline hover:text-blue-300">
                       My Shop
                     </a>
                   </li>
@@ -61,7 +61,7 @@ const Menu = ({ onSelectMenu }) => {
               <div className="header">USER PROFILE</div>
               <ul className="space-y-4">
                 <li>
-                  <a href="#" className="text-gray-600 underline hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
+                  <a href="#" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
                     My Profile
                   </a>
                 </li>
@@ -71,7 +71,7 @@ const Menu = ({ onSelectMenu }) => {
                   </a>
                 </li>
                 <li>
-                  <a href="/seller" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
+                  <a href="/seller" className="text-gray-600 underline hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
                     My Shop
                   </a>
                 </li>
@@ -83,7 +83,7 @@ const Menu = ({ onSelectMenu }) => {
           <div className="block lg:hidden w-full">
             <button
               onClick={() => setIsShopCollapseOpen(!isShopCollapseOpen)}
-              className="flex items-center cursor-pointer bg-[#0B472D] text-white p-2 rounded-md w-full text-left mb-3"
+              className="flex items-center cursor-pointer bg-[#0B472D] text-white p-2 rounded-md w-full text-left"
             >
               <span className="flex-1">MY SHOP</span>
               <svg
@@ -100,19 +100,19 @@ const Menu = ({ onSelectMenu }) => {
                 <ul className="space-y-4 text-left lg:pr-11">
                   <li
                     onClick={() => handleMenuClick('overview')}
-                    className={`block text-[16px] ${selectedMenu === 'overview' ? 'text-blue-300 font-bold' : 'text-gray-200'} hover:text-blue-300`}
+                    className={`block text-[16px] ${selectedMenu === 'overview' ? 'text-green-900 font-bold' : 'text-gray-200'} hover:text-green-700`}
                   >
                     Overview
                   </li>
                   <li
                     onClick={() => handleMenuClick('inventory')}
-                    className={`block text-[16px] ${selectedMenu === 'inventory' ? 'text-blue-300 font-bold' : 'text-gray-200'} hover:text-blue-300`}
+                    className={`block text-[16px] ${selectedMenu === 'inventory' ? 'text-green-900 font-bold' : 'text-gray-200'} hover:text-green-700`}
                   >
                     Product Inventory
                   </li>
                   <li
                     onClick={() => handleMenuClick('orders')}
-                    className={`block text-[16px] ${selectedMenu === 'orders' ? 'text-blue-300 font-bold' : 'text-gray-200'} hover:text-blue-300`}
+                    className={`block text-[16px] ${selectedMenu === 'orders' ? 'text-green-900 font-bold' : 'text-gray-200'} hover:text-green-700`}
                   >
                     Orders
                   </li>

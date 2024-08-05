@@ -1,17 +1,18 @@
 import React from 'react';
+import './Overview.css'; 
 
 const Overview = () => {
-  const productsAvailable = 50; 
-  const productsSold = 150; 
+  const productsAvailable = 50;
+  const productsSold = 150;
 
-  const totalOrders = 20; 
-  const pendingOrders = 5; 
-  const shippedOrders = 10; 
-  const deliveredOrders = 5; 
+  const totalOrders = 20;
+  const pendingOrders = 5;
+  const shippedOrders = 10;
+  const deliveredOrders = 5;
 
   return (
-    <div className="p-4 md:p-5 bg-white rounded-lg shadow-lg mt-5 md:mt-10 h-[635px]">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
+    <div className="p-4 md:p-5 bg-white rounded-lg shadow-lg mb-240 md:mt-10 h-auto md:h-[635px] transform md:translate-y-0 translate-y-150 overview-container">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 h-full">
         <div className="flex flex-col justify-between w-full bg-green-900 p-4 rounded-lg">
           <h2 className="text-lg text-white font-semibold mb-2">Products</h2>
           <div className="flex-1">

@@ -17,6 +17,7 @@
   background-color: #f4f4f4;
 }
 
+/* Mobile responsive styles */
 @media (max-width: 768px) {
   .table-container {
     padding: 0.5rem;
@@ -72,6 +73,7 @@
   border-radius: 5px;
   width: 90%;
   max-width: 500px;
+  position: relative;
 }
 
 .modal-content input,
@@ -89,6 +91,7 @@
   cursor: pointer;
 }
 
+/* Mobile responsive styles for modals */
 @media (max-width: 768px) {
   .modal-content {
     padding: 1rem;
@@ -99,4 +102,17 @@
   .modal-content button {
     margin: 0.25rem 0;
   }
+}
+
+/* Additional styles for better visual appearance */
+.table th, .table td {
+  text-align: left;
+}
+
+.table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.table tr:hover {
+  background-color: #f1f1f1;
 }

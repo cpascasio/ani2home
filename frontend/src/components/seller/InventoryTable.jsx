@@ -121,22 +121,24 @@ const InventoryTable = () => {
 
   return (
     <div className="p-4 md:p-5 bg-white rounded-lg shadow-lg mt-5 md:mt-10">
-     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5">
-        <div className="flex-grow mr-4">
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="p-2 w-full rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent"
-          />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5">
+        <div className="flex flex-col md:flex-row md:items-center md:space-x-4 w-full">
+          <div className="flex-grow mb-4 md:mb-0">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="p-2 w-full rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent"
+            />
+          </div>
+          <button
+            className="px-4 py-2 bg-[#67b045] text-white rounded-lg hover:bg-green-700"
+            onClick={() => setShowModal(true)}
+          >
+            + Add Item
+          </button>
         </div>
-        <button
-          className="px-4 py-2 bg-[#67b045] text-white rounded-lg hover:bg-green-700"
-          onClick={() => setShowModal(true)}
-        >
-          + Add Item
-        </button>
       </div>
 
       <div className="overflow-x-auto">
@@ -161,9 +163,19 @@ const InventoryTable = () => {
                 <td className="p-2 border-b break-words">{item.category}</td>
                 <td className="p-2 border-b break-words">{item.type}</td>
                 <td className="p-2 border-b break-words">{item.stock} {item.isKilo ? "kg" : "pcs"}</td>
-                <td className="p-2 border-b break-words">
-                  <button className="px-3 py-1 bg-blue-500 text-white rounded-lg mr-2" onClick={() => handleEdit(item)}>Edit</button>
-                  <button className="px-3 py-1 bg-red-500 text-white rounded-lg" onClick={() => handleDelete(item.productId)}>Delete</button>
+                <td className="p-2 border-b break-words flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+                  <button
+                    className="px-2 py-1 text-xs md:text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    onClick={() => handleEdit(item)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="px-2 py-1 text-xs md:text-sm bg-red-500 text-white rounded-lg hover:bg-red-600"
+                    onClick={() => handleDelete(item.productId)}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
@@ -210,14 +222,17 @@ const InventoryTable = () => {
               </div>
               <div className="mb-4">
                 <label htmlFor="category" className="block text-gray-700">Category</label>
-                <input
-                  type="text"
+                <select
                   id="category"
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
                   className="p-2 w-full border border-gray-300 rounded-lg"
-                />
+                >
+                  <option value="">Select Category</option>
+                  <option value="Vegetables">Vegetables</option>
+                  <option value="Fruits">Fruits</option>
+                </select>
               </div>
               <div className="mb-4">
                 <label htmlFor="type" className="block text-gray-700">Type</label>
@@ -240,13 +255,13 @@ const InventoryTable = () => {
                   className="p-2 w-full border border-gray-300 rounded-lg"
                 >
                   <option value="kilo">Kilo</option>
-                  <option value="pcs">Pieces</option>
+                  <option value="piece">Piece</option>
                 </select>
               </div>
               <div className="mb-4">
                 <label htmlFor="price" className="block text-gray-700">Price</label>
                 <input
-                  type="text"
+                  type="number"
                   id="price"
                   name="price"
                   value={formData.price}
@@ -257,7 +272,7 @@ const InventoryTable = () => {
               <div className="mb-4">
                 <label htmlFor="stock" className="block text-gray-700">Stock</label>
                 <input
-                  type="text"
+                  type="number"
                   id="stock"
                   name="stock"
                   value={formData.stock}
@@ -265,13 +280,13 @@ const InventoryTable = () => {
                   className="p-2 w-full border border-gray-300 rounded-lg"
                 />
               </div>
-              {/* Add other fields as necessary */}
-              <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Add Product</button>
+              <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg">Add Product</button>
             </form>
           </div>
         </div>
       )}
-      {showEditModal && (
+
+      {showEditModal && selectedProduct && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
           <div className="bg-white p-4 md:p-5 rounded-lg shadow-lg w-11/12 md:w-1/3 relative">
             <span className="absolute top-2 right-2 text-2xl cursor-pointer" onClick={() => { setShowEditModal(false); setFormData(initialFormData); }}>&times;</span>
@@ -300,14 +315,17 @@ const InventoryTable = () => {
               </div>
               <div className="mb-4">
                 <label htmlFor="category" className="block text-gray-700">Category</label>
-                <input
-                  type="text"
+                <select
                   id="category"
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
                   className="p-2 w-full border border-gray-300 rounded-lg"
-                />
+                >
+                  <option value="">Select Category</option>
+                  <option value="Vegetables">Vegetables</option>
+                  <option value="Fruits">Fruits</option>
+                </select>
               </div>
               <div className="mb-4">
                 <label htmlFor="type" className="block text-gray-700">Type</label>
@@ -330,13 +348,13 @@ const InventoryTable = () => {
                   className="p-2 w-full border border-gray-300 rounded-lg"
                 >
                   <option value="kilo">Kilo</option>
-                  <option value="pcs">Pieces</option>
+                  <option value="piece">Piece</option>
                 </select>
               </div>
               <div className="mb-4">
                 <label htmlFor="price" className="block text-gray-700">Price</label>
                 <input
-                  type="text"
+                  type="number"
                   id="price"
                   name="price"
                   value={formData.price}
@@ -347,7 +365,7 @@ const InventoryTable = () => {
               <div className="mb-4">
                 <label htmlFor="stock" className="block text-gray-700">Stock</label>
                 <input
-                  type="text"
+                  type="number"
                   id="stock"
                   name="stock"
                   value={formData.stock}
@@ -355,8 +373,7 @@ const InventoryTable = () => {
                   className="p-2 w-full border border-gray-300 rounded-lg"
                 />
               </div>
-              {/* Add other fields as necessary */}
-              <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Update Product</button>
+              <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg">Update Product</button>
             </form>
           </div>
         </div>
