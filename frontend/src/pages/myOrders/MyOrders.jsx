@@ -15,24 +15,36 @@ const MyOrders = () => {
   const [additionalComments, setAdditionalComments] = useState('');
   const [starRating, setStarRating] = useState(0);
   const [reviewComment, setReviewComment] = useState('');
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('')
 
   const userData = {
     userProfilePic: '/assets/userProfilePic.png',
-    followers: 1234,
+    email: 'youremail@gmail.com',
     name: 'Placeholder name',
     address: "1234 Elm St, Springfield, IL",
     // max: 448 cHARACTERS
     bio: "I was supposed to be sent away But they forgot to come and get me I was a functioning alcoholic Til nobody noticed my new aesthetic All of this to say I hope you're okay But you're the reason And no one here's to blame But what about your quiet treason? And for a fortnight there, we were forever Run into you sometimes, ask about the weather Now you're in my backyard, turned into good neighbors Your wife waters flowers Your wife waters flowers"
   };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  // for get verified
+  const handleOpenVerificationModal = () => setIsVerificationModalOpen(true);
+  const handleCloseVerificationModal = () => setIsVerificationModalOpen(false);
+  const handleVerify = () => {
+    // Add verification logic here
+    console.log('Verification Code:', verificationCode);
+    handleCloseVerificationModal();
+  };
+
+  // for orders
+
   const handleOrderReceivedClick = () => {
     setIsOrderReceived(true);
   };
-
-  const handleWriteReview = () => {
-    setIsReviewModalOpen(true);
-  };
-
   const handleCancelOrder = () => {
     setIsModalOpen(true);
   };
@@ -44,24 +56,6 @@ const MyOrders = () => {
     console.log('Additional Comments:', additionalComments);
     setIsModalOpen(false);
   };
-
-  const handleSubmitReview = () => {
-    // Logic to submit the review
-    console.log('Review Submitted');
-    console.log('Rating:', starRating);
-    console.log('Comment:', reviewComment);
-    setIsReviewModalOpen(false);
-    setHasReviewed(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleCloseReviewModal = () => {
-    setIsReviewModalOpen(false);
-  };
-
 
   // Function to close the Order Received modal
   const handleCloseOrderReceivedModal = () => {
@@ -78,12 +72,34 @@ const MyOrders = () => {
     }
   };
 
+  //for review
+
+  const handleWriteReview = () => {
+    setIsReviewModalOpen(true);
+  };
+
+  const handleSubmitReview = () => {
+    // Logic to submit the review
+    console.log('Review Submitted');
+    console.log('Rating:', starRating);
+    console.log('Comment:', reviewComment);
+    setIsReviewModalOpen(false);
+    setHasReviewed(true);
+  };
+
+  const handleCloseReviewModal = () => {
+    setIsReviewModalOpen(false);
+  };
+
+
+  
+
   return (
     <div className="w-full">
       
-      <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900 md:pt-[6%]">
+      <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900 pt-[6%]">
         {/* <!-- Mobile View: First Row --> */}
-        <div className="flex flex-row md:hidden w-full p-4 pt-[22%]">
+        <div className="flex flex-row md:hidden w-full p-4 pt-[8vh]">
           <div className="flex justify-center items-center w-1/3 sm:mb-0">
             <div className="bg-white rounded-full">
               <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
@@ -96,8 +112,9 @@ const MyOrders = () => {
             <div className="italic mb-2 font-inter text-sm">
               {userData.address}
             </div>
-            <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 mx-[20%] font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
-              Get Verified
+            <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 mx-[20%] font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500"
+              onClick={handleOpenVerificationModal}>
+                Get Verified
             </button>
           </div>
         </div>
@@ -118,9 +135,10 @@ const MyOrders = () => {
               </div>
             </div>
             <div className="mt-4 w-full flex justify-center">
-              <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
+              <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500"
+                onClick={handleOpenVerificationModal}>
                 Get Verified
-              </button>
+            </button>
             </div>
           </div>
           <div className="flex flex-col flex-1 pl-0 md:pl-[4%] pr-0 md:pr-[4%] text-white items-start relative">
@@ -143,9 +161,7 @@ const MyOrders = () => {
       </div>
 
 
-
-
-
+      {/* <!--START OF BODY --> */}
       <div className="w-full min-h-screen bg-gray-200">
         <div className="flex flex-col min-h-screen sm:flex-row w-full max-w-screen-xl mx-auto p-4 bg-gray-200">
           <div className="w-full sm:w-[15%] p-4">
@@ -347,6 +363,48 @@ const MyOrders = () => {
               </div>
             </button>
 
+            {/* Verification Modal */}
+            {isVerificationModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                  <div className="bg-white p-6 rounded-lg w-full max-w-sm relative">
+                    <button 
+                      className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                      onClick={handleCloseVerificationModal}
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                    </button>
+                    <h2 className="text-lg font-bold mb-4 text-left text-gray-600">Verify Your Account</h2>
+                    <p className="mb-4 text-gray-600">Please check your inbox for verification code sent to <span className='font-bold'>{userData.email}</span></p>
+                    <input
+                      type="text"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      className="border border-gray-300 rounded-md p-2 w-auto mb-4 bg-white text-gray-600 font-bold text-center text-2xl"
+                      placeholder="Enter the 6-digit code"
+                      maxLength={6}
+                      pattern="\d{6}"
+                      inputMode="numeric"
+                    />
+                    <div className="flex justify-end space-x-4">
+                    <button 
+                        className="bg-gray-400 text-white py-2 px-4 rounded transition duration-300 ease-in-out hover:bg-gray-600"
+                        onClick={handleCloseVerificationModal}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        className="bg-green-900 text-white p-2 px-5 rounded transition duration-300 ease-in-out hover:bg-blue-500"
+                        onClick={handleVerify}
+                      >
+                        Verify
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
             {/* Order Received Modal */}
             <Dialog open={isOrderReceived} onClose={handleCloseOrderReceivedModal}>
               <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center">
@@ -415,7 +473,7 @@ const MyOrders = () => {
                   <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                     <button
                       onClick={handleCloseModal}
-                      className="bg-gray-400 text-white py-2 px-4 rounded"
+                      className="bg-gray-400 text-white py-2 px-4 rounded transition duration-300 ease-in-out hover:bg-gray-600"
                     >
                       Cancel
                     </button>
