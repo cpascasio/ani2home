@@ -59,7 +59,7 @@ const Products = () => {
               </button>
               {isCollapseOpen && (
                 <div className="bg-[#67B045] text-white p-4 w-auto max-w-md mx-auto"> {/* Adjusted width */}
-                  {['All Products', 'Vegetables', 'Meat', 'Fruits'].map((category) => (
+                  {['All Products', 'Fruits', 'Vegetables', 'Artisanal Food'].map((category) => (
                     <a
                       key={category}
                       href={`#${category.toLowerCase()}`}
@@ -79,7 +79,7 @@ const Products = () => {
                 <span className="text-xl font-bold pl-2">Categories</span>
               </div>
               <div className="flex flex-col text-left">
-                {['All Products', 'Vegetables', 'Meat', 'Fruits'].map((category) => (
+                {['All Products', 'Fruits', 'Vegetables', 'Artisanal Food'].map((category) => (
                   <a
                     key={category}
                     href={`#${category.toLowerCase()}`}
