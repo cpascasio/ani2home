@@ -80,7 +80,7 @@ const Cart = () => {
                 <div className="flex justify-center mt-10"> {/* container for checkout button */}
                     <button 
                         onClick={handleCheckout}
-                        className="w-full max-w-[212px] h-[40px] bg-green-900 text-[16px] font-inter font-bold text-white border border-gray-300 hover:bg-gray-900"
+                        className="w-full max-w-[212px] h-[40px] bg-green-900 rounded-md text-[16px] font-inter font-bold text-white border border-gray-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition duration-300 ease-in-out"
                     >
                         Proceed to Checkout
                     </button>

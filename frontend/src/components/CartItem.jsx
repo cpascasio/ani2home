@@ -132,7 +132,7 @@ const CartItem = ({ product }) => {
                             type="text"
                             value={quantity}
                             readOnly
-                            className="w-[40px] h-[20px] text-center border border-gray-300 mx-1"
+                            className="w-[40px] h-[20px] text-center text-black border border-gray-300 bg-white mx-1"
                         />
                         <button 
                             onClick={handleIncrease} 
