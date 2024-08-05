@@ -317,7 +317,7 @@ const MyProfile = () => {
                 {userData.name || 'Fernando Lopez'}
             </h1>
             <div className="italic mb-2 font-inter text-sm">
-                {userData.address || 'Dasmarinas, Cavite'}
+                {userData?.address?.fulladdress || 'Dasmarinas, Cavite'}
             </div>
             <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 mx-[20%] font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500"
               onClick={handleOpenVerificationModal}>
@@ -401,7 +401,7 @@ const MyProfile = () => {
                 {userData.name || 'Fernando Lopez'}
             </h1>
             <div className="italic mb-2 md:mb-4 font-inter text-sm md:text-base">
-                {userData.address || 'Dasmarinas, Cavite'}
+                {userData?.address?.fulladdress || 'Dasmarinas, Cavite'}
             </div>
             <Map
               mapId="profileMap"
@@ -750,7 +750,7 @@ const MyProfile = () => {
                                             type="text"
                                             id="newLocation"
                                             name="newLocation"
-                                            defaultValue={userData?.address}
+                                            defaultValue={userData?.address?.fulladdress}
                                             className="input input-bordered bg-gray-200 text-gray-800 w-full"
                                             />
                                         </div>
@@ -824,7 +824,7 @@ const MyProfile = () => {
                                                 </tr>
                                                 <tr>
                                                     <td className="text-left text-gray-500 pl-2 md:pl-4 pb-2 font-medium whitespace-nowrap">Location:</td>
-                                                    <td className="text-left px-2 md:px-4 pb-2 break-words">{userData?.address}</td>
+                                                    <td className="text-left px-2 md:px-4 pb-2 break-words">{userData?.address?.fulladdress}</td>
                                                 </tr>
                                                 <tr>
                                                     <td className="text-left text-gray-500 pl-2 md:pl-4 pb-2 font-medium align-top whitespace-nowrap">Bio:</td>
