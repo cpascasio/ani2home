@@ -19,9 +19,10 @@ const MyOrders = () => {
   const userData = {
     userProfilePic: '/assets/userProfilePic.png',
     followers: 1234,
-    name: 'John Doe',
-    address: '1234 Elm St, Springfield, IL',
-    bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque id...'
+    name: 'Placeholder name',
+    address: "1234 Elm St, Springfield, IL",
+    // max: 422 cHARACTERS
+    bio: "I was supposed to be sent away But they forgot to come and get me I was a functioning alcoholic Til nobody noticed my new aesthetic All of this to say I hope you're okay But you're the reason And no one here's to blame But what about your quiet treason? And for a fortnight there, we were forever Run into you sometimes, ask about the weather Now you're in my backyard, turned into good neighbors Your wife waters flowers"
   };
 
   const handleOrderReceivedClick = () => {
@@ -80,60 +81,37 @@ const MyOrders = () => {
   return (
     <div className="w-full">
       <Header />
-      <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900">
-        <div className="flex flex-col md:flex-row md:pl-[3%] md:pt-[2%] md:pb-[2%] p-4 w-full md:w-1/2">
-          <div className="flex flex-col items-center text-white mb-4 md:mb-0">
-            <div className="flex justify-center items-center mb-4">
-              <div className="bg-white rounded-full">
-                <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
-              </div>
-            </div>
-            <div className="mt-4">
-              <div className="flex items-center mb-2">
-                <div className="mr-2">
-                  <img src="/assets/FollowersIcon.png" alt="Followers" />
-                </div>
-                <div className="text-left font-inter text-sm">
-                  <strong>Followers:</strong> {userData.followers}
-                </div>
-              </div>
-              <div className="flex items-center mb-2">
-                <div className="mr-2">
-                  <img src="/assets/RatingsIcon.png" alt="Ratings" />
-                </div>
-                <div className="text-left font-inter text-sm">
-                  <strong>Rating:</strong> 4.4 (1,304)
-                </div>
-              </div>
-              <div className="flex items-center mb-2">
-                <div className="mr-2">
-                  <img src="/assets/ProductsIcon.png" alt="Products" />
-                </div>
-                <div className="text-left font-inter text-sm">
-                  <strong>Products:</strong> 67
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col flex-1 pl-0 md:pl-[4%] pr-0 md:pr-[4%] text-white items-start relative">
-            <h1 className="text-2xl md:text-4xl font-bold font-inter mb-2 md:mb-0">
-              {userData.name}
-            </h1>
-            <div className="italic mb-2 md:mb-4 font-inter text-sm md:text-base">
-              {userData.address}
-            </div>
-            <div className="mb-4 md:mb-6 text-justify font-inter text-sm md:text-base">
-              {userData.bio}
-            </div>
-            <button className="absolute bottom-0 right-0 rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold mr-4 md:mr-7 transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
-              Get Verified
-            </button>
-          </div>
-        </div>
-        <div className="flex flex-1 w-full md:w-1/2">
-          <img src="/assets/FarmCover1.jpg" alt="Cover Photo" className="w-full h-auto object-cover" />
+      <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900 md:pt-[6%]">
+  <div className="flex flex-col md:flex-row md:pl-[3%] p-4 w-full md:w-1/2">
+    <div className="flex flex-col items-center text-white mb-4 md:mb-0">
+      <div className="flex justify-center items-center mb-4">
+        <div className="bg-white rounded-full">
+          <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
         </div>
       </div>
+      <div className="mt-4 w-full flex justify-center">
+        <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
+          Get Verified
+        </button>
+      </div>
+    </div>
+    <div className="flex flex-col flex-1 pl-0 md:pl-[4%] pr-0 md:pr-[4%] text-white items-start relative">
+      <h1 className="text-2xl md:text-4xl font-bold font-inter mb-2 md:mb-0">
+        {userData.name}
+      </h1>
+      <div className="italic mb-2 md:mb-4 font-inter text-sm md:text-base">
+        {userData.address}
+      </div>
+      <div className="md:mb-6 text-justify font-inter text-sm md:text-base">
+        {userData.bio}
+      </div>
+    </div>
+  </div>
+  <div className="flex flex-1 w-full md:w-1/2">
+    <img src="../src/assets/FarmCover1.jpg" alt="Cover Photo" className="w-full h-auto object-cover" />
+  </div>
+</div>
+
 
       <div className="w-full min-h-screen bg-gray-200">
         <div className="flex flex-col min-h-screen sm:flex-row w-full max-w-screen-xl mx-auto p-4 bg-gray-200">
