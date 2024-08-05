@@ -47,7 +47,7 @@ const FlyoutNav = () => {
 };
 
 const Logo = () => (
-  <div className="flex items-center gap-2">
+  <a href="/" className="flex items-center gap-2">
     <img
       src={logoImage}
       alt="Ani2Home Logo"
@@ -58,8 +58,9 @@ const Logo = () => (
       alt="Ani2Home Title"
       className="w-13 h-12"
     />
-  </div>
+  </a>
 );
+
 
 const NavLinks = () => (
   <div className="flex items-center gap-8 pl-8">
