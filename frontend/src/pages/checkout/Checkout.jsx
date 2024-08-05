@@ -68,10 +68,10 @@ const Checkout = () => {
 
   const placesLib = useMapsLibrary('places');
 
-  useEffect(() => {
-    console.log('Quantity:', quantity);
+//   useEffect(() => {
+//     console.log('Quantity:', quantity);
 
-}, [quantity]);
+// }, [quantity]);
 
 useEffect(() => {
   if (userFetch != null) {
@@ -272,6 +272,8 @@ useEffect(() => {
     }
   };
 
+  let totalPrice = 0;
+
 
   if (items.length > 0) {
     for (let i = 0; i < items.length; i++) {
@@ -367,7 +369,6 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
 
   return (
     <div  style={{ backgroundColor: '#e5e7eb', minHeight: '100vh' }} className='w-full pt-24'>
-      <Header />
       <div className="px-5 sm:px-10 md:px-20 lg:px-40 bg-gray-200 min-h-screen"> {/* main container for body */}
         <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-10">
           YOUR CART
@@ -638,7 +639,6 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
 
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

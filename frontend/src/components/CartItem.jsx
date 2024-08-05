@@ -11,6 +11,8 @@ import Star from '../assets/Star.png'; // path to the star images
 // import axios
 import axios from 'axios';
 import { useUser } from '../context/UserContext';
+// import cartcontext
+import { CartContext } from '../context/CartContext';
 
 const CartItem = ({ product }) => {
     const { user } = useUser();
@@ -115,7 +117,7 @@ const CartItem = ({ product }) => {
             <div className="flex flex-row items-center justify-center lg:flex-row lg:items-center lg:justify-between mt-4 lg:mt-0 lg:w-auto w-full">
                 <div className="flex flex-col items-center lg:items-center lg:mr-10 mb-4 lg:mb-0 mr-10">
                     <div className="text-[17px] font-inter text-[#737373]">Unit Price</div>
-                    <div className="text-[15px] font-inter text-[#E11919] mt-1">₱{products.price.toFixed(2)}</div>
+                    <div className="text-[15px] font-inter text-[#E11919] mt-1">₱{products.price}</div>
                 </div>
                 <div className="flex flex-col items-center lg:items-center lg:mr-8 mb-4 lg:mb-0 mr-10">
                     <div className="text-[17px] font-inter text-[#737373] text-center lg:text-left">Quantity</div>
