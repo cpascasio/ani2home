@@ -86,7 +86,7 @@ const Confirmation = () => {
               We’ll message you an order confirmation with details and tracking info.
             </div>
             <div className="flex justify-center mt-7 mb-4"> {/* Center button horizontally and add margin bottom */}
-              <button className="bg-[#67B045] text-white font-inter font-bold text-[15px] w-[166px] h-[33px] hover:bg-[#4a9d2e]">
+              <button className="bg-green-900 text-white font-inter font-bold text-[15px] w-[166px] h-[33px] hover:bg-blue-500 hover:text-white hover:border-blue-500 transition duration-300 ease-in-out rounded-md">
                 Continue Shopping
               </button>
             </div>
