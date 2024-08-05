@@ -79,27 +79,29 @@ const FeaturedRecipes = () => {
         Discover our curated selection of recipes featuring the freshest fruits and vegetables from Ani2Home's local farmers and markets. Perfect for a wholesome and delightful meal experience.
       </p>
       <br />
-      <Slider {...settings}>
-        {featuredRecipes.map((recipe) => (
-          <div key={recipe.id} className="p-4 flex">
-            <div className="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform duration-300 hover:scale-105"
-              style={{ height: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column' }}
-            >
-              <img
-                src={recipe.imageUrl}
-                alt={recipe.title}
-                className="w-full h-60 object-cover mb-1 rounded-t-lg"
-                style={{ borderBottom: '4px solid #0059B8' }}
-              />
-              <div className="p-4 flex flex-col justify-between flex-1">
-                <h4 className="text-lg font-semibold mb-2 text-green-800">{recipe.title}</h4>
-                <p className="text-sm text-gray-600">{recipe.description}</p>
+      <div className="relative overflow-hidden pl-24">
+        <Slider {...settings} className="relative z-10">
+          {featuredRecipes.map((recipe) => (
+            <div key={recipe.id} className="p-4 flex">
+              <div className="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden transform transition-transform duration-300 hover:scale-105"
+                style={{ height: '100%', maxWidth: '300px', display: 'flex', flexDirection: 'column' }}
+              >
+                <img
+                  src={recipe.imageUrl}
+                  alt={recipe.title}
+                  className="w-full h-60 object-cover mb-1 rounded-t-lg"
+                  style={{ borderBottom: '4px solid #0059B8' }}
+                />
+                <div className="p-4 flex flex-col justify-between flex-1">
+                  <h4 className="text-lg font-semibold mb-2 text-green-800">{recipe.title}</h4>
+                  <p className="text-sm text-gray-600">{recipe.description}</p>
+                </div>
               </div>
+              <br />
             </div>
-            <br />
-          </div>
-        ))}
-      </Slider>
+          ))}
+        </Slider>
+      </div>
     </div>
   );
 };
@@ -108,7 +110,7 @@ const NextArrow = (props) => {
   const { onClick } = props;
   return (
     <div
-      className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-10"
+      className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-20"
       onClick={onClick}
     >
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -122,8 +124,9 @@ const PrevArrow = (props) => {
   const { onClick } = props;
   return (
     <div
-      className="absolute top-1/2 left-4 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-10"
+      className="absolute top-1/2 left-0 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-20"
       onClick={onClick}
+      style={{ left: '-80px' }} 
     >
       <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
@@ -131,5 +134,6 @@ const PrevArrow = (props) => {
     </div>
   );
 };
+
 
 export default FeaturedRecipes;

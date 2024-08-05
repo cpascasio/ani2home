@@ -1,7 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import backgroundImage from '../../assets/hero-section-bg.svg';
 
 const Hero = () => {
+  const navigate = useNavigate(); 
+
+  const handleShopAllClick = () => {
+    navigate('/products'); 
+  };
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
       {/* Hero Section */}
@@ -28,22 +35,24 @@ const Hero = () => {
                 }}>
                 Nurturing Communities, One Delivery at a Time.
             </p>
-            <button className="font-bold py-2 px-4 md:py-3 md:px-6 lg:py-4 lg:px-8 rounded-full mb-10"
-            style={{
+            <button
+              className="font-bold py-2 px-4 md:py-3 md:px-6 lg:py-4 lg:px-8 rounded-full mb-10"
+              style={{
                 backgroundColor: '#67B045',
                 color: '#FFFFFF',
                 transition: 'background-color 0.3s ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#072C1C';
-              e.currentTarget.style.color = '#67B045';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#67B045';
-              e.currentTarget.style.color = '#FFFFFF';
-            }}
+              }}
+              onClick={handleShopAllClick} 
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#072C1C';
+                e.currentTarget.style.color = '#67B045';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#67B045';
+                e.currentTarget.style.color = '#FFFFFF';
+              }}
             >
-            Shop All
+              Shop All
             </button>
           </div>
         </div>
