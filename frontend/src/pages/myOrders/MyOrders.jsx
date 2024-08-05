@@ -102,15 +102,15 @@ const MyOrders = () => {
         <div className="flex flex-row md:hidden w-full p-4 pt-[8vh]">
           <div className="flex justify-center items-center w-1/3 sm:mb-0">
             <div className="bg-white rounded-full">
-              <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+              <img src={userData.userProfilePic || "../src/assets/MyProfile pic.png"} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
             </div>
           </div>
           <div className="flex flex-col justify-center text-white w-2/3 pl-4">
             <h1 className="text-2xl font-bold font-inter mb-2">
-              {userData.name}
+              {userData.name || 'Fernando Lopez'}
             </h1>
             <div className="italic mb-2 font-inter text-sm">
-              {userData.address}
+              {userData.address || 'Dasmarinas, Cavite'}
             </div>
             <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 mx-[20%] font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500"
               onClick={handleOpenVerificationModal}>
@@ -122,7 +122,7 @@ const MyOrders = () => {
         {/* <!-- Mobile View: Second Row --> */}
         <div className="md:hidden flex flex-col p-6 pt-0 text-white">
           <div className="text-justify font-inter text-sm">
-            {userData.bio}
+            {userData.bio || 'Fernando is the proud owner of Pogi Farms where he passionately practices sustainable agriculture. He cultivates organic produce on his expansive land and welcomes visitors for educational farm tours, promoting community engagement and environmental awareness.'}
           </div>
         </div>
 
@@ -131,7 +131,7 @@ const MyOrders = () => {
           <div className="flex flex-col items-center text-white mb-4 md:mb-0">
             <div className="flex justify-center items-center mb-4">
               <div className="bg-white rounded-full">
-                <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+                <img src={userData.userProfilePic || "../src/assets/MyProfile pic.png"} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
               </div>
             </div>
             <div className="mt-4 w-full flex justify-center">
@@ -143,13 +143,13 @@ const MyOrders = () => {
           </div>
           <div className="flex flex-col flex-1 pl-0 md:pl-[4%] pr-0 md:pr-[4%] text-white items-start relative">
             <h1 className="text-2xl md:text-4xl font-bold font-inter mb-2 md:mb-0">
-              {userData.name}
+              {userData.name || 'Fernando Lopez'}
             </h1>
             <div className="italic mb-2 md:mb-4 font-inter text-sm md:text-base">
-              {userData.address}
+              {userData.address || 'Dasmarinas, Cavite'}
             </div>
             <div className="md:mb-6 text-justify font-inter text-sm md:text-base">
-              {userData.bio}
+              {userData.bio || 'Fernando is the proud owner of Pogi Farms where he passionately practices sustainable agriculture. He cultivates organic produce on his expansive land and welcomes visitors for educational farm tours, promoting community engagement and environmental awareness.'}
             </div>
           </div>
         </div>
