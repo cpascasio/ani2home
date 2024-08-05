@@ -1,5 +1,3 @@
-import Header from '../../components/Header.jsx'
-import Footer from '../../components/Footer.jsx'
 import useFetch from '../../../hooks/useFetch.js';
 import { useUser } from '../../context/UserContext.jsx';
 import { useNavigate } from 'react-router-dom';
@@ -9,18 +7,29 @@ import axios from 'axios';
 const MyProfile = () => {
 
     const  userLog = localStorage.getItem('user');
-
     const {user, dispatch, logout} = useUser();
-
     const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
-
     const [userData, setUserData] = useState({});
-
     const [editMode, setEditMode] = useState(false);
-
     const navigate = useNavigate();
-
     const [isCollapseOpen, setIsCollapseOpen] = useState(false);
+
+    // for verification
+    const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+    const [verificationCode, setVerificationCode] = useState('')
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+      };
+    
+      // for get verified
+      const handleOpenVerificationModal = () => setIsVerificationModalOpen(true);
+      const handleCloseVerificationModal = () => setIsVerificationModalOpen(false);
+      const handleVerify = () => {
+        // Add verification logic here
+        console.log('Verification Code:', verificationCode);
+        handleCloseVerificationModal();
+      };
     
 
     // if button is pressed, editmode to true
@@ -134,63 +143,111 @@ const MyProfile = () => {
 
   return (
     <div style={{ backgroundColor: '#e5e7eb', minHeight: '100vh' }} className='w-full pt-24'>
-        <Header />
-        <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900"> {/* Banner */}
-            <div className="flex flex-col md:flex-row md:pl-[3%] md:pt-[2%] md:pb-[2%] p-4 w-full md:w-1/2"> {/* Banner Left Side */}
-                <div className="flex flex-col items-center text-white mb-4 md:mb-0"> {/* Box for Logo and Stats */}
-                    <div className="flex justify-center items-center mb-4">
-                        <div className="bg-white rounded-full"> {/* White Background */}
-                            <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
-                        </div>
-                    </div>
-                    <div className="mt-4"> {/* Stats Box */}
-                        <div className="flex items-center mb-2"> {/* Followers */}
-                            <div className="mr-2">
-                                <img src="../src/assets/FollowersIcon.png" alt="Followers" />
-                            </div>
-                            <div className="text-left font-inter text-sm">
-                                <strong>Followers:</strong> {userData.followers}
-                            </div>
-                        </div>
-                        <div className="flex items-center mb-2"> {/* Ratings */}
-                            <div className="mr-2">
-                                <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
-                            </div>
-                            <div className="text-left font-inter text-sm">
-                                <strong>Rating:</strong> 4.4 (1,304)
-                            </div>
-                        </div>
-                        <div className="flex items-center mb-2"> {/* Products */}
-                            <div className="mr-2">
-                                <img src="../src/assets/ProductsIcon.png" alt="Products" />
-                            </div>
-                            <div className="text-left font-inter text-sm">
-                                <strong>Products:</strong> 67
-                            </div>
-                        </div>
-                    </div>
-                </div> {/* End of Box for Logo and Stats */}
-                <div className="flex flex-col flex-1 pl-0 md:pl-[4%] pr-0 md:pr-[4%] text-white items-start relative"> {/* Name, Location, Bio, Buttons */}
-                    <h1 className="text-2xl md:text-4xl font-bold font-inter mb-2 md:mb-0">
-                        {userData.name}
-                    </h1>
-                    <div className="italic mb-2 md:mb-4 font-inter text-sm md:text-base">
-                        {userData.address}
-                    </div>
-                    <div className="mb-4 md:mb-6 text-justify font-inter text-sm md:text-base"> {/* Characters Maximum: 439 */}
-                        {userData.bio}
-                    </div>
-                    <button className="absolute bottom-0 right-0 rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold mr-4 md:mr-7 
-                    transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
-                        Get Verified
+        {/* <!-- START OF BANNER --> */}
+        <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900 pt-[6%]">
+        {/* <!-- Mobile View: First Row --> */}
+        <div className="flex flex-row md:hidden w-full p-4 pt-[8vh]">
+          <div className="flex justify-center items-center w-1/3 sm:mb-0">
+            <div className="bg-white rounded-full">
+              <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+            </div>
+          </div>
+          <div className="flex flex-col justify-center text-white w-2/3 pl-4">
+            <h1 className="text-2xl font-bold font-inter mb-2">
+              {userData.name}
+            </h1>
+            <div className="italic mb-2 font-inter text-sm">
+              {userData.address}
+            </div>
+            <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 mx-[20%] font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500"
+              onClick={handleOpenVerificationModal}>
+                Get Verified
+            </button>
+          </div>
+        </div>
+
+        {/* <!-- Mobile View: Second Row --> */}
+        <div className="md:hidden flex flex-col p-6 pt-0 text-white">
+          <div className="text-justify font-inter text-sm">
+            {userData.bio}
+          </div>
+        </div>
+
+        {/* <!-- Desktop View --> */}
+        <div className="hidden md:flex flex-col md:flex-row md:pl-[3%] p-4 w-full md:w-1/2">
+          <div className="flex flex-col items-center text-white mb-4 md:mb-0">
+            <div className="flex justify-center items-center mb-4">
+              <div className="bg-white rounded-full">
+                <img src={userData.userProfilePic} alt="Profile Pic" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+              </div>
+            </div>
+            <div className="mt-4 w-full flex justify-center">
+              <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500"
+                onClick={handleOpenVerificationModal}>
+                Get Verified
+            </button>
+            </div>
+          </div>
+          <div className="flex flex-col flex-1 pl-0 md:pl-[4%] pr-0 md:pr-[4%] text-white items-start relative">
+            <h1 className="text-2xl md:text-4xl font-bold font-inter mb-2 md:mb-0">
+              {userData.name}
+            </h1>
+            <div className="italic mb-2 md:mb-4 font-inter text-sm md:text-base">
+              {userData.address}
+            </div>
+            <div className="md:mb-6 text-justify font-inter text-sm md:text-base">
+              {userData.bio}
+            </div>
+          </div>
+        </div>
+        
+        {/* <!-- Desktop View: Cover Photo --> */}
+        <div className="hidden md:flex flex-1 w-full md:w-1/2">
+          <img src="../src/assets/FarmCover1.jpg" alt="Cover Photo" className="w-full h-auto object-cover" />
+        </div>
+      </div>
+
+            {/* Verification Modal */}
+            {isVerificationModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                  <div className="bg-white p-6 rounded-lg w-full max-w-sm relative">
+                    <button 
+                      className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                      onClick={handleCloseVerificationModal}
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
                     </button>
-                </div> {/* End of Name, etc. of User Profile */}
-            </div> {/* Banner Left Side End */}
-            
-            <div className="flex flex-1 w-full md:w-1/2"> {/* Banner Right Side */}
-                <img src="../src/assets/FarmCover1.jpg" alt="Cover Photo" className="w-full h-auto object-cover" /> {/* Insert Cover Photo */}
-            </div> {/* Banner Right Side End */}
-        </div> {/* Banner End */}
+                    <h2 className="text-lg font-bold mb-4 text-left text-gray-600">Verify Your Account</h2>
+                    <p className="mb-4 text-gray-600">Please check your inbox for verification code sent to <span className='font-bold'>{userData.email}</span></p>
+                    <input
+                      type="text"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      className="border border-gray-300 rounded-md p-2 w-auto mb-4 bg-white text-gray-600 font-bold text-center text-2xl"
+                      placeholder="Enter the 6-digit code"
+                      maxLength={6}
+                      pattern="\d{6}"
+                      inputMode="numeric"
+                    />
+                    <div className="flex justify-end space-x-4">
+                    <button 
+                        className="bg-gray-400 text-white py-2 px-4 rounded transition duration-300 ease-in-out hover:bg-gray-600"
+                        onClick={handleCloseVerificationModal}
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        className="bg-green-900 text-white p-2 px-5 rounded transition duration-300 ease-in-out hover:bg-blue-500"
+                        onClick={handleVerify}
+                      >
+                        Verify
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
 
             {/* ----- start of body ----- */} 
@@ -620,7 +677,7 @@ const MyProfile = () => {
                         </div>
                     </div>
                 </div>
-        <Footer />
+       
     </div>
   );
 };
