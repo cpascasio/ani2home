@@ -12,11 +12,7 @@ import useFetch from '../../../hooks/useFetch';
 import { useUser } from '../../context/UserContext.jsx';
 // import axios
 import axios from 'axios';
-
-import { useUser } from "../../context/UserContext.jsx";
 import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
-
-import axios from "axios";
 import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 
 const Checkout = () => {
