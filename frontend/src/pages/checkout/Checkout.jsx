@@ -479,13 +479,13 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
                   <div className="flex justify-end space-x-4 mb-2 w-full">
                     <button 
                       onClick={handleCancelEdit}
-                      className="btn btn-sm bg-gray-200 text-[#737373] rounded border border-gray-300 hover:bg-gray-300"
+                      className="btn btn-sm bg-gray-400 text-white border-none rounded transition duration-300 ease-in-out hover:bg-red-500 font-inter font-bold"
                     >
                       Cancel
                     </button>
                     <button
                       type="Submit"
-                      className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
+                      className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 hover:text-white transition duration-300 ease-in-out border-none px-5"
                     >
                       Save
                     </button>
@@ -544,7 +544,7 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
               value={note}
               onChange={handleNoteChange}
               placeholder="Please leave a message..."
-              className="w-full border-b border-[#AFAFAF] text-[#737373] font-inter text-[15px] p-2 resize-none"
+              className="w-full border-b border-[#AFAFAF] text-[#737373] font-inter text-[15px] p-2 resize-none bg-white"
               style={{ minHeight: '40px' }}
             />
           </div>
@@ -559,46 +559,47 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
           </div>
 
           <div className="bg-white w-full h-[46px] mt-1 flex items-center justify-between p-4 border border-gray-300 relative">
-          <div className="font-inter text-[15px] text-[#737373]">
-            Payment Option
+  <div className="font-inter text-[15px] text-[#737373]">
+    Payment Option
+  </div>
+  <div className="flex items-center">
+    <div className="font-inter text-[15px] text-[#E11919]">
+      {selectedPaymentOption || 'Select payment method'}
+    </div>
+    <svg
+      onClick={handleDropdownToggle}
+      className={`w-[20px] h-[20px] ml-2 cursor-pointer transition-transform duration-300 ${isDropdownOpen ? 'rotate-270' : ''}`}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  </div>
+  {isDropdownOpen && (
+    <div className="absolute left-0 top-full bg-white border border-gray-300 w-full z-10">
+      {paymentOptions.map((option) => (
+        <div
+          key={option}
+          onClick={() => handlePaymentOptionSelect(option)}
+          className="flex items-center p-2 cursor-pointer hover:bg-gray-200"
+        >
+          <div className={`w-4 h-4 border rounded-full flex items-center justify-center mr-2 ${selectedPaymentOption === option ? 'bg-blue-500' : 'bg-white'}`}>
+            {selectedPaymentOption === option && (
+              <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
+            )}
           </div>
-          <div className="flex items-center">
-            <div className="font-inter text-[15px] text-[#E11919]">
-              {selectedPaymentOption || 'Select payment method'}
-            </div>
-            <svg
-              onClick={handleDropdownToggle}
-              className={`w-[20px] h-[20px] ml-2 cursor-pointer transition-transform duration-300 ${isDropdownOpen ? 'rotate-90' : ''}`}
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 9l6 6 6-6" />
-            </svg>
-          </div>
-          {isDropdownOpen && (
-            <div className="absolute bg-white border border-gray-300 w-full mt-1 z-10">
-              {paymentOptions.map((option) => (
-                <div
-                  key={option}
-                  onClick={() => handlePaymentOptionSelect(option)}
-                  className="flex items-center p-2 cursor-pointer hover:bg-gray-200"
-                >
-                  <div className={`w-4 h-4 border rounded-full flex items-center justify-center mr-2 ${selectedPaymentOption === option ? 'bg-blue-500' : 'bg-white'}`}>
-                    {selectedPaymentOption === option && (
-                      <div className="w-2.5 h-2.5 bg-white rounded-full"></div>
-                    )}
-                  </div>
-                  <div className="font-inter text-[15px] text-[#737373]">{option}</div>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="font-inter text-[15px] text-[#737373]">{option}</div>
         </div>
+      ))}
+    </div>
+  )}
+</div>
+
 
           {/* Payment Details Section */} 
           <div className="bg-white w-full p-4 flex flex-col mt-1">
@@ -624,13 +625,13 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
           <div className="flex justify-between border p-2" style={{ marginBottom: 'auto'}}> {/* Inline style for margin-bottom */}
   <button 
     onClick={handleCancel} 
-    className="w-[122px] h-[40px] bg-white border border-gray-300 text-[#737373] font-inter font-bold text-[16px] hover:bg-gray-100 mr-4"
+    className="w-[122px] h-[40px] bg-gray-400 text-white border border-gray-300 rounded transition duration-300 ease-in-out hover:bg-red-500 font-inter font-bold text-[16px] mr-4 rounded-md"
   >
     Cancel
   </button>
   <button 
     onClick={handlePlaceOrder} 
-    className="w-[122px] h-[40px] bg-white border border-gray-300 text-[#737373] font-inter font-bold text-[16px] hover:bg-gray-100"
+    className="w-[122px] h-[40px] bg-green-900 font-inter font-bold text-white border border-gray-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition duration-300 ease-in-out rounded-md "
   >
     Place Order
   </button>
