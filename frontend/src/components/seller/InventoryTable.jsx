@@ -65,9 +65,10 @@ const InventoryTable = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Remove unit in formData
+    // Remove unit in formData and add storeId
     const { unit, ...rest } = formData;
-
+    rest.storeId = user?.userId;
+    
     try {
         const response = await axios.post("http://localhost:3000/api/products/create-product", rest, {
             headers: {

@@ -1,6 +1,6 @@
-import Header from '../../components/Header.jsx'
-import Footer from '../../components/Footer.jsx'
-import LocationIcon from '../../assets/location.png' // Path to the location icon
+import Header from '../../components/Header.jsx';
+import Footer from '../../components/Footer.jsx';
+import LocationIcon from '../../assets/location.png'; // Path to the location icon
 import LogisticsIcon from '../../assets/logistics.png'; // Path to the logistics image
 import Billing from '../../assets/billing.png';
 import { useState, useContext, useEffect, useCallback, useRef  } from 'react';
@@ -8,10 +8,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { CartContext } from '../../context/CartContext.jsx';
 // import useFetch
 import useFetch from '../../../hooks/useFetch';
-// import user contxt
-import { useUser } from '../../context/UserContext.jsx';
+
+import { useParams } from 'react-router-dom';
 // import axios
-import axios from 'axios';
 
 import { useUser } from "../../context/UserContext.jsx";
 import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
@@ -19,24 +18,35 @@ import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
 import axios from "axios";
 import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 
-const Checkout = () => {
+const Checkout = () => { 
   const { user } = useUser();
   const [items, setItems] = useState([]);
-  const { data: itemsFetch } = useFetch(`/api/cart/cart-items/${user?.userId}`);
-  
+  const [ seller, setSeller ] = useState({});
 
+  const { sellerId } = useParams();
+
+  const { data: itemsFetch } = useFetch(`/api/cart/checkout/${user?.userId}/${sellerId}`);
+
+  
   useEffect(() => {
     if (itemsFetch) {
-      setItems(itemsFetch);
+      setItems(itemsFetch.items);
+      // add itemsFetch.sellerId to setSeller
+      setSeller(itemsFetch.seller, itemsFetch.sellerId);
     }
     console.log("Checkout Items: ", itemsFetch);
-  }
-  , [itemsFetch]);
+  }, [itemsFetch]);
+
+  useEffect(() => {
+    setSellerAddress({
+      lat: seller?.address?.lat || 14.3879953,
+      lng: seller?.address?.lng || 120.9879423,
+    });
+  }, [seller]);
 
   useEffect(() => {
     console.log("Checkout Items Items: ", items); // doesn't fetch the items correctly
-  }
-  , [items]);
+  }, [items]);
 
   const navigate = useNavigate();
   const { cart } = useContext(CartContext);
@@ -56,6 +66,8 @@ const Checkout = () => {
   const [province, setProvince] = useState('Cavite');
   const [barangay, setBarangay] = useState('Molino III');
   const [city, setCity] = useState('Bacoor');
+  const [country, setCountry] = useState('Philippines');
+  const [postalCode, setPostalCode] = useState('4102');
   const [note, setNote] = useState(''); // State for the note
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -63,37 +75,46 @@ const Checkout = () => {
   const [originalPhoneNumber, setOriginalPhoneNumber] = useState(phoneNumber);
   const [originalAddress, setOriginalAddress] = useState(address);
 
+
   const map = useMap();
 
   const [markerPosition, setMarkerPosition] = useState(null);
   const [addressDetails, setAddressDetails] = useState({});
+  const [buyerAddress, setBuyerAddress] = useState({
+    lat: 14.3879953,
+    lng: 120.9879423,
+  });
+
+  const [sellerAddress, setSellerAddress] = useState({
+    lat: 14.3879953,
+    lng: 120.9879423,
+  });
 
   const autocompleteContainerRef = useRef(null);
 
   const placesLib = useMapsLibrary('places');
 
   useEffect(() => {
-    console.log('Quantity:', quantity);
-
-}, [quantity]);
-
-useEffect(() => {
-  if (userFetch != null) {
+    if (userFetch != null) {
       setUserData(userFetch.data);
       console.log("Fetched Data:", userFetch.data);
-  }
-}, [userFetch]);
+    }
+  }, [userFetch]);
 
-useEffect(() => {
-  if (userData != null) {
-    setFullName(userData.name || '');
-    setCountryCode(userData.phoneNumber ? userData.phoneNumber.slice(0, 3) : '');
-    setPhoneNumber(userData.phoneNumber ? userData.phoneNumber.slice(3) : '');
-    setAddress(userData?.address?.fulladdress || '');
-  }
-}, [userData]);
+  useEffect(() => {
+    if (userData != null) {
+      setFullName(userData.name || '');
+      setCountryCode(userData.phoneNumber ? userData.phoneNumber.slice(0, 3) : '');
+      setPhoneNumber(userData.phoneNumber ? userData.phoneNumber.slice(3) : '');
+      setAddressDetails(userData?.address || '');
+      setBuyerAddress({
+        lat: userData?.address?.lat,
+        lng: userData?.address?.lng,
+      });
+    }
+  }, [userData]);
 
-  
+
 
   const handleEditToggle = () => {
     setEditing(!editing);
@@ -102,7 +123,6 @@ useEffect(() => {
   const handleFullNameChange = (e) => {
     setFullName(e.target.value);
   };
-
 
   const handlePhoneNumberChange = (e) => {
     setPhoneNumber(e.target.value);
@@ -124,13 +144,23 @@ useEffect(() => {
     setCity(e.target.value);
   };
 
+  const handleCountryChange = (e) => {
+    setCountry(e.target.value);
+  };
+
+  const handlePostalCodeChange = (e) => {
+    setPostalCode(e.target.value);
+  };
+
   const handleCancelEdit = () => {
-    setFullName(originalFullName);
-    setPhoneNumber(originalPhoneNumber);
-    setAddress(originalAddress);
-    setProvince(originalProvince);
-    setBarangay(originalBarangay);
-    setCity(originalCity);
+    setFullName(userData?.name);
+    setPhoneNumber(userData?.phoneNumber);
+    setAddress(userData?.address?.fullAddress);
+    setProvince(userData?.address?.province);
+    setBarangay(userData?.address?.barangay);
+    setCity(userData?.address?.city);
+    setCountry(userData?.address?.country);
+    setPostalCode(userData?.address?.postalCode);
     setEditing(false);
   };
 
@@ -151,7 +181,6 @@ useEffect(() => {
   };
 
   const handleMapClick = async (event) => {
-
     const latitude = event.detail.latLng.lat;
     const longitude = event.detail.latLng.lng;
     setMarkerPosition({ lat: latitude, lng: longitude });
@@ -165,39 +194,89 @@ useEffect(() => {
       );
 
       if (response.data.results.length > 0) {
-        const result = response.data.results[0];
+        const result = response.data.results[0]; 
+
+        console.log("result: ", result);
+
+        const fullAddress = response.data.results[0].formatted_address;
+        
+        const streetNumber = response.data.results[0]?.address_components.find(
+          (address) => address.types.includes("street_number")
+        )?.short_name;
+        const premise = response.data.results[0]?.address_components.find(
+          (address) => address.types.includes("premise")
+        )?.short_name;
+        const plusCode =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("plus_code")
+          )?.short_name ?? "";
+        console.log("PLUS:" + plusCode);
+        const route =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("route")
+          )?.short_name ?? "";
+        console.log("ROUTE:" + route);
+        const barangay =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("sublocality")
+          )?.short_name ?? "";
+        console.log("BARANGAY:" + barangay);
+        const city =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("locality")
+          )?.short_name ?? "";
+        console.log("CITY:" + city);
+        const province =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("administrative_area_level_2")
+          )?.short_name ?? "";
+        console.log("PROVINCE:" + province);
+        const region =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("administrative_area_level_1")
+          )?.short_name ?? "";
+        console.log("REGION:" + region);
+        const country =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("country")
+          )?.long_name ?? "";
+        console.log("COUNTRY:" + country);
+        const postalCode =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("postal_code")
+          )?.short_name ?? "";
+
+        const streetAddress = [premise, plusCode, streetNumber, route].filter(Boolean).join(', ');
+
+        console.log("fullAddress: ", fullAddress);
+        console.log("streetAddress: ", streetAddress);
+        console.log("premise: ", premise);
+        console.log("plusCode: ", plusCode);
+        console.log("route: ", route);
+        console.log("barangay: ", barangay);
+        console.log("city: ", city);
+        console.log("province: ", province);
+        console.log("region: ", region);
+        console.log("country: ", country);
+        console.log("POSTAL CODE:" + postalCode);
   
-        const fulladdress = result.formatted_address;
-        const addressComponents = result.address_components;
-  
-        let city = '';
-        let province = '';
-        let region = '';
-        let country = '';
-  
-        for (const component of addressComponents) {
-          if (component.types.includes('locality')) {
-            city = component.long_name;
-          } else if (component.types.includes('administrative_area_level_1')) {
-            province = component.long_name;
-          } else if (component.types.includes('administrative_area_level_2')) {
-            region = component.long_name;
-          } else if (component.types.includes('country')) {
-            country = component.long_name;
-          }
-        }
-  
-        document.getElementById('newLocation').value = fulladdress;
+        document.getElementById('newStreetAddress').value = streetAddress;
         document.getElementById('newProvice').value = province;
         document.getElementById('newRegion').value = region;
         document.getElementById('newCity').value = city;
+        document.getElementById('newBarangay').value = barangay;
+        document.getElementById('newCountry').value = country;
+        document.getElementById('newPostalCode').value = postalCode;
   
         setAddressDetails({
-          fulladdress,
+          fullAddress,
+          streetAddress,
           city,
           province,
+          barangay,
           region,
           country,
+          postalCode,
           lng: longitude,
           lat: latitude,
         });
@@ -241,8 +320,8 @@ useEffect(() => {
     data.address = {};
 
     // Check if fields have been changed
-    if (formData.get("newLocation") !== userData?.address?.fulladdress) {
-      data.address.fulladdress = formData.get("newLocation") || "";
+    if (formData.get("newStreetAddress") !== userData?.address?.streetAddress) {
+      data.address.street = formData.get("newStreetAddress") || "";
     }
     if (formData.get("newProvice") !== userData?.address?.province) {
       data.address.province = formData.get("newProvice") || "";
@@ -252,6 +331,15 @@ useEffect(() => {
     }
     if (formData.get("newCity") !== userData?.address?.city) {
       data.address.city = formData.get("newCity") || "";
+    }
+    if (formData.get("newBarangay") !== userData?.address?.barangay) {
+      data.address.barangay = formData.get("newBarangay") || "";
+    }
+    if (formData.get("newCountry") !== userData?.address?.country) {
+      data.address.country = formData.get("newCountry") || "";
+    }
+    if (formData.get("newPostalCode") !== userData?.address?.postalCode) {
+      data.address.postalCode = formData.get("newPostalCode") || "";
     }
 
     // Get the token from localStorage or any other source
@@ -276,6 +364,7 @@ useEffect(() => {
     }
   };
 
+  let totalPrice = 0;
 
   if (items.length > 0) {
     for (let i = 0; i < items.length; i++) {
@@ -286,7 +375,7 @@ useEffect(() => {
   }
   // const totalPrice = cartItems.reduce((acc, items) => acc + (items.product.price * items.quantity), 0);
 
-  console.log("Total Price : ", totalPrice );
+  //console.log("Total Price : ", totalPrice );
 
   // Function to format numbers with commas
   const formatNumber = (number) => {
@@ -299,75 +388,61 @@ useEffect(() => {
 
   const handlePlaceOrder = () => {
 
-        const order = {
-          userId: user?.userId,
-          sellerId: "store345", // update card model to have a sellerId ty
-          shippingFee: 50,
-          totalPrice,
-          status: "In Process",
-          deliveryAddress: {
-            fullName,
-            province,
-            barangay,
-            city,
-            address,
-            phoneNumber
-          },
-          paymentOption: selectedPaymentOption,
-          paymentRefNo: '1234567890',
-          items: items.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity
-          }))
-        };
-
-
-
-        // Extract order details from items
-      const orderDetails = items.map(item => ({
-        orderId: order.orderId,
+    const order = {
+      userId: user?.userId,
+      sellerId: sellerId, // update card model to have a sellerId ty
+      shippingFee: 50,
+      totalPrice,
+      status: "In Process",
+      deliveryAddress: {
+        fullName,
+        province,
+        barangay,
+        city,
+        address: addressDetails.fullAddress,
+        phoneNumber
+      },
+      paymentOption: selectedPaymentOption,
+      paymentRefNo: '1234567890',
+      items: items.map(item => ({
         productId: item.productId,
         quantity: item.quantity
-      }));
+      }))
+    };
 
-        // navigate('/confirmation', { state: { order: order}});
-        // console.log('handlePlaceOrder', items);
+    // Extract order details from items
+    const orderDetails = items.map(item => ({
+      orderId: order.orderId,
+      productId: item.productId,
+      quantity: item.quantity
+    }));
 
-        // add to firebase to order db
+    // navigate('/confirmation', { state: { order: order}});
+    // console.log('handlePlaceOrder', items);
 
-       
+    // add to firebase to order db
 
+    // Conditionally add the note property if it's not an empty string
+    if (note.trim() !== '') {
+      order.note = note;
+    }
 
-        // Conditionally add the note property if it's not an empty string
-  // Conditionally add the note property if it's not an empty string
-if (note.trim() !== '') {
-  order.note = note;
-}
+    console.log('Order:', order);
 
-console.log('Order:', order);
+    // First, create the order
+    axios.post('http://localhost:3000/api/orders/place-order', order)
+      .then((response) => {
+        console.log('Order placed:', response.data);
+        
+        // Extract the orderId from the response if needed
+        const orderId = String(response.data.orderId);
+        console.log("OrderID: ", orderId);
 
-
-
-
-// First, create the order
-axios.post('http://localhost:3000/api/orders/place-order', order)
-  .then((response) => {
-    console.log('Order placed:', response.data);
-    
-     // Extract the orderId from the response if needed
-     const orderId = String(response.data.orderId);
-     console.log("OrderID: ", orderId);
-
-  })
-  .catch((error) => {
-    console.error('Error placing order or order details:', error);
-  });
+      })
+      .catch((error) => {
+        console.error('Error placing order or order details:', error);
+      });
   };
-
-
-
-
- 
 
   return (
     <div className='w-full'>
@@ -424,11 +499,24 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
                     </label>
                   </div>
                   <div className="flex flex-col my-2">
+                    <div className="bg-gray-200 text-gray-800 p-2 rounded">
+                      {addressDetails.fullAddress || userData?.address?.fullAddress || 'No address selected'}
+                    </div>
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newStreetAddress"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Street Address
+                    </label>
+                  </div>
+                  <div className="flex flex-col my-2">
                     <input
                       type="text"
-                      id="newLocation"
-                      name="newLocation"
-                      defaultValue={userData?.address?.fulladdress}
+                      id="newStreetAddress"
+                      name="newStreetAddress"
+                      defaultValue={userData?.address?.streetAddress}
                       required
                       className="input input-bordered bg-gray-200 text-gray-800"
                     />
@@ -476,6 +564,56 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
                       name="newCity"
                       required
                       defaultValue={userData?.address?.city} 
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newBarangay"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Barangay
+                    </label>
+                  </div>
+                  <div className="flex flex-col my-2">
+                    <input
+                      type="text"
+                      id="newBarangay"
+                      name="newBarangay"
+                      defaultValue={userData?.address?.barangay}
+                      required
+                      className="input input-bordered bg-gray-200 text-gray-800"
+                    />
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newCountry"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Country
+                    </label>
+                    <label
+                      htmlFor="newPostalCode"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Postal Code
+                    </label>
+                  </div>
+                  <div className="flex space-x-4 mb-2">
+                    <input 
+                      type="text" 
+                      id="newCountry"
+                      name="newCountry"
+                      required
+                      defaultValue={userData?.address?.country} 
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                    <input 
+                      type="text" 
+                      id="newPostalCode"
+                      name="newPostalCode"
+                      required
+                      defaultValue={userData?.address?.postalCode} 
                       className="w-full input input-bordered bg-gray-200 text-gray-800" 
                     />
                   </div>
@@ -532,7 +670,7 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
             <div className="ml-4 flex flex-col justify-between">
               <div className="font-inter text-[15px] text-black ml-[-70px] mb-0.5 mt-[-3px]">Shipping Details</div>
               <div className="font-inter text-[15px] text-black ml-[-80px]">Standard Local</div>
-              <div className="font-inter text-[15px] text-black ml-[-100px]">SPX Express</div>
+              <div className="font-inter text-[15px] text-black ml-[-100px]">Lalamove</div>
               <div className="font-inter text-[13px] text-black mt-1">Guaranteed to get by 5 - 8 Aug</div>
             </div>
             <div className="ml-auto flex flex-col items-center justify-center mt-5 mx-12">

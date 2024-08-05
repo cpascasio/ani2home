@@ -1,18 +1,19 @@
-import Header from "../../components/Header.jsx";
-import Footer from "../../components/Footer.jsx";
+
 import useFetch from "../../../hooks/useFetch.js";
 import { useUser } from "../../context/UserContext.jsx";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useRef } from "react";
 import axios from "axios";
 import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
-
 import { Autocomplete } from "@react-google-maps/api";
+import LocationIcon from '../../assets/location.png'; // Path to the location icon
 
 const MyProfile = () => {
   const userLog = localStorage.getItem("user");
 
-  const placesLib = useMapsLibrary('places');
+  const [editing, setEditing] = useState(false);
+
+  const placesLib = useMapsLibrary("places");
 
   const { user } = useUser();
 
@@ -26,16 +27,34 @@ const MyProfile = () => {
 
   const map = useMap();
 
+  const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+
+
   const [markerPosition, setMarkerPosition] = useState(null);
   const [addressDetails, setAddressDetails] = useState({});
 
   const autocompleteContainerRef = useRef(null);
 
+  useEffect(() => {
+    // assign address details
+    setAddressDetails({
+      fullAddress: userData?.address?.fullAddress,
+      streetAddress: userData?.address?.streetAddress,
+      barangay: userData?.address?.barangay,
+      city: userData?.address?.city,
+      province: userData?.address?.province,
+      region: userData?.address?.region,
+      country: userData?.address?.country,
+      postalCode: userData?.address?.postalCode,
+      lng: userData?.address?.lng,
+      lat: userData?.address?.lat,
+    });
 
+  }, [userData]);
 
 
   const handleMapClick = async (event) => {
-
     const latitude = event.detail.latLng.lat;
     const longitude = event.detail.latLng.lng;
     setMarkerPosition({ lat: latitude, lng: longitude });
@@ -45,50 +64,142 @@ const MyProfile = () => {
     console.log("marker clicked lng:", event.detail.latLng.lng);
     try {
       const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
+          import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+        }`
       );
 
       console.log(response.data.results[0]);
-      
-      const fulladdress = response.data.results[0].formatted_address;
-      const plusCode = response.data.results[0]?.address_components.find((address) => address.types.includes('plus_code'))?.short_name ?? "";
+
+      const fullAddress = response.data.results[0].formatted_address;
+      const premise = response.data.results[0]?.address_components.find(
+        (address) => address.types.includes("premise")
+      )?.short_name;
+      const plusCode =
+        response.data.results[0]?.address_components.find((address) =>
+          address.types.includes("plus_code")
+        )?.short_name ?? "";
       console.log("PLUS:" + plusCode);
-      const street = response.data.results[0]?.address_components.find((address) => address.types.includes('route'))?.short_name ?? "";
+      const street =
+        response.data.results[0]?.address_components.find((address) =>
+          address.types.includes("route")
+        )?.short_name ?? "";
       console.log("STREET:" + street);
-      const barangay = response.data.results[0]?.address_components.find((address) => address.types.includes('sublocality'))?.short_name ?? "";
+      const barangay =
+        response.data.results[0]?.address_components.find((address) =>
+          address.types.includes("sublocality")
+        )?.short_name ?? "";
       console.log("BARANGAY:" + barangay);
-      const city = response.data.results[0]?.address_components.find((address) => address.types.includes('locality'))?.short_name ?? "";
+      const city =
+        response.data.results[0]?.address_components.find((address) =>
+          address.types.includes("locality")
+        )?.short_name ?? "";
       console.log("CITY:" + city);
-      const province = response.data.results[0]?.address_components.find((address) => address.types.includes('administrative_area_level_2'))?.short_name ?? "";
+      const province =
+        response.data.results[0]?.address_components.find((address) =>
+          address.types.includes("administrative_area_level_2")
+        )?.short_name ?? "";
       console.log("PROVINCE:" + province);
-      const region = response.data.results[0]?.address_components.find((address) => address.types.includes('administrative_area_level_1'))?.short_name ?? "";
+      const region =
+        response.data.results[0]?.address_components.find((address) =>
+          address.types.includes("administrative_area_level_1")
+        )?.short_name ?? "";
       console.log("REGION:" + region);
-      const country = response.data.results[0]?.address_components.find((address) => address.types.includes('country'))?.short_name ?? "";
+      const country =
+        response.data.results[0]?.address_components.find((address) =>
+          address.types.includes("country")
+        )?.long_name ?? "";
       console.log("COUNTRY:" + country);
-      const postalCode = response.data.results[0]?.address_components.find((address) => address.types.includes('postal_code'))?.short_name ?? "";
+      const postalCode =
+        response.data.results[0]?.address_components.find((address) =>
+          address.types.includes("postal_code")
+        )?.short_name ?? "";
       console.log("POSTAL CODE:" + postalCode);
 
-        const lng = response.data.results[0].geometry.location.lng;
-        const lat = response.data.results[0].geometry.location.lat;
-
-        
+      const streetAddress = [premise, plusCode, street].filter(Boolean).join(', ');
+      console.log("🚀 ~ handleMapClick ~ streetAddress:", streetAddress)
+      
 
       setAddressDetails({
-        fulladdress,
+        fullAddress,
+        streetAddress,
+        barangay,
         city,
         province,
         region,
         country,
-        lng,
-        lat,
+        postalCode,
+        lng: longitude,
+        lat: latitude,
       });
 
-      
+      document.getElementById('newStreetAddress').value = streetAddress;
+      document.getElementById('newProvice').value = province;
+      document.getElementById('newRegion').value = region;
+      document.getElementById('newCity').value = city;
+      document.getElementById('newBarangay').value = barangay;
+      document.getElementById('newCountry').value = country;
+      document.getElementById('newPostalCode').value = postalCode;
 
     } catch (error) {
-      console.error('Error fetching address details:', error);
+      console.error("Error fetching address details:", error);
     }
   };
+
+  const handleEditToggle = () => {
+    setEditing(!editing);
+  };
+
+  const handleStreetAddressChange = (event) => {
+    setAddressDetails((prevDetails) => ({
+      ...prevDetails,
+      streetAddress: event.target.value,
+    }));
+  };
+
+  const handleProvinceChange = (event) => {
+    setAddressDetails((prevDetails) => ({
+      ...prevDetails,
+      province: event.target.value,
+    }));
+  };
+
+  const handleRegionChange = (event) => {
+    setAddressDetails((prevDetails) => ({
+      ...prevDetails,
+      region: event.target.value,
+    }));
+  };
+
+  const handleCityChange = (event) => {
+    setAddressDetails((prevDetails) => ({
+      ...prevDetails,
+      city: event.target.value,
+    }));
+  };
+
+  const handleBarangayChange = (event) => {
+    setAddressDetails((prevDetails) => ({
+      ...prevDetails,
+      barangay: event.target.value,
+    }));
+
+  };
+
+  const handleCountryChange = (event) => {
+    setAddressDetails((prevDetails) => ({
+      ...prevDetails,
+      country: event.target.value,
+    }));
+  };
+
+  const handlePostalCodeChange = (event) => {
+    setAddressDetails((prevDetails) => ({
+      ...prevDetails,
+      postalCode: event.target.value,
+    }));
+  };
+
 
 
   useEffect(() => {
@@ -97,10 +208,6 @@ const MyProfile = () => {
     const svc = new placesLib.PlacesService(map);
     // ...
   }, [placesLib, map]);
-
-
-
-  
 
   const handleClick = useCallback((ev) => {
     if (!ev) return;
@@ -111,17 +218,11 @@ const MyProfile = () => {
     ev.map.panTo(ev.detail.latLng);
   }, []);
 
-
   useEffect(() => {
     if (!map) return;
 
     // here you can interact with the imperative maps API
   }, [map]);
-
-  // if button is pressed, editmode to true
-  // if editmode is true, show the edit form
-
-  // if false, just display the user data
 
   useEffect(() => {
     console.log(user);
@@ -149,12 +250,10 @@ const MyProfile = () => {
     }
   }, [userData]);
 
-  //TODO:
-  //1. conditionally render page if user is logged in from backend if not, redirect to login page
-  //2. display userdata by userData.blahblah and display it in the
-  //3. make the edit user profile functionality work with backend endpoint.
-
-  // create the handleSubmit function that gets the value of formData then does an axios.put to the route http://localhost:3000/api/users/edit-user with headers type application json and token given the formdata.
+  const handleCancelEdit = () => {
+    
+    setEditing(false);
+  };
 
   const handleSubmitAddress = async (event) => {
     event.preventDefault(); // Prevent the default form submission behavior
@@ -163,22 +262,21 @@ const MyProfile = () => {
     const formData = new FormData(event.target);
 
     // Create an object to hold form values
-    const data = {};
-    data.address = {};
+    const address = {
+      fullAddress: addressDetails?.fullAddress || "",
+      streetAddress: formData.get("newStreetAddress") || "",
+      province: formData.get("newProvice") || "",
+      region: formData.get("newRegion") || "",
+      city: formData.get("newCity") || "",
+      barangay: formData.get("newBarangay") || "",
+      country: formData.get("newCountry") || "",
+      postalCode: formData.get("newPostalCode") || "",
+      lng: markerPosition?.lng || 0,
+      lat: markerPosition?.lat || 0,
+    };
 
-    // Check if fields have been changed
-    if (formData.get("newLocation") !== userData?.address?.fulladdress) {
-      data.address.fulladdress = formData.get("newLocation") || "";
-    }
-    if (formData.get("newProvice") !== userData?.address?.province) {
-      data.address.province = formData.get("newProvice") || "";
-    }
-    if (formData.get("newRegion") !== userData?.address?.region) {
-      data.address.region = formData.get("newRegion") || "";
-    }
-    if (formData.get("newCity") !== userData?.address?.city) {
-      data.address.city = formData.get("newCity") || "";
-    }
+    
+    const data = { address };
 
     // Get the token from localStorage or any other source
     const token = user?.token; // Replace with your actual token retrieval method
@@ -225,7 +323,7 @@ const MyProfile = () => {
       data.phoneNumber = formData.get("newPhoneNumber") || "";
     }
     if (formData.get("newBio") !== userData?.bio) {
-      data.bio = formData.get("newBio") || "";  
+      data.bio = formData.get("newBio") || "";
     }
 
     // Get the token from localStorage or any other source
@@ -250,10 +348,8 @@ const MyProfile = () => {
     }
   };
 
-
   return (
     <div className="w-full">
-      <Header />
       <div className="flex w-full h-auto bg-gradient-to-r from-green-900">
         {" "}
         {/*banner */}
@@ -316,7 +412,9 @@ const MyProfile = () => {
             <h1 className="text-4xl font-bold font-inter mb-0">
               {userData.name}
             </h1>
-            <div className="italic mb-4 font-inter">{userData?.address?.fulladdress}</div>
+            <div className="italic mb-4 font-inter">
+              {userData?.address?.fulladdress}
+            </div>
             <div className="mb-6 text-justify font-inter">
               {" "}
               {/*CHARACTERS MAXIMUM: 439 */}
@@ -386,9 +484,14 @@ const MyProfile = () => {
             <div className="text-lg font-bold mb-2 text-left text-gray-600 pb-5">
               My Profile
             </div>
+            <div className="bg-white w-full h-[auto] p-4"> {/* white box with padding */}
+            <div className="flex items-center mb-3"> {/* container for location icon and text */}
+              <img src={LocationIcon} alt="Location" className="w-[20px] h-[20px] mr-2" />
+              <div className="font-inter text-[15px] text-[#737373]">Delivery Address</div>
+            </div>
             <Map
               mapId="profileMap"
-              defaultZoom={10}
+              defaultZoom={13}
               defaultCenter={{ lat: 14.3879953, lng: 120.9879423 }}
               onClick={handleMapClick}
               onCameraChanged={(ev) => {
@@ -412,88 +515,173 @@ const MyProfile = () => {
             >
               <Marker position={markerPosition} />
             </Map>
-            <div className="bg-white p-5 mb-5">
-              <h2 className="text-lg text-left font-bold text-gray-600">
-                Edit Location
-              </h2>
-              <form onSubmit={handleSubmitAddress} className="space-y-4">
-              <div className="flex space-x-4 mb-2 mt-5">
-                  <label
-                    htmlFor="newLocation"
-                    className="w-full text-sm font-medium text-gray-600 text-left"
-                  >
-                    Full Address
-                  </label>
-                </div>
-                <div className="flex flex-col my-2">
-                  <input
-                    type="text"
-                    id="newLocation"
-                    name="newLocation"
-                    defaultValue={userData?.address?.fulladdress}
-                    required
-                    className="input input-bordered bg-gray-200 text-gray-800"
-                  />
-                </div>
+            {editing ? (
+
+              <div className="bg-white p-5 mb-5">
+                <h2 className="text-lg text-left font-bold text-gray-600">
+                  Edit Location
+                </h2>
+                <form onSubmit={handleSubmitAddress} className="space-y-4">
                 <div className="flex space-x-4 mb-2 mt-5">
-                  <label
-                    htmlFor="newProvice"
-                    className="w-full text-sm font-medium text-gray-600 text-left"
-                  >
-                    Province
-                  </label>
-                  <label
-                    htmlFor="newRegion"
-                    className="w-full text-sm font-medium text-gray-600 text-left"
-                  >
-                    Region
-                  </label>
-                  <label
-                    htmlFor="newCity"
-                    className="w-full text-sm font-medium text-gray-600 text-left"
-                  >
-                    City
-                  </label>
-                </div>
-                <div className="flex space-x-4 mb-2">
-                  <input 
-                    type="text" 
-                    id="newProvice"
-                    name="newProvice"
-                    required
-                    defaultValue={userData?.address?.province} 
-                    className="w-full input input-bordered bg-gray-200 text-gray-800" 
-                  />
-                  <input 
-                    type="text" 
-                    id="newRegion"
-                    name="newRegion"
-                    required
-                    defaultValue={userData?.address?.region} 
-                    className="w-full input input-bordered bg-gray-200 text-gray-800" 
-                  />
-                  <input 
-                    type="text" 
-                    id="newCity"
-                    name="newCity"
-                    required
-                    defaultValue={userData?.address?.city} 
-                    className="w-full input input-bordered bg-gray-200 text-gray-800" 
-                  />
-                </div>
-                <div className="flex justify-end space-x-4 mb-2 w-full">
-                  <button
-                    type="Submit"
-                    className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
-                  >
-                    Save
-                  </button>
-                </div>
-                
-              </form>
-            </div>
-            <div id="place-autocomplete-container" ref={autocompleteContainerRef} />
-            
+                    <label
+                      htmlFor="newLocation"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Full Address
+                    </label>
+                  </div>
+                  <div className="flex flex-col my-2">
+                    <div className="bg-gray-200 text-gray-800 p-2 rounded">
+                      {addressDetails.fullAddress || userData?.address?.fullAddress || 'No address selected'}
+                    </div>
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newStreetAddress"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Street Address
+                    </label>
+                  </div>
+                  <div className="flex flex-col my-2">
+                    <input
+                      type="text"
+                      id="newStreetAddress"
+                      name="newStreetAddress"
+                      defaultValue={userData?.address?.streetAddress}
+                      required
+                      onChange={handleStreetAddressChange}
+                      className="input input-bordered bg-gray-200 text-gray-800"
+                    />
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newProvice"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Province
+                    </label>
+                    <label
+                      htmlFor="newRegion"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Region
+                    </label>
+                    <label
+                      htmlFor="newCity"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      City
+                    </label>
+                  </div>
+                  <div className="flex space-x-4 mb-2">
+                    <input 
+                      type="text" 
+                      id="newProvice"
+                      name="newProvice"
+                      required
+                      defaultValue={userData?.address?.province} 
+                      onChange={handleProvinceChange}
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                    <input 
+                      type="text" 
+                      id="newRegion"
+                      name="newRegion"
+                      required
+                      defaultValue={userData?.address?.region} 
+                      onChange={handleRegionChange}
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                    <input 
+                      type="text" 
+                      id="newCity"
+                      name="newCity"
+                      required
+                      defaultValue={userData?.address?.city} 
+                      onChange={handleCityChange}
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newBarangay"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Barangay
+                    </label>
+                  </div>
+                  <div className="flex flex-col my-2">
+                    <input
+                      type="text"
+                      id="newBarangay"
+                      name="newBarangay"
+                      defaultValue={userData?.address?.barangay}
+                      required
+                      onChange={handleBarangayChange}
+                      className="input input-bordered bg-gray-200 text-gray-800"
+                    />
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newCountry"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Country
+                    </label>
+                    <label
+                      htmlFor="newPostalCode"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Postal Code
+                    </label>
+                  </div>
+                  <div className="flex space-x-4 mb-2">
+                    <input 
+                      type="text" 
+                      id="newCountry"
+                      name="newCountry"
+                      required
+                      defaultValue={userData?.address?.country} 
+                      onChange={handleCountryChange}
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                    <input 
+                      type="text" 
+                      id="newPostalCode"
+                      name="newPostalCode"
+                      required
+                      defaultValue={userData?.address?.postalCode} 
+                      onChange={handlePostalCodeChange}
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-4 mb-2 w-full">
+                    <button 
+                      onClick={handleCancelEdit}
+                      className="btn btn-sm bg-gray-200 text-[#737373] rounded border border-gray-300 hover:bg-gray-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="Submit"
+                      className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  
+                </form>
+              </div>
+            ) : (
+              <div 
+                className="mt-2 p-2 cursor-pointer hover:bg-gray-100"
+                onClick={handleEditToggle}
+              >
+                <div className="font-inter p-2 text-[15px] text-[#737373]">Edit Location</div>
+              </div>
+            )}
+          </div>
             <div className="bg-white p-10 rounded shadow-md">
               {" "}
               {/* white background */}
@@ -629,72 +817,6 @@ const MyProfile = () => {
                           className="input input-bordered bg-gray-200 text-gray-800"
                         />
                       </div>
-                      {/* <div className="flex flex-col">
-                        <label
-                          htmlFor="newLocation"
-                          className="text-sm font-medium text-gray-600 text-left"
-                        >
-                          Full Address
-                        </label>
-                        <input
-                          type="text"
-                          id="newLocation"
-                          name="newLocation"
-                          defaultValue={userData?.address?.fulladdress}
-                          className="input input-bordered bg-gray-200 text-gray-800"
-                        />
-                      </div> */}
-                      {/* <div className="flex flex-col">
-                        <textarea 
-                          value={userData?.address} 
-                          className="input input-bordered bg-gray-200 text-gray-800"
-                          rows="3"
-                          placeholder="Address"
-                        />
-                      </div> */}
-                      {/* <div className="flex space-x-4 mb-2">
-                        <label
-                          htmlFor="newProvice"
-                          className="w-full text-sm font-medium text-gray-600 text-left"
-                        >
-                          Province
-                        </label>
-                        <label
-                          htmlFor="newBarangay"
-                          className="w-full text-sm font-medium text-gray-600 text-left"
-                        >
-                          Barangay
-                        </label>
-                        <label
-                          htmlFor="newCity"
-                          className="w-full text-sm font-medium text-gray-600 text-left"
-                        >
-                          City
-                        </label>
-                      </div>
-                      <div className="flex space-x-4 mb-2">
-                        <input 
-                          type="text" 
-                          id="newProvice"
-                          value={userData?.address?.province} 
-                          className="w-full input input-bordered bg-gray-200 text-gray-800" 
-                          placeholder="Province"
-                        />
-                        <input 
-                          type="text" 
-                          id="newBarangay"
-                          value={userData?.address?.region} 
-                          className="w-full input input-bordered bg-gray-200 text-gray-800" 
-                          placeholder="Barangay"
-                        />
-                        <input 
-                          type="text" 
-                          id="newCity"
-                          value={userData?.address?.city} 
-                          className="w-full input input-bordered bg-gray-200 text-gray-800" 
-                          placeholder="City"
-                        /> 
-                      </div>*/}
                       <div className="flex flex-col">
                         <label
                           htmlFor="newBio"
@@ -777,7 +899,7 @@ const MyProfile = () => {
                           Location:
                         </td>
                         <td className="text-left px-8 pb-2">
-                          {userData?.address?.fulladdress}
+                          {userData?.address?.fullAddress}
                         </td>
                       </tr>
                       <tr>
@@ -800,12 +922,6 @@ const MyProfile = () => {
                     alt="Profile Picture"
                     className="w-28 h-28 rounded-full object-cover mb-12"
                   />
-                  {/* <button className="bg-none text-gray-700 font-bold py-2 px-4 rounded hover:bg-gray-400 hover:text-white mb-3 w-full border border-slate-400">
-                                        Discard Changes
-                                    </button>
-                                    <button className="bg-green-900 text-white font-bold py-2 px-4 rounded hover:bg-blue-600 w-full">
-                                        Save
-                                    </button>   */}
                 </div>{" "}
                 {/* end of box for prof pic and buttons */}
               </div>{" "}
@@ -1144,7 +1260,6 @@ const MyProfile = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

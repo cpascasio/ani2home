@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useReducer } from "react";
+import { auth } from "../config/firebase-config";
 
 export const UserContext = createContext();
 
@@ -29,7 +30,8 @@ const userReducer = (state, action) => {
     case "LOGIN":
       return { user: action.payload };
     case "LOGOUT":
-      localStorage.clear()
+      localStorage.clear();
+      auth.signOut();
       return { user: null };
     // other actions
     default:
