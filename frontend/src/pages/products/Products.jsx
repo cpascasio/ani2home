@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import Header from '../../components/Header.jsx';
-import Footer from '../../components/Footer.jsx';
 import useFetch from '../../../hooks/useFetch';
 import ProductCard from '../../components/ProductCard';
 

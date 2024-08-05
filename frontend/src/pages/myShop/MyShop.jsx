@@ -3,9 +3,7 @@ import Footer from '../../components/Footer.jsx'
 const MyShop = () => {
   return (
     <div className='w-full'>
-      <Header />
       My Shop
-      <Footer />
     </div>
   );
 };

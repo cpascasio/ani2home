@@ -61,7 +61,7 @@ const Menu = ({ onSelectMenu }) => {
               <div className="header">USER PROFILE</div>
               <ul className="space-y-4">
                 <li>
-                  <a href="#" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
+                  <a href="/myProfile" className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out">
                     My Profile
                   </a>
                 </li>
