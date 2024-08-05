@@ -36,8 +36,8 @@ const Seller = () => {
   }, [user]);
 
   return (
-    <div className="bg-[#e5e7eb] min-h-screen flex flex-col">
-      {user && <SellerBanner className="flex-shrink-0" />}
+    <div className="seller-bg">
+      {user && <SellerBanner />}
       <div className="flex flex-col lg:flex-row flex-1">
         <div className="lg:w-1/5 lg:order-1 order-2 flex-shrink-0 bg-gray-200">
           <Menu onSelectMenu={setSelectedMenu} />
@@ -46,9 +46,11 @@ const Seller = () => {
           {renderContent()}
         </div>
       </div>
+      <footer className="bg-gray-200 py-4">
+        {/* Footer content */}
+      </footer>
     </div>
   );
-  
 };
 
 export default Seller;

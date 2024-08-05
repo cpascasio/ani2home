@@ -6,6 +6,7 @@ import ProductCard from '../../components/ProductCard';
 import HorizontalLines from '../../assets/horizontallines.png';
 import SortUp from '../../assets/SortUp.png';
 import SortDown from '../../assets/SortDown.png';
+import Footer from '../../components/Footer';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -35,10 +36,8 @@ const Products = () => {
   };
 
   return (
-    <div style={{ backgroundColor: '#e5e7eb', minHeight: '100vh' }} className="w-full pt-24">
-      
-      {/* ----- start of body ----- */}
-      <div className="flex flex-col min-h-screen bg-gray-200">
+    <div className="flex flex-col min-h-screen bg-gray-200 pt-24">
+      <div className="flex flex-col flex-grow bg-gray-200">
         <div className="flex flex-col sm:flex-row w-full max-w-screen-xl mx-auto p-4">
           {/* Categories Section */}
           <div className="w-full sm:w-[15%] p-4">
@@ -191,7 +190,10 @@ const Products = () => {
           </div>
         </div>
       </div>
-     
+
+      {/* Footer */}
+      <footer className="bg-[#0B472D] text-white p-4 mt-auto">
+      </footer>
     </div>
   );
 };
