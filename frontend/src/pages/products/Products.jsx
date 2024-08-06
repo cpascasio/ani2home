@@ -10,13 +10,13 @@ import Footer from '../../components/Footer';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState(window.location.hash.replace('#', '') || 'All');
   const [selectedButton, setSelectedButton] = useState('default');
   const [isAscending, setIsAscending] = useState(true);
   const [isCollapseOpen, setIsCollapseOpen] = useState(false);
   const [isSortOptionsOpen, setIsSortOptionsOpen] = useState(false);
 
-  const { data: productsFetch } = useFetch("/api/products");
+  const { data: productsFetch } = useFetch(`/api/products/category/${selectedCategory}`);
 
   useEffect(() => {
     if (productsFetch) {
