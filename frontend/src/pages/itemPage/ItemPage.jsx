@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import Header from '../../components/Header.jsx';
-import Footer from '../../components/Footer.jsx';
 import Carrot from '../../assets/carrot.png';
 import Star from '../../assets/Star.png';
 import StarFilled from '../../assets/StarFilled.png';
@@ -144,7 +142,7 @@ const ItemPage = () => {
                                             type="text"
                                             value={quantity}
                                             readOnly
-                                            className="w-[40px] h-[30px] text-center border border-gray-300 mx-1"
+                                            className="w-[40px] h-[30px] bg-white text-center border border-gray-300 mx-1"
                                         />
                                         <button
                                             onClick={handleIncrease}
@@ -191,11 +189,11 @@ const ItemPage = () => {
                             </div>
                         </div>
 
-                        <div className="border-l border-gray-500 h-8 mr-10 md:my-0 md:ml-4"></div>
+                        {/* <div className="border-l border-gray-500 h-8 mr-10 md:my-0 md:ml-4"></div>
 
-                        <div className="flex flex-col md:flex-row text-gray-600 text-sm md:w-2/3 w-full">
+                        <div className="flex flex-col md:flex-row text-gray-600 text-sm md:w-2/3 w-full"> */}
                             {/* Products and Followers Column */}
-                            <div className="flex flex-col md:flex-row mb-4 md:mb-0 md:ml-5 md:mr-7 w-full md:w-auto">
+                            {/* <div className="flex flex-col md:flex-row mb-4 md:mb-0 md:ml-5 md:mr-7 w-full md:w-auto">
                                 <div className="flex items-center mb-2 md:mb-0 md:mr-7">
                                     <span className="mr-2">Products:</span>
                                     <span className="text-[#E11919] font-bold">{numberOfProducts}</span>
@@ -206,9 +204,9 @@ const ItemPage = () => {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col md:flex-row w-full md:w-auto">
+                            <div className="flex flex-col md:flex-row w-full md:w-auto"> */}
                                 {/* Ratings and Shop Rating Column */}
-                                <div className="flex items-center mb-2 md:mb-0 md:mr-7">
+                                {/* <div className="flex items-center mb-2 md:mb-0 md:mr-7">
                                     <span className="mr-2">Ratings:</span>
                                     <span className="text-[#E11919] font-bold">{numberOfRatings}</span>
                                 </div>
@@ -224,15 +222,15 @@ const ItemPage = () => {
 
                         <button
                             onClick={handleViewShop}
-                            className="bg-blue-500 text-white text-xs py-1 px-2 rounded-md hover:bg-blue-700 transition-colors duration-300 mt-4 md:mt-0"
+                            className="bg-blue-500 text-white font-bold text-xs py-2 px-2 rounded-md hover:bg-blue-700 transition-colors duration-300 mt-4 md:mt-0"
                         >
                             <img
                                 src={StorefrontIcon}
                                 alt="Storefront"
-                                className="w-4 h-4 inline-block mr-1"
+                                className="w-4 h-4 inline-block mr-1 mb-0.5"
                             />
                             View Shop
-                        </button>
+                        </button> */}
                     </div>
 
 
@@ -269,27 +267,27 @@ const ItemPage = () => {
                                     <div className="flex items-center space-x-2">
                                         <img src={SortIcon} alt="Sort" className="w-5 h-5" />
                                         <select
-                                            value={sortOrder}
-                                            onChange={handleSortChange}
-                                            className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                        value={sortOrder}
+                                        onChange={handleSortChange}
+                                        className="text-black border border-gray-300 rounded-md px-2 py-1 text-sm bg-white transition duration-300 ease-in-out hover:bg-gray-100 custom-select"
                                         >
-                                            <option value="Ascending">Sort by Rating (Low to High)</option>
-                                            <option value="Descending">Sort by Rating (High to Low)</option>
+                                        <option value="Ascending">Sort by Rating (Low to High)</option>
+                                        <option value="Descending">Sort by Rating (High to Low)</option>
                                         </select>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <img src={FilterIcon} alt="Filter" className="w-5 h-5" />
                                         <select
-                                            value={filterRating}
-                                            onChange={handleFilterChange}
-                                            className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                        value={filterRating}
+                                        onChange={handleFilterChange}
+                                        className="text-black border border-gray-300 rounded-md px-2 py-1 text-sm bg-white transition duration-300 ease-in-out hover:bg-gray-100 custom-select"
                                         >
-                                            <option value="All Stars">Filter by Rating</option>
-                                            {Object.entries(ratingCounts).map(([stars, count]) => (
-                                                <option key={stars} value={`${stars} Stars`}>
-                                                    {stars} Stars ({count})
-                                                </option>
-                                            ))}
+                                        <option value="All Stars">Filter by Rating</option>
+                                        {Object.entries(ratingCounts).map(([stars, count]) => (
+                                            <option key={stars} value={`${stars} Stars`}>
+                                            {stars} Stars ({count})
+                                            </option>
+                                        ))}
                                         </select>
                                     </div>
                                 </div>
