@@ -3,12 +3,14 @@ import useFetch from '../../../hooks/useFetch.js';
 // import user contxt
 import { useUser } from '../../context/UserContext.jsx';
 import { useState, useContext, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 
 const Confirmation = () => {
 
     const { user } = useUser();
     const [orders, setOrders] = useState([]);
     const { data: orderFetch } = useFetch(`/api/orders/${user?.userId}`);
+    const navigate = useNavigate();
 
     useEffect(() => {
         console.log(`Fetching orders for userId: ${user?.userId}`); // Log the userId
@@ -83,7 +85,10 @@ const Confirmation = () => {
                         We’ll message you an order confirmation with details and tracking info.
                         </div>
                         <div className="flex justify-center mt-7 mb-4"> {/* Center button horizontally and add margin bottom */}
-                        <button className="bg-green-900 text-white font-inter font-bold text-[15px] w-[166px] h-[33px] hover:bg-blue-500 hover:text-white hover:border-blue-500 transition duration-300 ease-in-out rounded-md">
+                        <button 
+                            className="bg-green-900 text-white font-inter font-bold text-[15px] w-[166px] h-[33px] hover:bg-blue-500 hover:text-white hover:border-blue-500 transition duration-300 ease-in-out rounded-md"
+                            onClick={() => navigate('/')}
+                        >
                             Continue Shopping
                         </button>
                         </div>
