@@ -27,6 +27,6 @@ const Joi = require('joi');
     isVerified: Joi.boolean().optional(),
 });
 
-  
+
 
   module.exports = userSchema;

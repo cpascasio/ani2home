@@ -1,7 +1,8 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const router = express.Router();
-
+const cloudinary = require('../config/cloudinary');
+const fs = require('fs');
 const productSchema = require('../models/productModels');
 
 // Firestore database reference
@@ -18,6 +19,21 @@ router.get('/:productId', async (req, res) => {
     } catch (error) {
         console.error('Error getting product:', error);
         res.status(500).send('Error getting product');
+    }
+});
+
+// route to get products given userId
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const products = [];
+        const snapshot = await db.collection('products').where('storeId', '==', req.params.userId).get();
+        snapshot.forEach((doc) => {
+            products.push({ id: doc.id, ...doc.data() });
+        });
+        res.json(products);
+    } catch (error) {
+        console.error('Error getting products:', error);
+        res.status(500).send('Error getting products');
     }
 });
 
@@ -86,6 +102,20 @@ router.post('/create-product', async (req, res) => {
     }
 
     try {
+        // Check if pictures exist and is an array
+        if (value.pictures) {
+            const uploadPromises = value.pictures.map(async (picture) => {
+                const result = await cloudinary.uploader.upload(picture, {
+                    folder: 'ani2home',
+        resource_type: 'image' // Optional: if you have an upload preset
+                });
+                return result.secure_url;
+            });
+
+            // Wait for all uploads to complete
+            value.pictures = await Promise.all(uploadPromises);
+        }
+
         const newProductRef = db.collection('products').doc();
         await newProductRef.set(value);
         res.status(201).json({ 
@@ -105,8 +135,6 @@ router.post('/create-product', async (req, res) => {
 router.put('/:productId', async (req, res) => {
     const { error, value } = productSchema.validate(req.body);
     console.log("🚀 ~ router.put ~ value:", value)
-
-    
 
     if (error) {
         return res.status(400).json({ error: error.details[0].message });

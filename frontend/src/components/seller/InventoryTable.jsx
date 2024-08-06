@@ -20,13 +20,15 @@ const InventoryTable = () => {
     unit: 'kilo',
     price: '',
     stock: '',
+    storeId: user?.userId,
     pictures: []
   };
 
   const [formData, setFormData] = useState(initialFormData);
 
-  const { data: fetchProducts } = useFetch("/api/products/");
+  const { data: fetchProducts } = useFetch(`/api/products/user/${user?.userId}`);
   const [products, setProducts] = useState([]);
+  const [pictures, setPictures] = useState([]);
 
   const itemsPerPage = 10;
 
@@ -56,9 +58,54 @@ const InventoryTable = () => {
     }));
   };
 
+  const handleFileChange = (e) => {
+    const files = e.target.files;
+    const fileReaders = [];
+    let isCancel = false;
+
+    const readFile = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (isCancel) {
+            reject(new Error("File reading cancelled"));
+          } else {
+            resolve(reader.result);
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    };
+
+    const handleFiles = async () => {
+      try {
+        const base64Files = await Promise.all(Array.from(files).map(file => readFile(file)));
+        setPictures(base64Files);
+        console.log("FINISHED READING FILES");
+      } catch (error) {
+        console.error("Error reading files", error);
+      }
+    };
+
+    handleFiles();
+
+    return () => {
+      isCancel = true;
+      fileReaders.forEach(reader => reader.abort());
+    };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+
     const { unit, ...rest } = formData;
+
+    if(pictures.length > 0) {
+      rest.pictures = pictures;
+    }
+
     try {
       const response = await axios.post("http://localhost:3000/api/products/create-product", rest, {
         headers: {
@@ -69,6 +116,7 @@ const InventoryTable = () => {
 
       const newProduct = response.data.product;
       setProducts(prevProducts => [...prevProducts, newProduct]);
+      setPictures([]);
       setFormData(initialFormData);
       setShowModal(false);
     } catch (error) {
@@ -116,8 +164,8 @@ const InventoryTable = () => {
     }
   };
 
-  const vegetables = ['Broccoli', 'Aubergine', 'Carrot', 'Chili', 'Lemon'];
-  const fruits = ['Apple', 'Banana', 'Orange', 'Strawberry', 'Grapes'];
+  const vegetable = ['Broccoli', 'Aubergine', 'Carrot', 'Chili', 'Lemon'];
+  const fruit = ['Apple', 'Banana', 'Orange', 'Strawberry', 'Grapes'];
 
   return (
     <div className="p-4 md:p-5 bg-white rounded-lg shadow-lg mt-5 md:mt-10">
@@ -158,7 +206,9 @@ const InventoryTable = () => {
             {displayedData.map((item, index) => (
               <tr key={index} className="hover:bg-gray-50">
                 <td className="p-2 border-b break-words">{item.id}</td>
-                <td className="p-2 border-b break-words">{item.photo}</td>
+                <td className="p-2 border-b break-words">
+                  <img src={item?.pictures[0] && item.pictures[0]} alt={item.productName} className="w-10 h-10 object-cover" />
+                </td>
                 <td className="p-2 border-b break-words">{item.productName}</td>
                 <td className="p-2 border-b break-words">{item.category}</td>
                 <td className="p-2 border-b break-words">{item.type}</td>
@@ -230,8 +280,8 @@ const InventoryTable = () => {
                   className="p-2 w-full border border-gray-300 rounded-lg"
                 >
                   <option value="">Select Category</option>
-                  <option value="Vegetables">Vegetables</option>
-                  <option value="Fruits">Fruits</option>
+                  <option value="Vegetable">Vegetable</option>
+                  <option value="Fruit">Fruit</option>
                 </select>
               </div>
               <div className="mb-4">
@@ -277,6 +327,17 @@ const InventoryTable = () => {
                   name="stock"
                   value={formData.stock}
                   onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="pictures" className="block text-gray-700">Pictures</label>
+                <input
+                  type="file"
+                  id="pictures"
+                  name="pictures"
+                  multiple
+                  onChange={handleFileChange}
                   className="p-2 w-full border border-gray-300 rounded-lg"
                 />
               </div>
@@ -323,8 +384,8 @@ const InventoryTable = () => {
                   className="p-2 w-full border border-gray-300 rounded-lg"
                 >
                   <option value="">Select Category</option>
-                  <option value="Vegetables">Vegetables</option>
-                  <option value="Fruits">Fruits</option>
+                  <option value="Vegetable">Vegetable</option>
+                  <option value="Fruit">Fruit</option>
                 </select>
               </div>
               <div className="mb-4">
@@ -370,6 +431,17 @@ const InventoryTable = () => {
                   name="stock"
                   value={formData.stock}
                   onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="pictures" className="block text-gray-700">Pictures</label>
+                <input
+                  type="file"
+                  id="pictures"
+                  name="pictures"
+                  multiple
+                  onChange={handleFileChange}
                   className="p-2 w-full border border-gray-300 rounded-lg"
                 />
               </div>
