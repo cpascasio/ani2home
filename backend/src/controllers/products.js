@@ -36,6 +36,39 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Route to get products category
+router.get('/category/:categ', async (req, res) => {
+    const { categ } = req.params;
+    console.log('Received category:', categ); // Added for debugging
+    try {
+        const products = [];
+        let snapshot;
+
+        if (categ === 'fruits' || categ === 'Fruits') {
+            snapshot = await db.collection('products').where('category', '==', 'Fruit').get();
+            console.log('Fetched fruits'); // Added for debugging
+        } else if (categ === 'vegetables' || categ === 'Vegetables') {
+            snapshot = await db.collection('products').where('category', '==', 'Vegetable').get();
+            console.log('Fetched vegetables'); // Added for debugging
+        } else if (categ === 'artisanal food' || categ === 'Artisanal Food') {
+            snapshot = await db.collection('products').where('category', '==', 'Artisinal Food').get();
+            console.log('Fetched artisinal food'); // Added for debugging
+        } else {
+            snapshot = await db.collection('products').get();
+            console.log('Fetched all products'); // Added for debugging
+        }
+
+        snapshot.forEach((doc) => {
+            products.push({ id: doc.id, ...doc.data() });
+        });
+
+        res.json(products);
+    } catch (error) {
+        console.error('Error getting products:', error);
+        res.status(500).send('Error getting products');
+    }
+});
+
 // Route to create a new product
 router.post('/create-product', async (req, res) => {
     const { error, value } = productSchema.validate(req.body);
