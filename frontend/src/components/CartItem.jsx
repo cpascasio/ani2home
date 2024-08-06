@@ -55,6 +55,7 @@ const CartItem = ({ product }) => {
     const handleCancel = () => setShowModal(false);
     const handleRemove = () => {
         setShowModal(false);
+        handleRemoveFromCart();
         // Implement the actual remove logic here
     };
 
@@ -90,6 +91,7 @@ const CartItem = ({ product }) => {
                 data: payload
             });
             console.log('Product removed from cart');
+            window.location.reload();
          
         } catch (error) {
             console.error('Error removing from cart:', error);
@@ -151,7 +153,7 @@ const CartItem = ({ product }) => {
             </div>
             <div className="flex justify-center lg:justify-end mt-4 lg:mt-0 lg:mr-10">
                 <button 
-                    onClick={handleRemoveFromCart} 
+                    onClick={handleRemoveClick} 
                     className="text-[15px] font-inter text-[#737373] underline hover:text-blue-500"
                 >
                     Remove
