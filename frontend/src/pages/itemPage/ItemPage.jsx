@@ -9,6 +9,8 @@ import SortIcon from '../../assets/sort.png'; // Add sort icon import
 import FilterIcon from '../../assets/filter.png'; // Add filter icon import
 import { useNavigate, useParams } from 'react-router-dom';
 import useFetch from '../../../hooks/useFetch';
+import axios from 'axios';
+import { useUser } from '../../context/UserContext';
 
 // Function to generate star elements based on the rating
 const generateStars = (rating, isProductCard = false) => {
@@ -39,6 +41,7 @@ const generateStars = (rating, isProductCard = false) => {
 
 const ItemPage = () => {
 
+    const { user } = useUser(); // Get user data
     const { productId } = useParams(); // Get product ID from URL
     const { data: productFetch } = useFetch(`/api/products/product/${productId}`); // Fetch product data
 
