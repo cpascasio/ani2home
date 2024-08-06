@@ -8,9 +8,12 @@ import LeftArrow from '../../assets/LeftArrow.png';
 import RightArrow from '../../assets/RightArr.png';
 import useFetch from '../../../hooks/useFetch';
 import ProductCard from '../../components/ProductCard';
+import { useParams } from 'react-router-dom';
 
 const ShopProfile = () => {
+    const { sellerId } = useParams();
     const [products, setProducts] = useState([]);
+    const [seller, setSeller] = useState({});
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedButton, setSelectedButton] = useState('default');
     const [isAscending, setIsAscending] = useState(true);
@@ -18,11 +21,12 @@ const ShopProfile = () => {
     const [isSortOptionsOpen, setIsSortOptionsOpen] = useState(false);
     const [currentProductIndex, setCurrentProductIndex] = useState(0);
 
-    const { data: productsFetch } = useFetch("/api/products");
+    const { data: productsFetch } = useFetch(`/api/products/seller/${sellerId}`); // Fetch product data
 
     useEffect(() => {
         if (productsFetch) {
-            setProducts(productsFetch);
+            setProducts(productsFetch.products);
+            setSeller(productsFetch.seller);
         }
     }, [productsFetch]);
 
