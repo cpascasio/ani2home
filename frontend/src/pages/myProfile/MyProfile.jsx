@@ -153,7 +153,7 @@ const MyProfile = () => {
   useEffect(() => {
     if (userData != null) {
       console.log("USERDATA: ");
-      console.log(userData);
+      console.log(userData); // asd
     }
   }, [userData]);
 
