@@ -435,7 +435,7 @@ const handleCancelEdit = () => {
         // Extract the orderId from the response if needed
         const orderId = String(response.data.orderId);
         console.log("OrderID: ", orderId);
-
+        navigate('/confirmation');
       })
       .catch((error) => {
         console.error('Error placing order or order details:', error);
