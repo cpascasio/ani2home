@@ -305,6 +305,9 @@ const MyProfile = () => {
   //3. make the edit user profile functionality work with backend endpoint.
 
   // create the handleSubmit function that gets the value of formData then does an axios.put to the route http://localhost:3000/api/users/edit-user with headers type application json and token given the formdata.
+  const handleDelAcc = () => {
+    dispatch({ type: "LOGOUT" });
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // Prevent the default form submission behavior
@@ -1210,7 +1213,7 @@ const MyProfile = () => {
                           Are you sure you want to delete your account? This
                           action cannot be undone.
                         </p>
-                        <form method="dialog" className="space-y-4">
+                        <form method="dialog" className="space-y-4" onSubmit={handleDelAcc}>
                           <div className="flex flex-col">
                             <input
                               type="text"
@@ -1262,7 +1265,6 @@ const MyProfile = () => {
                               id="deleteBtn"
                               className="btn btn-sm bg-red-500 rounded text-white hover:bg-red-600 border-none w-auto h-auto"
                               disabled
-                              onClick={() => console.log("Delete logic here")}
                             >
                               Delete
                             </button>
