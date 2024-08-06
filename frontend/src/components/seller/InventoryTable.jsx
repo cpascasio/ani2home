@@ -157,7 +157,7 @@ const InventoryTable = () => {
           <tbody>
             {displayedData.map((item, index) => (
               <tr key={index} className="hover:bg-gray-50">
-                <td className="p-2 border-b break-words">{item.productId}</td>
+                <td className="p-2 border-b break-words">{item.id}</td>
                 <td className="p-2 border-b break-words">{item.photo}</td>
                 <td className="p-2 border-b break-words">{item.productName}</td>
                 <td className="p-2 border-b break-words">{item.category}</td>

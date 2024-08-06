@@ -22,14 +22,14 @@ const routes = [
     { path: "/aboutus", element: <AboutUs />, name: "AboutUs" },
     { path: "/products", element: <Products />, name: "Products" },
     { path: "/seller", element: <Seller />, name: "Seller" },
-    { path: "/shopProfile", element: <ShopProfile />, name: "ShopProfile" },
+    { path: "/profile/:sellerId", element: <ShopProfile />, name: "ShopProfile" },
     { path: "/myProfile", element: <MyProfile />, name: "MyProfile" },
     { path: "/myOrders", element: <MyOrders />, name: "MyOrders" },
     { path: "/myShop", element: <MyShop />, name: "MyShop" },
     { path: "/cart", element: <Cart />, name: "Cart" },
-    { path: "/checkout", element: <Checkout />, name: "Checkout" },
+    { path: "/checkout/:sellerId", element: <Checkout />, name: "Checkout" },
     { path: "/confirmation", element: <Confirmation />, name: "Confirmation" },
-    { path: "/itemPage", element: <ItemPage />, name: "ItemPage" }
+    { path: "/item/:productId", element: <ItemPage />, name: "ItemPage" }
     
 ];
 

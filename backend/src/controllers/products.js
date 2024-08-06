@@ -21,6 +21,42 @@ router.get('/:productId', async (req, res) => {
     }
 });
 
+// Route to get the product detail given productId and the seller details
+router.get('/product/:productId', async (req, res) => {
+    try {
+        const productDoc = await db.collection('products').doc(req.params.productId).get();
+        if (!productDoc.exists) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        const productData = productDoc.data();
+        productData.id = productDoc.id; // Add the document ID to the product data
+
+        const sellerDoc = await db.collection('users').doc(productData.storeId).get();
+        res.json({ product: productData, seller: sellerDoc.data() });
+    } catch (error) {
+        console.error('Error getting product:', error);
+        res.status(500).send('Error getting product');
+    }
+});
+
+// Route to get the products of a specific seller and the seller details
+router.get('/seller/:sellerId', async (req, res) => {
+    try {
+        const products = [];
+        const snapshot = await db.collection('products').where('storeId', '==', req.params.sellerId).get();
+        snapshot.forEach((doc) => {
+            products.push({ id: doc.id, ...doc.data() });
+        });
+
+        const sellerDoc = await db.collection('users').doc(req.params.sellerId).get();
+        res.json({ products, seller: sellerDoc.data() });
+    } catch (error) {
+        console.error('Error getting products:', error);
+        res.status(500).send('Error getting products');
+    }
+});
+
 // Route to get all products
 router.get('/', async (req, res) => {
     try {

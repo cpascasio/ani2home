@@ -1,6 +1,4 @@
-import React, { useState } from 'react';
-import Header from '../../components/Header.jsx';
-import Footer from '../../components/Footer.jsx';
+import React, { useState, useEffect } from 'react';
 import Carrot from '../../assets/carrot.png';
 import Star from '../../assets/Star.png';
 import StarFilled from '../../assets/StarFilled.png';
@@ -9,7 +7,8 @@ import StorefrontIcon from '../../assets/storefront.png'; // Add your storefront
 import VerifiedUserIcon from '../../assets/verifiedUser.png'; // Add your verified user icon import
 import SortIcon from '../../assets/sort.png'; // Add sort icon import
 import FilterIcon from '../../assets/filter.png'; // Add filter icon import
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import useFetch from '../../../hooks/useFetch';
 
 // Function to generate star elements based on the rating
 const generateStars = (rating, isProductCard = false) => {
@@ -39,17 +38,57 @@ const generateStars = (rating, isProductCard = false) => {
 };
 
 const ItemPage = () => {
+
+    const { productId } = useParams(); // Get product ID from URL
+    const { data: productFetch } = useFetch(`/api/products/product/${productId}`); // Fetch product data
+
+    const [product, setProduct] = useState(""); // State for product data
+    const [seller, setSeller] = useState(""); // State for seller data
     const navigate = useNavigate();
     const [quantity, setQuantity] = useState(1); // State for quantity
     const [sortOrder, setSortOrder] = useState('Ascending'); // State for sorting
     const [filterRating, setFilterRating] = useState('All Stars'); // State for filtering
-    const rating = 4.9; // Example product rating
-    const shopRating = 4.7; // Example shop rating
-    const price = 100; // Example price
-    const productName = "Carrot"; // Example product name
-    const numberOfRatings = 100; // Example number of received ratings
-    const numberOfProducts = 50; // Example number of products in the shop
-    const numberOfFollowers = 1200; // Example number of followers
+    const [rating, setRating] = useState(4.9); // Example rating
+    const [shopRating, setShopRating] = useState(4.7); // Example shop rating
+    const [shopName, setShopName] = useState("Shop Name"); // Example shop name
+    //const rating = 4.9; // Example product rating
+    //const shopRating = 4.7; // Example shop rating
+    const [price, setPrice] = useState(100); // Example price
+    //const price = 100; // Example price
+    const [productName, setProductName] = useState("Carrot"); // Example product name
+    //const productName = "Carrot"; // Example product name
+    const [numberOfRatings, setNumberOfRatings] = useState(100); // Example number of received ratings
+    //const numberOfRatings = 100; // Example number of received ratings
+    const [numberOfProducts, setNumberOfProducts] = useState(50); // Example number of products in the shop
+    //const numberOfProducts = 50; // Example number of products in the shop
+    const [numberOfFollowers, setNumberOfFollowers] = useState(1200); // Example number of followers
+
+    useEffect(() => {
+        console.log(productId);
+    }, []);
+
+    useEffect(() => {
+        if (productFetch) {
+            setProduct(productFetch.product);
+            setSeller(productFetch.seller);
+        }
+    }, [productFetch]);
+
+    useEffect(() => {
+        if (product) {
+            setRating(product?.rating);
+            setPrice(product?.price);
+            setProductName(product?.productName);
+
+
+        }
+    }, [product]);
+
+    useEffect(() => {
+        if (seller) {
+            setShopName(seller?.name);
+        }
+    }, [seller]);
 
     const [ratingCounts, setRatingCounts] = useState({
         5: 10,  // Example count for 5-star reviews
@@ -59,9 +98,23 @@ const ItemPage = () => {
         1: 0    // Example count for 1-star reviews
     });
     
-    const handleAddToCart = () => {
-        navigate('/cart');
-    };
+    const handleAddToCart = async () => {
+        // Include user ID in the product data
+    
+        try {
+          // Create Axios POST request
+          await axios.post('http://localhost:3000/api/cart/add-to-cart', {
+              userId: user?.userId,
+              sellerId: product?.storeId,
+              productId: product?.id,
+              quantity: quantity,
+          });
+    
+          navigate("/cart");
+        } catch (error) {
+          console.error('hello Error adding to cart:', error);
+        }
+      };
 
     const handleIncrease = () => {
         setQuantity(prev => prev + 1);
@@ -72,7 +125,7 @@ const ItemPage = () => {
     };
 
     const handleViewShop = () => {
-        window.location.href = 'http://localhost:5173/shopProfile';
+        navigate('/profile/' + product?.storeId); // Navigate to shop profile
     };
 
     const handleSortChange = (e) => {
@@ -84,9 +137,8 @@ const ItemPage = () => {
     };
 
     return (
-        <div style={{ backgroundColor: '#e5e7eb', minHeight: '100vh' }} className="w-full pt-24">
-            <Header />
-            <div className="flex flex-col min-h-screen bg-gray-200">
+        <div  style={{ backgroundColor: '#e5e7eb'}} className='w-full pt-24'>
+            <div className="pt-5">
                 {/* Breadcrumb Navigation Container */}
                 <div className="relative w-full max-w-screen-md">
                     {/* Flex container for positioning */}
@@ -131,7 +183,7 @@ const ItemPage = () => {
                                 <div className="flex items-center justify-between">
                                     <div className="text-left text-[15px] text-[#E11919]">
                                         <span className="text-black">Price: </span>
-                                        ₱{price.toFixed(2)}
+                                        {`₱${price.toFixed(2)}`}
                                     </div>
                                     <div className="flex items-center space-x-2 lg:mr-6">
                                         <div className="text-left text-[15px] text-[#737373] mr-2">Quantity</div>
@@ -145,7 +197,7 @@ const ItemPage = () => {
                                             type="text"
                                             value={quantity}
                                             readOnly
-                                            className="w-[40px] h-[30px] text-center border border-gray-300 mx-1"
+                                            className="w-[40px] h-[30px] bg-white text-center border border-gray-300 mx-1"
                                         />
                                         <button
                                             onClick={handleIncrease}
@@ -172,70 +224,77 @@ const ItemPage = () => {
                     </div>
 
                     {/* White Rectangle with Profile Pic and Shop Info */}
-                    <div className="my-6 bg-white border border-gray-300 rounded-lg shadow-md p-4 flex flex-col md:flex-row items-start md:items-center justify-between">
+                    <div className="my-6 bg-white border border-gray-300 rounded-lg shadow-md p-4 flex md:flex-row items-start md:items-center justify-between">
                         <div className="flex items-start md:items-center flex-1">
                             <img
                                 src={MyProfilePic}
                                 alt="Profile"
                                 className="w-12 h-12 bg-gray-300 rounded-full object-cover"
                             />
-                            <div className="ml-4">
-                                <div className="text-gray-900 text-md font-semibold truncate w-48 md:w-auto">Shop Name</div>
-                                <div className="flex items-center mt-1">
-                                    <span className="text-sm text-[#2979FF]">Verified</span>
-                                    <img
-                                        src={VerifiedUserIcon}
-                                        alt="Verified"
-                                        className="w-5 h-5 ml-2"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="border-l border-gray-500 h-8 mr-10 md:my-0 md:ml-4"></div>
-
-                        <div className="flex flex-col md:flex-row text-gray-600 text-sm md:w-2/3 w-full">
-                            {/* Products and Followers Column */}
-                            <div className="flex flex-col md:flex-row mb-4 md:mb-0 md:ml-5 md:mr-7 w-full md:w-auto">
-                                <div className="flex items-center mb-2 md:mb-0 md:mr-7">
-                                    <span className="mr-2">Products:</span>
-                                    <span className="text-[#E11919] font-bold">{numberOfProducts}</span>
-                                </div>
-                                <div className="flex items-center mb-2 md:mb-0">
-                                    <span className="mr-2">Followers:</span>
-                                    <span className="text-[#E11919] font-bold">{numberOfFollowers}</span>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col md:flex-row w-full md:w-auto">
-                                {/* Ratings and Shop Rating Column */}
-                                <div className="flex items-center mb-2 md:mb-0 md:mr-7">
-                                    <span className="mr-2">Ratings:</span>
-                                    <span className="text-[#E11919] font-bold">{numberOfRatings}</span>
-                                </div>
-                                <div className="flex items-center mb-2 md:mb-0">
-                                    <span className="mr-2">Shop Rating:</span>
-                                    <div className="flex items-center">
-                                        {generateStars(shopRating)}
-                                        <span className="ml-2 text-xs text-gray-700">{shopRating.toFixed(1)}</span>
+                            <div className="flex md:flex-row items-start md:items-center flex-1">
+                                <div className="ml-2 md:ml-4"> {/* Adjust margin for mobile view */}
+                                    <div className="text-gray-900 text-md font-semibold truncate w-auto">{shopName}</div>
+                                    <div className="flex items-center mt-1">
+                                        <span className="text-sm text-[#2979FF]">Verified</span>
+                                        <img
+                                            src={VerifiedUserIcon}
+                                            alt="Verified"
+                                            className="w-5 h-5 ml-2"
+                                        />
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={handleViewShop}
-                            className="bg-blue-500 text-white text-xs py-1 px-2 rounded-md hover:bg-blue-700 transition-colors duration-300 mt-4 md:mt-0"
-                        >
-                            <img
-                                src={StorefrontIcon}
-                                alt="Storefront"
-                                className="w-4 h-4 inline-block mr-1"
-                            />
-                            View Shop
-                        </button>
+                                <div className="border-l border-gray-500 h-20 md:h-8 mx-4 mt-1 ml-3 mr-3 md:ml-8 md:mt-0 md:mx-6"></div> {/* Adjust margin for the border */}
+                                <div className="flex flex-col md:flex-row md:items-center">
+                                    <div className="flex flex-col md:flex-row md:items-center">
+                                        <div className="flex items-center md:mt-0 md:ml-4">
+                                            <span className="md:mr-2 mr-6 text-xs md:text-sm ">Products:</span>
+                                            <span className="text-[#E11919] font-bold text-xs md:text-sm md:mr-6">{numberOfProducts}</span>
+                                        </div>
+                                        <div className="flex items-center mt-2 md:mt-0 md:ml-4">
+                                            <span className="md:mr-2 mr-5 text-xs md:text-sm">Followers:</span>
+                                            <span className="text-[#E11919] font-bold text-xs md:text-sm md:mr-6">{numberOfFollowers}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col md:flex-row md:items-center mt-2 md:mt-0 md:ml-5">
+                                        <div className="flex items-center">
+                                            <span className="md:mr-2 mr-8 text-xs md:text-sm">Ratings:</span>
+                                            <span className="text-[#E11919] font-bold text-xs md:text-sm md:mr-5">{numberOfRatings}</span>
+                                        </div>
+                                        <div className="flex items-center mt-2 md:mt-0 md:ml-4">
+                                            <span className="mr-2 text-xs md:text-sm">Shop Rating:</span>
+                                            <div className="flex items-center">
+                                                {generateStars(shopRating)}
+                                                <span className="ml-2 text-xs text-gray-700 md:mr-5">{shopRating.toFixed(1)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={handleViewShop}
+                                        className="hidden md:block bg-blue-500 text-white font-bold text-xs py-2 px-2 rounded-md hover:bg-blue-700 transition-colors duration-300 mt-4 md:ml-6 md:mt-0"
+                                    >
+                                        <img
+                                            src={StorefrontIcon}
+                                            alt="Storefront"
+                                            className="w-4 h-4 inline-block mr-1 mb-0.5"
+                                        />
+                                        View Shop
+                                    </button>
+                                    {/* Button for mobile view */}
+                                    <button
+                                        onClick={handleViewShop}
+                                        className="block md:hidden bg-blue-500 text-white font-bold text-xs py-2 px-2 rounded-md hover:bg-blue-700 transition-colors duration-300 mt-4"
+                                    >
+                                        <img
+                                            src={StorefrontIcon}
+                                            alt="Storefront"
+                                            className="w-4 h-4 inline-block mr-1 mb-0.5"
+                                        />
+                                        View Shop
+                                    </button>
+                                </div>
+                            </div>   
+                        </div>               
                     </div>
-
 
 
                     {/* Additional Details Box */}
@@ -255,7 +314,7 @@ const ItemPage = () => {
                             </div>
                             {/* Number of Ratings Container */}
                             <div className="flex items-left text-xs text-gray-600 mb-4">
-                                {numberOfRatings} Ratings
+                                {numberOfRatings} Product Ratings
                             </div>
                             
                             {/* Sorting and Filtering Dropdowns */}
@@ -270,27 +329,27 @@ const ItemPage = () => {
                                     <div className="flex items-center space-x-2">
                                         <img src={SortIcon} alt="Sort" className="w-5 h-5" />
                                         <select
-                                            value={sortOrder}
-                                            onChange={handleSortChange}
-                                            className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                        value={sortOrder}
+                                        onChange={handleSortChange}
+                                        className="text-black border border-gray-300 rounded-md px-2 py-1 text-sm bg-white transition duration-300 ease-in-out hover:bg-gray-100 custom-select"
                                         >
-                                            <option value="Ascending">Sort by Rating (Low to High)</option>
-                                            <option value="Descending">Sort by Rating (High to Low)</option>
+                                        <option value="Ascending">Sort by Rating (Low to High)</option>
+                                        <option value="Descending">Sort by Rating (High to Low)</option>
                                         </select>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <img src={FilterIcon} alt="Filter" className="w-5 h-5" />
                                         <select
-                                            value={filterRating}
-                                            onChange={handleFilterChange}
-                                            className="border border-gray-300 rounded-md px-2 py-1 text-sm"
+                                        value={filterRating}
+                                        onChange={handleFilterChange}
+                                        className="text-black border border-gray-300 rounded-md px-2 py-1 text-sm bg-white transition duration-300 ease-in-out hover:bg-gray-100 custom-select"
                                         >
-                                            <option value="All Stars">Filter by Rating</option>
-                                            {Object.entries(ratingCounts).map(([stars, count]) => (
-                                                <option key={stars} value={`${stars} Stars`}>
-                                                    {stars} Stars ({count})
-                                                </option>
-                                            ))}
+                                        <option value="All Stars">Filter by Rating</option>
+                                        {Object.entries(ratingCounts).map(([stars, count]) => (
+                                            <option key={stars} value={`${stars} Stars`}>
+                                            {stars} Stars ({count})
+                                            </option>
+                                        ))}
                                         </select>
                                     </div>
                                 </div>
@@ -351,7 +410,6 @@ const ItemPage = () => {
                     </div>
                 </div>
             </div>
-            <Footer />
         </div>
     );
 };

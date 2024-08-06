@@ -105,11 +105,11 @@ const CartItem = ({ product }) => {
                         {products.description}
                     </div>
                     <div className="flex items-center justify-center mt-2">
-                        <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.5" />
-                        <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.5" />
-                        <img src={StarFilled} alt="Star Filled" className="w-4 h-4 mx-0.5" />
-                        <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4 mx-0.5" />
-                        <img src={Star} alt="Star" className="w-4 h-4 mx-0.5" />
+                        <img src={StarFilled} alt="Star Filled" className="w-4 h-4" />
+                        <img src={StarFilled} alt="Star Filled" className="w-4 h-4" />
+                        <img src={StarFilled} alt="Star Filled" className="w-4 h-4" />
+                        <img src={StarHalfEmpty} alt="Star Half Empty" className="w-4 h-4" />
+                        <img src={Star} alt="Star" className="w-4 h-4" />
                         <div className="text-[13px] font-inter text-[#737373] ml-2">4.5k sold</div>
                     </div>
                 </div>

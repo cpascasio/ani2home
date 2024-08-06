@@ -8,9 +8,19 @@ import LeftArrow from '../../assets/LeftArrow.png';
 import RightArrow from '../../assets/RightArr.png';
 import useFetch from '../../../hooks/useFetch';
 import ProductCard from '../../components/ProductCard';
+import { useParams } from 'react-router-dom';
 
 const ShopProfile = () => {
+    const { sellerId } = useParams();
     const [products, setProducts] = useState([]);
+    const [seller, setSeller] = useState({});
+    const [name, setName] = useState("");
+    const [fullAddress, setfullAddress] = useState("");
+    const [bio, setBio] = useState("");
+    const [followers, setFollowers] = useState(0);
+    const [rating, setRating] = useState(0);
+    const [numberOfProducts, setNumberOfProducts] = useState(0);
+    const [numberOfProductsSold, setNumberOfProductsSold] = useState(0);
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedButton, setSelectedButton] = useState('default');
     const [isAscending, setIsAscending] = useState(true);
@@ -18,11 +28,12 @@ const ShopProfile = () => {
     const [isSortOptionsOpen, setIsSortOptionsOpen] = useState(false);
     const [currentProductIndex, setCurrentProductIndex] = useState(0);
 
-    const { data: productsFetch } = useFetch("/api/products");
+    const { data: productsFetch } = useFetch(`/api/products/seller/${sellerId}`); // Fetch product data
 
     useEffect(() => {
         if (productsFetch) {
-            setProducts(productsFetch);
+            setProducts(productsFetch.products);
+            setSeller(productsFetch.seller);
         }
     }, [productsFetch]);
 
@@ -49,7 +60,7 @@ const ShopProfile = () => {
     return (
         <div className="w-full">
         {/* ----- START BANNER ------ */}
-            <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900 pt-[6%]">
+            <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-[#072c1c] to-[#83c763] pt-[6%]">
                 {/* Mobile View: Profile and Follow Button */}
                 <div className="flex flex-row md:hidden w-full p-6 pt-[8vh]">
                     <div className="flex justify-center items-center w-1/3">
@@ -58,7 +69,7 @@ const ShopProfile = () => {
                         </div>
                     </div>
                     <div className="flex flex-col justify-center text-white w-2/3 pl-4">
-                        <h1 className="text-2xl font-bold font-inter mb-2">Pogi Farms</h1>
+                        <h1 className="text-2xl font-bold font-inter mb-2">{seller?.name}</h1>
                         <div className="italic mb-2 font-inter text-sm">Dasmarinas, Cavite</div>
                         <button className="rounded border border-[#D9D9D9] text-white p-2 px-5 mx-[20%] mt-2 font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
                             Follow+
@@ -175,7 +186,7 @@ const ShopProfile = () => {
                 
                 {/* Best Seller Section */}
                 <div className="flex flex-col w-full sm:px-40 mb-4">
-                    <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-5 mb-3">
+                    <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-5 mb-3 md:pl-0 pl-6">
                         BEST SELLERS
                     </div>
                     {/* Desktop view */}

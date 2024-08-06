@@ -97,7 +97,7 @@ const MyOrders = () => {
   return (
     <div className="w-full">
       
-      <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-green-900 pt-[6%]">
+      <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-[#072c1c] to-[#83c763] pt-[6%]">
         {/* <!-- Mobile View: First Row --> */}
         <div className="flex flex-row md:hidden w-full p-6 pt-[8vh]">
           <div className="flex justify-center items-center w-1/3 sm:mb-0">

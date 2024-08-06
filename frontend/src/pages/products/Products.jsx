@@ -36,8 +36,8 @@ const Products = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-200 pt-24">
-      <div className="flex flex-col flex-grow bg-gray-200">
+    <div  style={{ backgroundColor: '#e5e7eb'}} className='w-full pt-24'>
+            <div className="px-5 sm:px-10 md:px-20 lg:px-40 bg-gray-200 min-h-screen">
         <div className="flex flex-col sm:flex-row w-full max-w-screen-xl mx-auto p-4">
           {/* Categories Section */}
           <div className="w-full sm:w-[15%] p-4">
@@ -190,10 +190,6 @@ const Products = () => {
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-[#0B472D] text-white p-4 mt-auto">
-      </footer>
     </div>
   );
 };

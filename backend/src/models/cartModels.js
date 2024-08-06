@@ -1,9 +1,13 @@
 const Joi = require('joi');
 
 const cartSchema = Joi.object({
-    userId: Joi.string().required(),
-    productId: Joi.string().required(),
-    quantity: Joi.number().integer().default(1).required()
+    cart: Joi.array().items(Joi.object({
+        sellerId: Joi.string().optional(),
+        items: Joi.array().items(Joi.object({
+            productId: Joi.string().optional(),
+            quantity: Joi.number().optional()
+        })).optional()
+    })).optional()
 });
 
 module.exports = cartSchema;

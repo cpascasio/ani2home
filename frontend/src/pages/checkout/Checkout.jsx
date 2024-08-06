@@ -10,22 +10,35 @@ import useFetch from '../../../hooks/useFetch';
 import { useUser } from '../../context/UserContext.jsx';
 // import axios
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
 import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 
 const Checkout = () => {
   const { user } = useUser();
   const [items, setItems] = useState([]);
-  const { data: itemsFetch } = useFetch(`/api/cart/cart-items/${user?.userId}`);
+  const [ seller, setSeller ] = useState({});
+
+  const { sellerId } = useParams();
+
+  const { data: itemsFetch } = useFetch(`/api/cart/checkout/${user?.userId}/${sellerId}`);
   
 
   useEffect(() => {
     if (itemsFetch) {
-      setItems(itemsFetch);
+      setItems(itemsFetch.items);
+      // add itemsFetch.sellerId to setSeller
+      setSeller(itemsFetch.seller, itemsFetch.sellerId);
     }
     console.log("Checkout Items: ", itemsFetch);
-  }
-  , [itemsFetch]);
+  }, [itemsFetch]);
+
+  useEffect(() => {
+    setSellerAddress({
+      lat: seller?.address?.lat || 14.3879953,
+      lng: seller?.address?.lng || 120.9879423,
+    });
+  }, [seller]);
 
   useEffect(() => {
     console.log("Checkout Items Items: ", items); // doesn't fetch the items correctly
@@ -61,15 +74,21 @@ const Checkout = () => {
 
   const [markerPosition, setMarkerPosition] = useState(null);
   const [addressDetails, setAddressDetails] = useState({});
+  const [buyerAddress, setBuyerAddress] = useState({
+    lat: 14.3879953,
+    lng: 120.9879423,
+  });
+
+  const [sellerAddress, setSellerAddress] = useState({
+    lat: 14.3879953,
+    lng: 120.9879423,
+  });
+
 
   const autocompleteContainerRef = useRef(null);
 
   const placesLib = useMapsLibrary('places');
 
-//   useEffect(() => {
-//     console.log('Quantity:', quantity);
-
-// }, [quantity]);
 
 useEffect(() => {
   if (userFetch != null) {
@@ -83,50 +102,63 @@ useEffect(() => {
     setFullName(userData.name || '');
     setCountryCode(userData.phoneNumber ? userData.phoneNumber.slice(0, 3) : '');
     setPhoneNumber(userData.phoneNumber ? userData.phoneNumber.slice(3) : '');
-    setAddress(userData?.address?.fulladdress || '');
+    setAddressDetails(userData?.address || '');
+    setBuyerAddress({
+      lat: userData?.address?.lat,
+      lng: userData?.address?.lng,
+    });
   }
 }, [userData]);
 
   
 
-  const handleEditToggle = () => {
-    setEditing(!editing);
-  };
+const handleEditToggle = () => {
+  setEditing(!editing);
+};
 
-  const handleFullNameChange = (e) => {
-    setFullName(e.target.value);
-  };
+const handleFullNameChange = (e) => {
+  setFullName(e.target.value);
+};
 
+const handlePhoneNumberChange = (e) => {
+  setPhoneNumber(e.target.value);
+};
 
-  const handlePhoneNumberChange = (e) => {
-    setPhoneNumber(e.target.value);
-  };
+const handleAddressChange = (e) => {
+  setAddress(e.target.value);
+};
 
-  const handleAddressChange = (e) => {
-    setAddress(e.target.value);
-  };
+const handleProvinceChange = (e) => {
+  setProvince(e.target.value);
+};
 
-  const handleProvinceChange = (e) => {
-    setProvince(e.target.value);
-  };
+const handleBarangayChange = (e) => {
+  setBarangay(e.target.value);
+};
 
-  const handleBarangayChange = (e) => {
-    setBarangay(e.target.value);
-  };
+const handleCityChange = (e) => {
+  setCity(e.target.value);
+};
 
-  const handleCityChange = (e) => {
-    setCity(e.target.value);
-  };
+const handleCountryChange = (e) => {
+  setCountry(e.target.value);
+};
 
-  const handleCancelEdit = () => {
-    setFullName(originalFullName);
-    setPhoneNumber(originalPhoneNumber);
-    setAddress(originalAddress);
-    setProvince(originalProvince);
-    setBarangay(originalBarangay);
-    setCity(originalCity);
-    setEditing(false);
-  };
+const handlePostalCodeChange = (e) => {
+  setPostalCode(e.target.value);
+};
+
+const handleCancelEdit = () => {
+  setFullName(userData?.name);
+  setPhoneNumber(userData?.phoneNumber);
+  setAddress(userData?.address?.fullAddress);
+  setProvince(userData?.address?.province);
+  setBarangay(userData?.address?.barangay);
+  setCity(userData?.address?.city);
+  setCountry(userData?.address?.country);
+  setPostalCode(userData?.address?.postalCode);
+  setEditing(false);
+};
 
   const handleNoteChange = (e) => {
     setNote(e.target.value);
@@ -145,7 +177,6 @@ useEffect(() => {
   };
 
   const handleMapClick = async (event) => {
-
     const latitude = event.detail.latLng.lat;
     const longitude = event.detail.latLng.lng;
     setMarkerPosition({ lat: latitude, lng: longitude });
@@ -159,39 +190,89 @@ useEffect(() => {
       );
 
       if (response.data.results.length > 0) {
-        const result = response.data.results[0];
+        const result = response.data.results[0]; 
+
+        console.log("result: ", result);
+
+        const fullAddress = response.data.results[0].formatted_address;
+        
+        const streetNumber = response.data.results[0]?.address_components.find(
+          (address) => address.types.includes("street_number")
+        )?.short_name;
+        const premise = response.data.results[0]?.address_components.find(
+          (address) => address.types.includes("premise")
+        )?.short_name;
+        const plusCode =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("plus_code")
+          )?.short_name ?? "";
+        console.log("PLUS:" + plusCode);
+        const route =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("route")
+          )?.short_name ?? "";
+        console.log("ROUTE:" + route);
+        const barangay =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("sublocality")
+          )?.short_name ?? "";
+        console.log("BARANGAY:" + barangay);
+        const city =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("locality")
+          )?.short_name ?? "";
+        console.log("CITY:" + city);
+        const province =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("administrative_area_level_2")
+          )?.short_name ?? "";
+        console.log("PROVINCE:" + province);
+        const region =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("administrative_area_level_1")
+          )?.short_name ?? "";
+        console.log("REGION:" + region);
+        const country =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("country")
+          )?.long_name ?? "";
+        console.log("COUNTRY:" + country);
+        const postalCode =
+          response.data.results[0]?.address_components.find((address) =>
+            address.types.includes("postal_code")
+          )?.short_name ?? "";
+
+        const streetAddress = [premise, plusCode, streetNumber, route].filter(Boolean).join(', ');
+
+        console.log("fullAddress: ", fullAddress);
+        console.log("streetAddress: ", streetAddress);
+        console.log("premise: ", premise);
+        console.log("plusCode: ", plusCode);
+        console.log("route: ", route);
+        console.log("barangay: ", barangay);
+        console.log("city: ", city);
+        console.log("province: ", province);
+        console.log("region: ", region);
+        console.log("country: ", country);
+        console.log("POSTAL CODE:" + postalCode);
   
-        const fulladdress = result.formatted_address;
-        const addressComponents = result.address_components;
-  
-        let city = '';
-        let province = '';
-        let region = '';
-        let country = '';
-  
-        for (const component of addressComponents) {
-          if (component.types.includes('locality')) {
-            city = component.long_name;
-          } else if (component.types.includes('administrative_area_level_1')) {
-            province = component.long_name;
-          } else if (component.types.includes('administrative_area_level_2')) {
-            region = component.long_name;
-          } else if (component.types.includes('country')) {
-            country = component.long_name;
-          }
-        }
-  
-        document.getElementById('newLocation').value = fulladdress;
+        document.getElementById('newStreetAddress').value = streetAddress;
         document.getElementById('newProvice').value = province;
         document.getElementById('newRegion').value = region;
         document.getElementById('newCity').value = city;
+        document.getElementById('newBarangay').value = barangay;
+        document.getElementById('newCountry').value = country;
+        document.getElementById('newPostalCode').value = postalCode;
   
         setAddressDetails({
-          fulladdress,
+          fullAddress,
+          streetAddress,
           city,
           province,
+          barangay,
           region,
           country,
+          postalCode,
           lng: longitude,
           lat: latitude,
         });
@@ -210,6 +291,7 @@ useEffect(() => {
     setMarkerPosition({ lat, lng });
     ev.map.panTo(ev.detail.latLng);
   }, []);
+
 
   useEffect(() => {
     if (!placesLib || !map) return;
@@ -235,8 +317,8 @@ useEffect(() => {
     data.address = {};
 
     // Check if fields have been changed
-    if (formData.get("newLocation") !== userData?.address?.fulladdress) {
-      data.address.fulladdress = formData.get("newLocation") || "";
+    if (formData.get("newStreetAddress") !== userData?.address?.streetAddress) {
+      data.address.street = formData.get("newStreetAddress") || "";
     }
     if (formData.get("newProvice") !== userData?.address?.province) {
       data.address.province = formData.get("newProvice") || "";
@@ -246,6 +328,15 @@ useEffect(() => {
     }
     if (formData.get("newCity") !== userData?.address?.city) {
       data.address.city = formData.get("newCity") || "";
+    }
+    if (formData.get("newBarangay") !== userData?.address?.barangay) {
+      data.address.barangay = formData.get("newBarangay") || "";
+    }
+    if (formData.get("newCountry") !== userData?.address?.country) {
+      data.address.country = formData.get("newCountry") || "";
+    }
+    if (formData.get("newPostalCode") !== userData?.address?.postalCode) {
+      data.address.postalCode = formData.get("newPostalCode") || "";
     }
 
     // Get the token from localStorage or any other source
@@ -282,7 +373,7 @@ useEffect(() => {
   }
   // const totalPrice = cartItems.reduce((acc, items) => acc + (items.product.price * items.quantity), 0);
 
-  console.log("Total Price : ", totalPrice );
+  //console.log("Total Price : ", totalPrice );
 
   // Function to format numbers with commas
   const formatNumber = (number) => {
@@ -295,85 +386,75 @@ useEffect(() => {
 
   const handlePlaceOrder = () => {
 
-        const order = {
-          userId: user?.userId,
-          sellerId: "store345", // update card model to have a sellerId ty
-          shippingFee: 50,
-          totalPrice,
-          status: "In Process",
-          deliveryAddress: {
-            fullName,
-            province,
-            barangay,
-            city,
-            address,
-            phoneNumber
-          },
-          paymentOption: selectedPaymentOption,
-          paymentRefNo: '1234567890',
-          items: items.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity
-          }))
-        };
-
-
-
-        // Extract order details from items
-      const orderDetails = items.map(item => ({
-        orderId: order.orderId,
+    const order = {
+      userId: user?.userId,
+      sellerId: sellerId, // update card model to have a sellerId ty
+      shippingFee: 50,
+      totalPrice,
+      status: "In Process",
+      deliveryAddress: {
+        fullName,
+        province,
+        barangay,
+        city,
+        address: addressDetails.fullAddress,
+        phoneNumber
+      },
+      paymentOption: selectedPaymentOption,
+      paymentRefNo: '1234567890',
+      items: items.map(item => ({
         productId: item.productId,
         quantity: item.quantity
-      }));
+      }))
+    };
 
-        // navigate('/confirmation', { state: { order: order}});
-        // console.log('handlePlaceOrder', items);
+    // Extract order details from items
+    const orderDetails = items.map(item => ({
+      orderId: order.orderId,
+      productId: item.productId,
+      quantity: item.quantity
+    }));
 
-        // add to firebase to order db
+    // navigate('/confirmation', { state: { order: order}});
+    // console.log('handlePlaceOrder', items);
 
-       
+    // add to firebase to order db
 
+    // Conditionally add the note property if it's not an empty string
+    if (note.trim() !== '') {
+      order.note = note;
+    }
 
-        // Conditionally add the note property if it's not an empty string
-  // Conditionally add the note property if it's not an empty string
-if (note.trim() !== '') {
-  order.note = note;
-}
+    console.log('Order:', order);
 
-console.log('Order:', order);
+    // First, create the order
+    axios.post('http://localhost:3000/api/orders/place-order', order)
+      .then((response) => {
+        console.log('Order placed:', response.data);
+        
+        // Extract the orderId from the response if needed
+        const orderId = String(response.data.orderId);
+        console.log("OrderID: ", orderId);
 
+        // add navigation to redirect to confirmation page
+        navigate('/confirmation', { state: { order: order, orderId: orderId }});
 
-
-
-// First, create the order
-axios.post('http://localhost:3000/api/orders/place-order', order)
-  .then((response) => {
-    console.log('Order placed:', response.data);
-    
-     // Extract the orderId from the response if needed
-     const orderId = String(response.data.orderId);
-     console.log("OrderID: ", orderId);
-
-  })
-  .catch((error) => {
-    console.error('Error placing order or order details:', error);
-  });
+      })
+      .catch((error) => {
+        console.error('Error placing order or order details:', error);
+      });
   };
-
-
-
-
  
 
   return (
-    <div  style={{ backgroundColor: '#e5e7eb', minHeight: '100vh' }} className='w-full pt-24'>
+    <div  style={{ backgroundColor: '#e5e7eb'}} className='w-full pt-24'>
       <div className="px-5 sm:px-10 md:px-20 lg:px-40 bg-gray-200 min-h-screen"> {/* main container for body */}
         <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-10">
           YOUR CART
         </div>
         <div className="flex justify-center mt-6"> {/* container for white box */}
           <div className="bg-white w-full max-w-4xl p-4"> {/* white box with padding */}
-            <div className="flex items-center"> {/* container for location icon and text */}
+          <div className="flex items-center mb-3"> {/* container for location icon and text */}
               <img src={LocationIcon} alt="Location" className="w-[20px] h-[20px] mr-2" />
               <div className="font-inter text-[15px] text-[#737373]">Delivery Address</div>
             </div>
@@ -419,11 +500,24 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
                     </label>
                   </div>
                   <div className="flex flex-col my-2">
+                    <div className="bg-gray-200 text-gray-800 p-2 rounded">
+                      {addressDetails.fullAddress || userData?.address?.fullAddress || 'No address selected'}
+                    </div>
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newStreetAddress"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Street Address
+                    </label>
+                  </div>
+                  <div className="flex flex-col my-2">
                     <input
                       type="text"
-                      id="newLocation"
-                      name="newLocation"
-                      defaultValue={userData?.address?.fulladdress}
+                      id="newStreetAddress"
+                      name="newStreetAddress"
+                      defaultValue={userData?.address?.streetAddress}
                       required
                       className="input input-bordered bg-gray-200 text-gray-800"
                     />
@@ -474,6 +568,56 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
                       className="w-full input input-bordered bg-gray-200 text-gray-800" 
                     />
                   </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newBarangay"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Barangay
+                    </label>
+                  </div>
+                  <div className="flex flex-col my-2">
+                    <input
+                      type="text"
+                      id="newBarangay"
+                      name="newBarangay"
+                      defaultValue={userData?.address?.barangay}
+                      required
+                      className="input input-bordered bg-gray-200 text-gray-800"
+                    />
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label
+                      htmlFor="newCountry"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Country
+                    </label>
+                    <label
+                      htmlFor="newPostalCode"
+                      className="w-full text-sm font-medium text-gray-600 text-left"
+                    >
+                      Postal Code
+                    </label>
+                  </div>
+                  <div className="flex space-x-4 mb-2">
+                    <input 
+                      type="text" 
+                      id="newCountry"
+                      name="newCountry"
+                      required
+                      defaultValue={userData?.address?.country} 
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                    <input 
+                      type="text" 
+                      id="newPostalCode"
+                      name="newPostalCode"
+                      required
+                      defaultValue={userData?.address?.postalCode} 
+                      className="w-full input input-bordered bg-gray-200 text-gray-800" 
+                    />
+                  </div>
                   <div className="flex justify-end space-x-4 mb-2 w-full">
                     <button 
                       onClick={handleCancelEdit}
@@ -483,7 +627,7 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
                     </button>
                     <button
                       type="Submit"
-                      className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 hover:text-white transition duration-300 ease-in-out border-none px-5"
+                      className="btn btn-sm bg-green-900 rounded text-white transition duration-300 ease-in-out hover:bg-blue-500 border-none px-5"
                     >
                       Save
                     </button>
@@ -526,7 +670,7 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
             <div className="ml-4 flex flex-col justify-between">
               <div className="font-inter text-[15px] text-black ml-[-70px] mb-0.5 mt-[-3px]">Shipping Details</div>
               <div className="font-inter text-[15px] text-black ml-[-80px]">Standard Local</div>
-              <div className="font-inter text-[15px] text-black ml-[-100px]">SPX Express</div>
+              <div className="font-inter text-[15px] text-black ml-[-100px]">Lalamove</div>
               <div className="font-inter text-[13px] text-black mt-1">Guaranteed to get by 5 - 8 Aug</div>
             </div>
             <div className="ml-auto flex flex-col items-center justify-center mt-5 mx-12">
@@ -620,22 +764,20 @@ axios.post('http://localhost:3000/api/orders/place-order', order)
             </div>
           </div>
           
-          <div className="flex justify-between border p-2" style={{ marginBottom: 'auto'}}> {/* Inline style for margin-bottom */}
-  <button 
-    onClick={handleCancel} 
-    className="w-[122px] h-[40px] bg-gray-400 text-white border border-gray-300 rounded transition duration-300 ease-in-out hover:bg-red-500 font-inter font-bold text-[16px] mr-4 rounded-md"
-  >
-    Cancel
-  </button>
-  <button 
-    onClick={handlePlaceOrder} 
-    className="w-[122px] h-[40px] bg-green-900 font-inter font-bold text-white border border-gray-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition duration-300 ease-in-out rounded-md "
-  >
-    Place Order
-  </button>
-</div>
-
-
+          <div className="flex justify-between border p-2 pb-10" style={{ marginBottom: 'auto'}}> {/* Inline style for margin-bottom */}
+            <button 
+              onClick={handleCancel} 
+              className="w-[122px] h-[40px] bg-gray-400 text-white border border-gray-300 rounded transition duration-300 ease-in-out hover:bg-red-500 font-inter font-bold text-[16px] mr-4 rounded-md"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handlePlaceOrder} 
+              className="w-[122px] h-[40px] bg-green-900 font-inter font-bold text-white border border-gray-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition duration-300 ease-in-out rounded-md "
+            >
+              Place Order
+            </button>
+          </div>
         </div>
       </div>
     </div>

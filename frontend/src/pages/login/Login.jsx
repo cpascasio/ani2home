@@ -10,6 +10,7 @@ import {
 } from "firebase/auth";
 import { useUser } from "../../../src/context/UserContext.jsx";
 import GoogleIcon from "../../assets/google-icon.png"; 
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const { user, dispatch } = useUser();
@@ -17,6 +18,7 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Subscribe to authentication state changes
@@ -201,6 +203,8 @@ const Login = () => {
           });
         }
       }
+
+      navigate('/myProfile');
     } catch (error) {
       console.error(error);
     }

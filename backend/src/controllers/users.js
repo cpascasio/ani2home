@@ -2,7 +2,7 @@ const express = require('express');
 const admin = require('firebase-admin');
 const router = express.Router();
 const userSchema = require('../models/userModels'); // Import the userSchema
-
+const cartSchema = require('../models/cartModels');
 //const userSchema = require('../models/userModels');
 
 // Initialize Firebase Admin SDK
@@ -59,14 +59,78 @@ const addUserToFirestore = async (value) => {
     // Extract userId from the value object
     const { userId, ...userData } = value;
 
+    let default_var = {
+      "name": "",
+      "userName": "",
+      "email": "",
+      "dateOfBirth": "",
+      "userProfilePic": "",
+      "userCover": "",
+      "address": {
+        "fullAddress": "",
+        "streetAddress": "",
+        "city": "",
+        "province": "",
+        "barangay": "",
+        "region": "",
+        "country": "",
+        "postalCode": "",
+        "lng": 0,
+        "lat": 0
+      },
+      "phoneNumber": "",
+      "followers": [],
+      "isStore": false,
+      "bio": "",
+      "isVerified": false
+    };
+
+    // Merge userData into default_var
+    const mergedData = {
+      ...default_var,
+      ...userData,
+      address: {
+        ...default_var.address,
+        ...userData.address
+      }
+    };
+
     // Add user data to Firestore, excluding the userId from the document fields
-    await db.collection('users').doc(userId).set(userData);
+    await db.collection('users').doc(userId).set(mergedData);
 
     console.log('User data successfully written to Firestore');
   } catch (error) {
     console.error('Error adding user data to Firestore:', error);
   }
 };
+
+// create cart for user
+const createCartForUser = async (userId) => {
+
+  const data = {
+    cart: [],
+  }
+
+  // validate the cart
+  const { error, value } = cartSchema.validate(data);
+
+  if (error) {
+    console.error('Validation Error:', error.details[0].message); // Log the validation error
+    throw new Error('Error creating cart for user');
+  }
+
+  try {
+    // Assuming 'add' is a method to add a new document. This might need to be adjusted based on your DB API.
+    await db.collection('cart').doc(userId).set(value);
+    console.log('Cart created successfully');
+  } catch (error) {
+    console.error('Error creating cart:', error);
+    throw new Error('Error creating cart for user');
+  }
+
+};
+
+
 
 const checkUserExists = async (userId) => {
   try {
@@ -85,17 +149,24 @@ const checkUserExists = async (userId) => {
     console.error('Error checking user existence:', error);
     throw error;
   }
+
+
 };
 
 
 router.post('/create-user', async (req, res) => {
   // Validate the request body against the schema
 
+ 
+
+
+
+
+
   console.log('Request body:', req.body);
 
   // get rememberMe from the request body
   const rememberMe = req.body.rememberMe;
-
 
   // check firebase db users collection for userid if existing
   const userId = req.body.userId; // Assuming userId is part of the request body
@@ -116,7 +187,6 @@ router.post('/create-user', async (req, res) => {
     });
   }
 
-
   const { error, value } = userSchema.validate(req.body);
   if (error) {
     return res.status(400).send(error.details[0].message);
@@ -127,17 +197,17 @@ router.post('/create-user', async (req, res) => {
   try {
     // Assuming 'add' is a method to add a new document. This might need to be adjusted based on your DB API.
     await addUserToFirestore(value);
+    await createCartForUser(userId); // Create cart for the user after adding the user to Firestore
     res.status(201).json({ 
       message: 'User created successfully',
       state: 'success'
-
-     });
+    });
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).json({
       message: 'Error creating user',
       state: 'error',
-  });
+    });
   }
 });
 
@@ -185,6 +255,8 @@ router.get('/:uid/isStore', async (req, res) => {
 router.put('/edit-user/:uid', async (req, res) => {
   const { uid } = req.params;
   const { error, value } = userSchema.validate(req.body);
+
+  console.log("value", value);
 
   console.log(req.body);
   if (error) {
