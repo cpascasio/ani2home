@@ -1,16 +1,40 @@
 import React, { useContext } from 'react';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { useUser } from '../context/UserContext';
 import axios from 'axios';
+import Star from '../assets/Star.png';
+import StarFilled from '../assets/StarFilled.png';
 
+function generateStars(rating) {
+  const starElements = [];
 
-const ProductCard = (product) => {  
+  for (let k = 0; k < rating; k++) {
+    starElements.push(
+      <img
+        key={`filled-${k}`}
+        alt="Star"
+        src={StarFilled}
+        className="w-4 h-4"
+      />
+    );
+  }
+  for (let k = 0; k < 5 - rating; k++) {
+    starElements.push(
+      <img
+        key={`empty-${k}`}
+        alt="Star"
+        src={Star}
+        className="w-4 h-4"
+      />
+    );
+  }
+
+  return starElements;
+}
+
+const ProductCard = (product) => {
   const { user } = useUser();
-
-  // add console log for user
-  console.log('Current user:', user);
   const { addToCart } = useContext(CartContext);
   const navigate = useNavigate();
 
@@ -32,6 +56,12 @@ const ProductCard = (product) => {
     }
   };
 
+  const handleImageClick = () => {
+    // Navigate to itemPage with product ID or other identifier
+    navigate('/itemPage');
+  };
+
+  const yellowStars = generateStars(product.rating);
 
   return (
     // <div className="card bg-base-100 w-96 shadow-xl">
@@ -55,30 +85,30 @@ const ProductCard = (product) => {
     //     </div>
     //   </div>
     // </div>
-
     <div className="bg-white flex flex-col border border-gray-300 rounded-lg overflow-hidden shadow-md w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto">
-  <img
-    src={product.pictures[0]} 
-    alt={product.productName} 
-    className="w-full h-[178px] object-cover"
-  />
-  <div className="p-3">
-    <h2 className="text-left text-sm font-bold text-gray-900 truncate">{product.productName}</h2> 
-    <p className="text-left text-xs text-gray-600 mt-1 line-clamp-2"> 
-      {product.productDescription}
-    </p>
-    <p className="text-left text-xs text-red-500 mt-1">Rating: {product.rating}</p>
-  </div>
-  <button
-    className="bg-green-900 text-white py-2 px-4 rounded-md hover:bg-blue-500 hover:text-white transition-colors duration-300 mx-4 mb-4"
-    onClick={handleAddToCart} 
-  >
-    Add To Cart
-  </button>
-</div>
-
-
-
+      <img
+        src={product.pictures[0]}
+        alt={product.productName}
+        className="w-full h-[178px] object-cover cursor-pointer"
+        onClick={handleImageClick}
+      />
+      <div className="flex flex-col flex-grow p-3">
+        <h2 className="text-left text-sm font-bold text-gray-900 truncate">{product.productName}</h2>
+        <p className="text-left text-xs text-gray-600 mt-1 line-clamp-2">
+          {product.productDescription}
+        </p>
+        <div className="stars-wrapper flex mt-1">
+          {yellowStars}
+        </div>
+        <p className="text-left text-xs text-red-500 mt-1">Rating: {product.rating}</p>
+      </div>
+      <button
+        className="bg-green-900 text-white py-1 px-2 text-xs rounded-md hover:bg-blue-500 hover:text-white transition-colors duration-300 mx-4 mb-4 sm:py-2 sm:px-4 sm:text-sm"
+        onClick={handleAddToCart}
+      >
+        Add To Cart
+      </button>
+    </div>
   );
 };
 

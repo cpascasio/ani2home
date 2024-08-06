@@ -1,19 +1,46 @@
 .App {
-    display: flex;
-    font-family: Arial, sans-serif;
-  }
-  
-  .menu-container {
-    flex: 0 0 200px;
-  }
-  
-  .content-container {
-    flex: 1;
-    padding: 20px;
-    background-color: #f0f0f0;
-  }
-  
-  h1 {
-    color: #333;
-  }
-  
+  display: flex;
+  font-family: Arial, sans-serif;
+}
+
+.menu-container {
+  flex: 0 0 200px;
+}
+
+.content-container {
+  flex: 1;
+  padding: 20px;
+  background-color: #e5e7eb;
+}
+
+h1 {
+  color: #333;
+}
+
+.seller-bg {
+  background-color: #e5e7eb; 
+  display: flex;
+  flex-direction: column;
+  height: 100vh; 
+}
+
+.seller-flex-1 {
+  flex: 1;
+  overflow: auto; /
+}
+
+.seller-lg-flex-row {
+  flex-direction: row; 
+}
+
+.seller-lg-w-1-5 {
+  width: 20%; 
+}
+
+.seller-lg-order-1 {
+  order: 1; 
+}
+
+.seller-order-2 {
+  order: 2; 
+}
