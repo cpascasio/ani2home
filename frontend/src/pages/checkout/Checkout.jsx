@@ -618,13 +618,13 @@ const handleCancelEdit = () => {
                   <div className="flex justify-end space-x-4 mb-2 w-full">
                     <button 
                       onClick={handleCancelEdit}
-                      className="btn btn-sm bg-gray-200 text-[#737373] rounded border border-gray-300 hover:bg-gray-300"
+                      className="btn btn-sm bg-gray-400 text-white border-none rounded transition duration-300 ease-in-out hover:bg-red-500 font-inter font-bold"
                     >
                       Cancel
                     </button>
                     <button
                       type="Submit"
-                      className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none px-5"
+                      className="btn btn-sm bg-green-900 rounded text-white transition duration-300 ease-in-out hover:bg-blue-500 border-none px-5"
                     >
                       Save
                     </button>
