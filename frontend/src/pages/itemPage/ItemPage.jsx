@@ -189,11 +189,11 @@ const ItemPage = () => {
                             </div>
                         </div>
 
-                        {/* <div className="border-l border-gray-500 h-8 mr-10 md:my-0 md:ml-4"></div>
+                        <div className="border-l border-gray-500 h-8 mr-10 md:my-0 md:ml-4"></div>
 
-                        <div className="flex flex-col md:flex-row text-gray-600 text-sm md:w-2/3 w-full"> */}
+                        <div className="flex flex-col md:flex-row text-gray-600 text-sm md:w-2/3 w-full">
                             {/* Products and Followers Column */}
-                            {/* <div className="flex flex-col md:flex-row mb-4 md:mb-0 md:ml-5 md:mr-7 w-full md:w-auto">
+                            <div className="flex flex-col md:flex-row mb-4 md:mb-0 md:ml-5 md:mr-7 w-full md:w-auto">
                                 <div className="flex items-center mb-2 md:mb-0 md:mr-7">
                                     <span className="mr-2">Products:</span>
                                     <span className="text-[#E11919] font-bold">{numberOfProducts}</span>
@@ -204,9 +204,9 @@ const ItemPage = () => {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col md:flex-row w-full md:w-auto"> */}
+                            <div className="flex flex-col md:flex-row w-full md:w-auto">
                                 {/* Ratings and Shop Rating Column */}
-                                {/* <div className="flex items-center mb-2 md:mb-0 md:mr-7">
+                                <div className="flex items-center mb-2 md:mb-0 md:mr-7">
                                     <span className="mr-2">Ratings:</span>
                                     <span className="text-[#E11919] font-bold">{numberOfRatings}</span>
                                 </div>
@@ -230,7 +230,7 @@ const ItemPage = () => {
                                 className="w-4 h-4 inline-block mr-1 mb-0.5"
                             />
                             View Shop
-                        </button> */}
+                        </button>
                     </div>
 
 
