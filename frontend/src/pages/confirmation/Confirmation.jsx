@@ -42,8 +42,8 @@ const Confirmation = () => {
                             </div>
                         </div>
                         <hr className="my-4 border-gray-300" /> {/* Lighter horizontal line */}
-                        <div className="ml-5 font-inter text-[15px] text-black text-left">
-                            Your order number is: <span className="font-bold text-[#0000FF]">000000001</span>
+                        <div className="mt-4 ml-5 font-inter text-[15px] text-black text-left">
+                        Your order number is: <span className="font-bold text-[#0000FF]">{orders[0]?.orderId}</span>
                         </div>
                         <div className="ml-5 font-inter text-[15px] text-black text-left font-bold mt-4">
                             Billing & Shipping Information:
@@ -67,21 +67,7 @@ const Confirmation = () => {
                             We’ll message you an order confirmation with details and tracking info.
                         </div>
                         </div>
-                        <div className="mt-4 ml-5 font-inter text-[15px] text-black text-left">
-                        Your order number is: <span className="font-bold text-[#0000FF]">{orders[0]?.orderId}</span>
-                        </div>
-                        <div className="mt-4 ml-5 font-inter text-[15px] text-black text-left">
-                        Billing & Shipping Information: <span>Fernando Lopez</span>
-                        </div>
-                        <div className="ml-5 font-inter text-[15px] text-black text-left">
-                        Condo Residences, You know where street, Dasmarinas Barangay 123, Dasmarinas, Cavite, 1004
-                        </div>
-                        <div className="ml-5 font-inter text-[15px] text-black text-left">
-                        (+63) 998 765 4321
-                        </div>
-                        <div className="mt-4 ml-5 font-inter text-[15px] text-black text-left">
-                        We’ll message you an order confirmation with details and tracking info.
-                        </div>
+                        
                         <div className="flex justify-center mt-7 mb-4"> {/* Center button horizontally and add margin bottom */}
                         <button className="bg-green-900 text-white font-inter font-bold text-[15px] w-[166px] h-[33px] hover:bg-blue-500 hover:text-white hover:border-blue-500 transition duration-300 ease-in-out rounded-md">
                             Continue Shopping
