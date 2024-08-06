@@ -805,7 +805,7 @@ const MyProfile = () => {
                 </div>
               )}
             </div>
-            <div className="bg-white p-10 rounded shadow-md">
+            <div className="bg-white p-10 pt-0 rounded shadow-md">
               {" "}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-600">
@@ -944,23 +944,6 @@ const MyProfile = () => {
                           pattern="(\+63|0)[1-9][0-9]{9}"
                           name="newPhoneNumber"
                           defaultValue={userData?.phoneNumber}
-                          className="input input-bordered bg-gray-200 text-gray-800 w-full"
-                        />
-                      </div>
-
-                      {/* Location */}
-                      <div className="flex flex-col">
-                        <label
-                          htmlFor="newLocation"
-                          className="text-sm font-medium text-gray-600 text-left"
-                        >
-                          Location
-                        </label>
-                        <input
-                          type="text"
-                          id="newLocation"
-                          name="newLocation"
-                          defaultValue={userData?.address?.fullAddress}
                           className="input input-bordered bg-gray-200 text-gray-800 w-full"
                         />
                       </div>
