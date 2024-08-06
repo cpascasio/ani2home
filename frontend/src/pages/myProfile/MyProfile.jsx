@@ -6,6 +6,7 @@ import axios from "axios";
 import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { Autocomplete } from "@react-google-maps/api";
 import LocationIcon from "../../assets/location.png"; // Path to the location icon
+import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
 
 const MyProfile = () => {
   const userLog = localStorage.getItem("user");
@@ -13,7 +14,9 @@ const MyProfile = () => {
   const [editing, setEditing] = useState(false);
   const placesLib = useMapsLibrary("places");
 
-  const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
+  const [refetch, setRefetch] = useState(false);
+
+  const { data: userFetch } = useDynamicFetch(`/api/users/${user?.userId}`, refetch);
   const [userData, setUserData] = useState({});
   const [editMode, setEditMode] = useState(false);
   const navigate = useNavigate();
@@ -287,6 +290,8 @@ const MyProfile = () => {
         }
       );
       console.log("Success:", response.data);
+      setRefetch(prev => !prev);
+      handleCancelEdit();
       // Handle success (e.g., show a success message or redirect)
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
@@ -300,6 +305,9 @@ const MyProfile = () => {
   //3. make the edit user profile functionality work with backend endpoint.
 
   // create the handleSubmit function that gets the value of formData then does an axios.put to the route http://localhost:3000/api/users/edit-user with headers type application json and token given the formdata.
+  const handleDelAcc = () => {
+    dispatch({ type: "LOGOUT" });
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault(); // Prevent the default form submission behavior
@@ -342,6 +350,8 @@ const MyProfile = () => {
         }
       );
       console.log("Success:", response.data);
+      setRefetch(prev => !prev);
+      document.getElementById("modal_editProfile").close()
       // Handle success (e.g., show a success message or redirect)
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
@@ -439,7 +449,7 @@ const MyProfile = () => {
 
       {/* Verification Modal */}
       {isVerificationModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-sm relative">
             <button
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
@@ -805,7 +815,7 @@ const MyProfile = () => {
                 </div>
               )}
             </div>
-            <div className="bg-white p-10 rounded shadow-md">
+            <div className="bg-white p-10 pt-0 rounded shadow-md">
               {" "}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-600">
@@ -948,23 +958,6 @@ const MyProfile = () => {
                         />
                       </div>
 
-                      {/* Location */}
-                      <div className="flex flex-col">
-                        <label
-                          htmlFor="newLocation"
-                          className="text-sm font-medium text-gray-600 text-left"
-                        >
-                          Location
-                        </label>
-                        <input
-                          type="text"
-                          id="newLocation"
-                          name="newLocation"
-                          defaultValue={userData?.address?.fullAddress}
-                          className="input input-bordered bg-gray-200 text-gray-800 w-full"
-                        />
-                      </div>
-
                       {/* Bio */}
                       <div className="flex flex-col">
                         <label
@@ -996,7 +989,6 @@ const MyProfile = () => {
                         <button
                           type="submit"
                           className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none w-auto h-auto"
-                          onClick={() => console.log("Save logic here")}
                         >
                           Save
                         </button>
@@ -1204,7 +1196,7 @@ const MyProfile = () => {
                           Are you sure you want to delete your account? This
                           action cannot be undone.
                         </p>
-                        <form method="dialog" className="space-y-4">
+                        <form method="dialog" className="space-y-4" onSubmit={handleDelAcc}>
                           <div className="flex flex-col">
                             <input
                               type="text"
@@ -1256,7 +1248,6 @@ const MyProfile = () => {
                               id="deleteBtn"
                               className="btn btn-sm bg-red-500 rounded text-white hover:bg-red-600 border-none w-auto h-auto"
                               disabled
-                              onClick={() => console.log("Delete logic here")}
                             >
                               Delete
                             </button>
@@ -1314,10 +1305,10 @@ const MyProfile = () => {
                               }}
                               onInput={() => {
                                 const input =
-                                  document.getElementById("confirmation");
-                                const deleteBtn =
-                                  document.getElementById("deleteBtn");
-                                deleteBtn.disabled = input.value !== "CONFIRM";
+                                  document.getElementById("confirmationShop");
+                                const deleteBtnShop =
+                                  document.getElementById("deleteBtnShop");
+                                  deleteBtnShop.disabled = input.value !== "CONFIRM";
                               }}
                             />
                             <label
@@ -1343,7 +1334,7 @@ const MyProfile = () => {
                             </button>
                             <button
                               type="submit"
-                              id="deleteBtn"
+                              id="deleteBtnShop"
                               className="btn btn-sm bg-red-500 rounded text-white hover:bg-red-600 border-none px-5 w-auto h-auto"
                               disabled
                               onClick={() => console.log("Delete logic here")}

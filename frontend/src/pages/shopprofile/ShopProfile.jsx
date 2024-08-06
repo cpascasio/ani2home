@@ -179,7 +179,7 @@ const ShopProfile = () => {
                 
                 {/* Best Seller Section */}
                 <div className="flex flex-col w-full sm:px-40 mb-4">
-                    <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-5 mb-3">
+                    <div className="font-inter font-bold text-[18px] text-gray-600 text-left pt-5 mb-3 md:pl-0 pl-6">
                         BEST SELLERS
                     </div>
                     {/* Desktop view */}

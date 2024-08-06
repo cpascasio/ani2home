@@ -314,7 +314,7 @@ const ItemPage = () => {
                             </div>
                             {/* Number of Ratings Container */}
                             <div className="flex items-left text-xs text-gray-600 mb-4">
-                                {numberOfRatings} Ratings
+                                {numberOfRatings} Product Ratings
                             </div>
                             
                             {/* Sorting and Filtering Dropdowns */}
