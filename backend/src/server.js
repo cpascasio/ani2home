@@ -16,6 +16,10 @@ const app = express();
 
 app.use(cors()); // Use CORS module
 
+// Increase payload size limit
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 const port = process.env.PORT || 3000;
 
 // Create an API router

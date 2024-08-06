@@ -3,8 +3,12 @@ import backgroundImage from '../../assets/product-categories-bg.svg';
 import category1Image from '../../assets/category1.png';
 import category2Image from '../../assets/category2.png';
 import category3Image from '../../assets/category3.png';
+import { useNavigate } from "react-router-dom";
 
 const ProductCategories = () => {
+
+  const navigate = useNavigate();
+
   return (
     <div
       className="relative w-full h-screen bg-cover bg-center bg-no-repeat"
@@ -49,6 +53,7 @@ const ProductCategories = () => {
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
+            onClick={() => navigate('/products#fruits')}
           >
             <span className="z-10">Fruits</span>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90 rounded-full"></div>
@@ -64,6 +69,7 @@ const ProductCategories = () => {
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
+            onClick={() => navigate('/products#vegetables')}
           >
             <span className="z-10">Vegetables</span>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90 rounded-full"></div>
@@ -79,6 +85,7 @@ const ProductCategories = () => {
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
+            onClick={() => navigate('/products#artisanal%20food')}
           >
             <span className="z-10">Artisanal Food</span>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90 rounded-full"></div>

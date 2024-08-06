@@ -1,7 +1,8 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const router = express.Router();
-
+const cloudinary = require('../config/cloudinary');
+const fs = require('fs');
 const productSchema = require('../models/productModels');
 
 // Firestore database reference
@@ -18,6 +19,21 @@ router.get('/:productId', async (req, res) => {
     } catch (error) {
         console.error('Error getting product:', error);
         res.status(500).send('Error getting product');
+    }
+});
+
+// route to get products given userId
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const products = [];
+        const snapshot = await db.collection('products').where('storeId', '==', req.params.userId).get();
+        snapshot.forEach((doc) => {
+            products.push({ id: doc.id, ...doc.data() });
+        });
+        res.json(products);
+    } catch (error) {
+        console.error('Error getting products:', error);
+        res.status(500).send('Error getting products');
     }
 });
 
@@ -72,6 +88,39 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Route to get products category
+router.get('/category/:categ', async (req, res) => {
+    const { categ } = req.params;
+    console.log('Received category:', categ); // Added for debugging
+    try {
+        const products = [];
+        let snapshot;
+
+        if (categ === 'fruits' || categ === 'Fruits') {
+            snapshot = await db.collection('products').where('category', '==', 'Fruit').get();
+            console.log('Fetched fruits'); // Added for debugging
+        } else if (categ === 'vegetables' || categ === 'Vegetables') {
+            snapshot = await db.collection('products').where('category', '==', 'Vegetable').get();
+            console.log('Fetched vegetables'); // Added for debugging
+        } else if (categ === 'artisanal food' || categ === 'Artisanal Food') {
+            snapshot = await db.collection('products').where('category', '==', 'Artisinal Food').get();
+            console.log('Fetched artisinal food'); // Added for debugging
+        } else {
+            snapshot = await db.collection('products').get();
+            console.log('Fetched all products'); // Added for debugging
+        }
+
+        snapshot.forEach((doc) => {
+            products.push({ id: doc.id, ...doc.data() });
+        });
+
+        res.json(products);
+    } catch (error) {
+        console.error('Error getting products:', error);
+        res.status(500).send('Error getting products');
+    }
+});
+
 // Route to create a new product
 router.post('/create-product', async (req, res) => {
     const { error, value } = productSchema.validate(req.body);
@@ -86,6 +135,20 @@ router.post('/create-product', async (req, res) => {
     }
 
     try {
+        // Check if pictures exist and is an array
+        if (value.pictures) {
+            const uploadPromises = value.pictures.map(async (picture) => {
+                const result = await cloudinary.uploader.upload(picture, {
+                    folder: 'ani2home',
+        resource_type: 'image' // Optional: if you have an upload preset
+                });
+                return result.secure_url;
+            });
+
+            // Wait for all uploads to complete
+            value.pictures = await Promise.all(uploadPromises);
+        }
+
         const newProductRef = db.collection('products').doc();
         await newProductRef.set(value);
         res.status(201).json({ 
@@ -105,8 +168,6 @@ router.post('/create-product', async (req, res) => {
 router.put('/:productId', async (req, res) => {
     const { error, value } = productSchema.validate(req.body);
     console.log("🚀 ~ router.put ~ value:", value)
-
-    
 
     if (error) {
         return res.status(400).json({ error: error.details[0].message });

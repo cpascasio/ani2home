@@ -10,23 +10,50 @@ import Footer from '../../components/Footer';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortedProducts, setSortedProducts] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(window.location.hash.replace('#', '') || 'All');
   const [selectedButton, setSelectedButton] = useState('default');
   const [isAscending, setIsAscending] = useState(true);
   const [isCollapseOpen, setIsCollapseOpen] = useState(false);
   const [isSortOptionsOpen, setIsSortOptionsOpen] = useState(false);
 
-  const { data: productsFetch } = useFetch("/api/products");
+  const { data: productsFetch } = useFetch(`/api/products/category/${selectedCategory}`);
 
   useEffect(() => {
     if (productsFetch) {
+      const sorted = sortProducts(productsFetch, selectedButton, isAscending);
       setProducts(productsFetch);
+      setSortedProducts(sorted);
     }
-  }, [productsFetch]);
+  }, [productsFetch, selectedButton, isAscending]);
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
     setIsCollapseOpen(false);
+  };
+
+  const sortProducts = (products, criteria, ascending) => {
+    return [...products].sort((a, b) => {
+      let comparison = 0;
+      
+      // Default to an empty string if 'name' is undefined
+      const nameA = a.productName || '';
+      const nameB = b.productName || '';
+      
+      if (criteria === 'default') {
+        comparison = nameA.localeCompare(nameB);
+      } else if (criteria === 'topSales') {
+        const salesA = a.totalSales || 0;
+        const salesB = b.totalSales || 0;
+        comparison = salesA - salesB;
+      } else if (criteria === 'topRated') {
+        const ratingA = a.rating || 0;
+        const ratingB = b.rating || 0;
+        comparison = ratingA - ratingB;
+      }
+      
+      return ascending ? comparison : -comparison;
+    });
   };
 
   const getButtonClassName = (buttonType) => {
@@ -36,8 +63,8 @@ const Products = () => {
   };
 
   return (
-    <div  style={{ backgroundColor: '#e5e7eb'}} className='w-full pt-24'>
-            <div className="px-5 sm:px-10 md:px-20 lg:px-40 bg-gray-200 min-h-screen">
+    <div style={{ backgroundColor: '#e5e7eb' }} className='w-full pt-24'>
+      <div className="px-5 sm:px-10 md:px-20 lg:px-40 bg-gray-200 min-h-screen">
         <div className="flex flex-col sm:flex-row w-full max-w-screen-xl mx-auto p-4">
           {/* Categories Section */}
           <div className="w-full sm:w-[15%] p-4">
@@ -183,7 +210,7 @@ const Products = () => {
               </div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {products?.map((product) => (
+              {sortedProducts?.map((product) => (
                 <ProductCard key={product._id} {...product} />
               ))}
             </div>

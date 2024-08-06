@@ -25,7 +25,17 @@ router.get('/:userId', async (req, res) => {
         const cartData = doc.data().cart;
         console.log("🚀 ~ router.get ~ cartData:", cartData);
 
-        res.json(cartData);
+        // Fetch seller details for each cart item
+        const cartWithSellerDetails = await Promise.all(cartData.map(async (item) => {
+            const sellerDoc = await db.collection('users').doc(item.sellerId).get();
+            const sellerData = sellerDoc.exists ? sellerDoc.data() : null;
+            return {
+                ...item,
+                seller: sellerData
+            };
+        }));
+
+        res.json(cartWithSellerDetails);
 
     } catch (error) {
         console.error('Error getting cart:', error);
@@ -162,18 +172,54 @@ router.post('/add-to-cart', async (req, res) => {
 
 // route for remove cart items
 router.delete('/remove-from-cart', async (req, res) => {
-    // remove cart item from cart collection given userId and productId in req
     try {
-        const snapshot = await db.collection('cart').where('userId', '==', req.body.userId).where('productId', '==', req.body.productId).get();
-        snapshot.forEach(async (doc) => {
-            await db.collection('cart').doc(doc.id).delete();
+        const { userId, productId } = req.body;
+
+        // Get the user's cart document
+        const userDocRef = db.collection('cart').doc(userId);
+        const userDoc = await userDocRef.get();
+
+        if (!userDoc.exists) {
+            return res.status(404).send('User not found');
+        }
+
+        const cartData = userDoc.data().cart;
+
+        // Log the entire cart data
+        console.log('Cart Data:', cartData);
+
+        // Iterate over the cart data to log each item's details
+        cartData.forEach((cartEntry, index) => {
+            console.log(`Cart Entry ${index + 1}:`, cartEntry);
+            console.log('Seller ID:', cartEntry.sellerId);
+            cartEntry.items.forEach((item, itemIndex) => {
+                console.log(`  Item ${itemIndex + 1}:`, item);
+                console.log('    Product ID:', item.productId);
+                console.log('    Quantity:', item.quantity);
+            });
         });
+
+        // Filter out the item with the matching productId
+        const updatedCart = cartData
+            .map(cartEntry => {
+                return {
+                    ...cartEntry,
+                    items: cartEntry.items.filter(item => item.productId !== productId)
+                };
+            })
+            .filter(cartEntry => cartEntry.items.length > 0);
+
+        // Update the user's cart document
+        await userDocRef.update({ cart: updatedCart });
+
         res.json({ message: 'Product removed from cart' });
     } catch (error) {
         console.error('Error removing product from cart:', error);
         res.status(500).send('Error removing product from cart');
     }
 });
+
+
 
 
 

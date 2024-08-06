@@ -1,8 +1,10 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const router = express.Router();
+const fs = require('fs');
 const userSchema = require('../models/userModels'); // Import the userSchema
 const cartSchema = require('../models/cartModels');
+const cloudinary = require('../config/cloudinary');
 //const userSchema = require('../models/userModels');
 
 // Initialize Firebase Admin SDK
@@ -257,8 +259,8 @@ router.put('/edit-user/:uid', async (req, res) => {
   const { error, value } = userSchema.validate(req.body);
 
   console.log("value", value);
-
   console.log(req.body);
+
   if (error) {
     return res.status(400).send(error.details[0].message);
   }
@@ -271,7 +273,22 @@ router.put('/edit-user/:uid', async (req, res) => {
       return res.status(404).json({ message: 'User not found', state: 'error' });
     }
 
-    await userDocRef.update(value);
+    // Extract userProfilePic from value
+    const { userProfilePic, ...rest } = value;
+
+    // Upload userProfilePic to Cloudinary if it exists
+    if (userProfilePic) {
+      const uploadResponse = await cloudinary.uploader.upload(userProfilePic, {
+        folder: 'ani2home',
+        resource_type: 'image'
+      });
+
+      // Replace userProfilePic with the URL from Cloudinary
+      rest.userProfilePic = uploadResponse.secure_url;
+    }
+
+    // Update Firestore document with the modified value
+    await userDocRef.update(rest);
     res.status(200).json({ 
       message: 'User updated successfully',
       state: 'success'

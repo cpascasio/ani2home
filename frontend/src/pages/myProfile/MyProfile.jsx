@@ -7,6 +7,7 @@ import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { Autocomplete } from "@react-google-maps/api";
 import LocationIcon from "../../assets/location.png"; // Path to the location icon
 import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
+import { set } from "date-fns";
 
 const MyProfile = () => {
   const userLog = localStorage.getItem("user");
@@ -23,6 +24,8 @@ const MyProfile = () => {
   const [isCollapseOpen, setIsCollapseOpen] = useState(false);
 
   const map = useMap();
+
+  const [userProfilePic, setUserProfilePic] = useState(null);
 
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -64,6 +67,7 @@ const MyProfile = () => {
       lat: userData?.address?.lat,
     });
   }, [userData]);
+
 
   const handleMapClick = async (event) => {
     const latitude = event.detail.latLng.lat;
@@ -234,6 +238,7 @@ const MyProfile = () => {
   useEffect(() => {
     if (userFetch != null) {
       setUserData(userFetch.data);
+      //setUserProfilePic(userFetch?.data?.userProfilePic);
       console.log(userFetch.data);
     }
   }, [userFetch]);
@@ -251,6 +256,22 @@ const MyProfile = () => {
 
   const handleLogout = () => {
     logout();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        // You can now use reader.result to get the file data
+        console.log("READER");
+        console.log(reader.result);
+        // Update the user profile picture or perform any other action
+
+        setUserProfilePic(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmitAddress = async (event) => {
@@ -318,6 +339,11 @@ const MyProfile = () => {
     // Create an object to hold form values
     const data = {};
 
+
+  if(userProfilePic !== null){
+    data.userProfilePic = userProfilePic;
+  }
+
     // Check if fields have been changed
     if (formData.get("newName") !== userData?.name) {
       data.name = formData.get("newName") || "";
@@ -351,6 +377,7 @@ const MyProfile = () => {
       );
       console.log("Success:", response.data);
       setRefetch(prev => !prev);
+      setUserProfilePic(null);
       document.getElementById("modal_editProfile").close()
       // Handle success (e.g., show a success message or redirect)
     } catch (error) {
@@ -882,10 +909,7 @@ const MyProfile = () => {
                           name="profilePicture"
                           accept="image/*"
                           className="mt-2"
-                          onChange={(e) => {
-                            // Handle file upload here
-                            console.log(e.target.files[0]);
-                          }}
+                          onChange={handleFileChange}
                         />
                       </div>
 

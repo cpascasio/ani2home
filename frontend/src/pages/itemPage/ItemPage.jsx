@@ -9,6 +9,8 @@ import SortIcon from '../../assets/sort.png'; // Add sort icon import
 import FilterIcon from '../../assets/filter.png'; // Add filter icon import
 import { useNavigate, useParams } from 'react-router-dom';
 import useFetch from '../../../hooks/useFetch';
+import axios from 'axios';
+import { useUser } from '../../context/UserContext';
 
 // Function to generate star elements based on the rating
 const generateStars = (rating, isProductCard = false) => {
@@ -39,6 +41,7 @@ const generateStars = (rating, isProductCard = false) => {
 
 const ItemPage = () => {
 
+    const { user } = useUser(); // Get user data
     const { productId } = useParams(); // Get product ID from URL
     const { data: productFetch } = useFetch(`/api/products/product/${productId}`); // Fetch product data
 
@@ -51,6 +54,8 @@ const ItemPage = () => {
     const [rating, setRating] = useState(4.9); // Example rating
     const [shopRating, setShopRating] = useState(4.7); // Example shop rating
     const [shopName, setShopName] = useState("Shop Name"); // Example shop name
+    const [pictures, setPictures] = useState([]); // Example pictures
+    const [productDescription, setProductDescription] = useState(""); // Example product description
     //const rating = 4.9; // Example product rating
     //const shopRating = 4.7; // Example shop rating
     const [price, setPrice] = useState(100); // Example price
@@ -79,6 +84,8 @@ const ItemPage = () => {
             setRating(product?.rating);
             setPrice(product?.price);
             setProductName(product?.productName);
+            setPictures(product?.pictures);
+            setProductDescription(product?.productDescription);
 
 
         }
@@ -168,8 +175,8 @@ const ItemPage = () => {
                         {/* Image Section */}
                         <div className="w-full md:w-1/3 flex justify-center items-center">
                             <img
-                                src={Carrot}
-                                alt="Carrot"
+                                src={pictures[0]}
+                                alt="No Image"
                                 className="object-cover w-full h-full"
                             />
                         </div>
@@ -177,7 +184,7 @@ const ItemPage = () => {
                         <div className="w-full md:w-2/3 flex flex-col p-4 md:p-7">
                             <h2 className="text-left text-xl font-bold text-gray-900 truncate">{productName}</h2>
                             <p className="text-left text-xs text-gray-600 mt-1 line-clamp-2">
-                                This is a description of the carrot product. It provides details about the carrot, its benefits, and any other relevant information.
+                                {productDescription}
                             </p>
                             <div className="flex flex-col mt-6">
                                 <div className="flex items-center justify-between">
