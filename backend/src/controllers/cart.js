@@ -25,7 +25,17 @@ router.get('/:userId', async (req, res) => {
         const cartData = doc.data().cart;
         console.log("🚀 ~ router.get ~ cartData:", cartData);
 
-        res.json(cartData);
+        // Fetch seller details for each cart item
+        const cartWithSellerDetails = await Promise.all(cartData.map(async (item) => {
+            const sellerDoc = await db.collection('users').doc(item.sellerId).get();
+            const sellerData = sellerDoc.exists ? sellerDoc.data() : null;
+            return {
+                ...item,
+                seller: sellerData
+            };
+        }));
+
+        res.json(cartWithSellerDetails);
 
     } catch (error) {
         console.error('Error getting cart:', error);

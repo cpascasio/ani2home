@@ -14,6 +14,7 @@ const ShopProfile = () => {
     const { sellerId } = useParams();
     const [products, setProducts] = useState([]);
     const [seller, setSeller] = useState({});
+    const [profilePicture, setProfilePicture] = useState("");
     const [name, setName] = useState("");
     const [fullAddress, setfullAddress] = useState("");
     const [bio, setBio] = useState("");
@@ -36,6 +37,19 @@ const ShopProfile = () => {
             setSeller(productsFetch.seller);
         }
     }, [productsFetch]);
+
+    useEffect(() => {
+        if (seller) {
+            setProfilePicture(seller?.userProfilePic || "");
+            setName(seller?.name || "");
+            setfullAddress(seller?.address?.fullAddress || "");
+            setBio(seller?.bio || "");
+            setFollowers(seller?.followers?.length || 0);
+            setRating(seller?.rating || 0);
+            setNumberOfProducts(products?.length || 0);
+            setNumberOfProductsSold(seller?.productsSold || 0);
+        }
+    }, [seller]);
 
     const handleCategoryClick = (category) => {
         setSelectedCategory(category);
@@ -65,12 +79,12 @@ const ShopProfile = () => {
                 <div className="flex flex-row md:hidden w-full p-6 pt-[8vh]">
                     <div className="flex justify-center items-center w-1/3">
                         <div className="bg-white rounded-full">
-                            <img src="../src/assets/FarmShop1.jpg" alt="Shop Logo" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+                            <img src={profilePicture} alt="Shop Logo" className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
                         </div>
                     </div>
                     <div className="flex flex-col justify-center text-white w-2/3 pl-4">
-                        <h1 className="text-2xl font-bold font-inter mb-2">{seller?.name}</h1>
-                        <div className="italic mb-2 font-inter text-sm">Dasmarinas, Cavite</div>
+                        <h1 className="text-2xl font-bold font-inter mb-2">{name}</h1>
+                        <div className="italic mb-2 font-inter text-sm">{fullAddress}</div>
                         <button className="rounded border border-[#D9D9D9] text-white p-2 px-5 mx-[20%] mt-2 font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
                             Follow+
                         </button>
@@ -80,7 +94,7 @@ const ShopProfile = () => {
                 {/* Mobile View: Bio Section */}
                 <div className="md:hidden flex flex-col p-6 py-0 text-white">
                     <div className="text-justify font-inter text-sm">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
+                        {bio}
                     </div>
                 </div>
 
@@ -92,7 +106,7 @@ const ShopProfile = () => {
                                 <img src="../src/assets/FollowersIcon.png" alt="Followers" className="w-5 h-5" />
                             </div>
                             <div className="text-center font-inter text-xs">
-                                <strong>Followers:</strong> 1,203
+                                <strong>Followers:</strong> {followers}
                             </div>
                         </div>
                     </div>
@@ -102,7 +116,7 @@ const ShopProfile = () => {
                                 <img src="../src/assets/RatingsIcon.png" alt="Ratings" className="w-5 h-5" />
                             </div>
                             <div className="text-center font-inter text-xs">
-                                <strong>Rating:</strong> 4.4 (1,304)
+                                <strong>Rating:</strong> {rating} (1,304)
                             </div>
                         </div>
                     </div>
@@ -112,7 +126,7 @@ const ShopProfile = () => {
                                 <img src="../src/assets/ProductsIcon.png" alt="Products" className="w-5 h-5" />
                             </div>
                             <div className="text-center font-inter text-xs">
-                                <strong>Products:</strong> 67
+                                <strong>Products:</strong> {numberOfProducts}
                             </div>
                         </div>
                     </div>
@@ -125,21 +139,21 @@ const ShopProfile = () => {
                     {/* Profile Picture */}
                     <div className="flex flex-col items-center w-1/4 pr-4">
                         <div className="flex justify-center items-center mb-4">
-                            <img src="../src/assets/FarmShop1.jpg" alt="Shop Logo" className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
+                            <img src={profilePicture} alt="Shop Logo" className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover" />
                         </div>
                     </div>
                     
                     {/* Bio and Follow Button Section */}
                     <div className="flex flex-col w-1/2 pr-8">
                         <div className="flex items-center mb-4">
-                            <h1 className="text-2xl font-bold font-inter mr-4 text-left text-white">Pogi Farms</h1>
+                            <h1 className="text-2xl font-bold font-inter mr-4 text-left text-white">{name}</h1>
                             <button className=" font-bold rounded border-2 border-white text-white p-2 px-5 font-inter hover:bg-white hover:text-green-900 transition-colors duration-300">
                                 Follow+
                             </button>
                         </div>
-                        <div className="italic mb-4 font-inter text-left text-white">Dasmarinas, Cavite</div>
+                        <div className="italic mb-4 font-inter text-left text-white">{fullAddress}</div>
                         <div className="mb-6 text-left font-inter text-justify text-white">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
+                            {bio}
                         </div>
                     </div>
                     
@@ -150,7 +164,7 @@ const ShopProfile = () => {
                                 <img src="../src/assets/FollowersIcon.png" alt="Followers" />
                             </div>
                             <div className="text-left font-inter w-auto">
-                                <strong>Followers:</strong> 1,203
+                                <strong>Followers:</strong> {followers}
                             </div>
                         </div>
                         <div className="flex items-center mb-4 w-auto">
@@ -158,7 +172,7 @@ const ShopProfile = () => {
                                 <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
                             </div>
                             <div className="text-left font-inter w-auto">
-                                <strong>Rating:</strong> 4.4 (1,304)
+                                <strong>Rating:</strong> {rating} (1,304)
                             </div>
                         </div>
                         <div className="flex items-center w-auto">
@@ -166,7 +180,7 @@ const ShopProfile = () => {
                                 <img src="../src/assets/ProductsIcon.png" alt="Products" />
                             </div>
                             <div className="text-left font-inter w-full">
-                                <strong>Products:</strong> 67
+                                <strong>Products:</strong> {numberOfProducts}
                             </div>
                         </div>
                     </div>
