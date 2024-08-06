@@ -1320,10 +1320,10 @@ const MyProfile = () => {
                               }}
                               onInput={() => {
                                 const input =
-                                  document.getElementById("confirmation");
-                                const deleteBtn =
-                                  document.getElementById("deleteBtn");
-                                deleteBtn.disabled = input.value !== "CONFIRM";
+                                  document.getElementById("confirmationShop");
+                                const deleteBtnShop =
+                                  document.getElementById("deleteBtnShop");
+                                  deleteBtnShop.disabled = input.value !== "CONFIRM";
                               }}
                             />
                             <label
@@ -1349,7 +1349,7 @@ const MyProfile = () => {
                             </button>
                             <button
                               type="submit"
-                              id="deleteBtn"
+                              id="deleteBtnShop"
                               className="btn btn-sm bg-red-500 rounded text-white hover:bg-red-600 border-none px-5 w-auto h-auto"
                               disabled
                               onClick={() => console.log("Delete logic here")}
