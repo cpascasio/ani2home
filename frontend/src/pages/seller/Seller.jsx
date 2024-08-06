@@ -24,12 +24,21 @@ const Seller = () => {
   };
 
   const { user } = useUser();
-  const { data: userData } = useFetch('/api/users/' + (user ? user?.userId : '') + '/isStore');
+
+  const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
+
+  const [userData, setUserData] = useState("");
+
+
+  useEffect(() => {
+    console.log(userFetch);
+    console.log(userFetch?.data?.isStore);
+    setUserData(userFetch?.data);
+  }, [userFetch]);
 
   useEffect(() => {
     console.log(userData);
-    console.log(userData?.data.isStore);
-  }, [userData]);
+  } , [userData]);
 
   useEffect(() => {
     console.log(user);
@@ -37,7 +46,7 @@ const Seller = () => {
 
   return (
     <div className="seller-bg">
-      {user && <SellerBanner />}
+      {user && <SellerBanner user={userData} />}
       <div className="flex flex-col lg:flex-row flex-1">
         <div className="lg:w-1/5 lg:order-1 order-2 flex-shrink-0 bg-gray-200">
           <Menu onSelectMenu={setSelectedMenu} />

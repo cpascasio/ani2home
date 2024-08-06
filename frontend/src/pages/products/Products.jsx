@@ -190,10 +190,6 @@ const Products = () => {
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-[#0B472D] text-white p-4 mt-auto">
-      </footer>
     </div>
   );
 };
