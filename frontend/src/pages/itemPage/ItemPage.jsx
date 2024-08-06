@@ -192,17 +192,17 @@ const ItemPage = () => {
                                 <div className="flex flex-col md:flex-row md:items-center">
                                     <div className="flex flex-col md:flex-row md:items-center">
                                         <div className="flex items-center md:mt-0 md:ml-4">
-                                            <span className="mr-2 text-xs md:text-sm">Products:</span>
+                                            <span className="md:mr-2 mr-6 text-xs md:text-sm ">Products:</span>
                                             <span className="text-[#E11919] font-bold text-xs md:text-sm md:mr-6">{numberOfProducts}</span>
                                         </div>
                                         <div className="flex items-center mt-2 md:mt-0 md:ml-4">
-                                            <span className="mr-2 text-xs md:text-sm">Followers:</span>
+                                            <span className="md:mr-2 mr-5 text-xs md:text-sm">Followers:</span>
                                             <span className="text-[#E11919] font-bold text-xs md:text-sm md:mr-6">{numberOfFollowers}</span>
                                         </div>
                                     </div>
                                     <div className="flex flex-col md:flex-row md:items-center mt-2 md:mt-0 md:ml-5">
                                         <div className="flex items-center">
-                                            <span className="mr-2 text-xs md:text-sm">Ratings:</span>
+                                            <span className="md:mr-2 mr-8 text-xs md:text-sm">Ratings:</span>
                                             <span className="text-[#E11919] font-bold text-xs md:text-sm md:mr-5">{numberOfRatings}</span>
                                         </div>
                                         <div className="flex items-center mt-2 md:mt-0 md:ml-4">
