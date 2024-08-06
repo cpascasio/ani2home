@@ -342,6 +342,7 @@ const MyProfile = () => {
         }
       );
       console.log("Success:", response.data);
+      document.getElementById("modal_editProfile").close()
       // Handle success (e.g., show a success message or redirect)
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
@@ -996,7 +997,6 @@ const MyProfile = () => {
                         <button
                           type="submit"
                           className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none w-auto h-auto"
-                          onClick={() => console.log("Save logic here")}
                         >
                           Save
                         </button>
