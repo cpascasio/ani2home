@@ -6,6 +6,7 @@ import axios from "axios";
 import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { Autocomplete } from "@react-google-maps/api";
 import LocationIcon from "../../assets/location.png"; // Path to the location icon
+import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
 
 const MyProfile = () => {
   const userLog = localStorage.getItem("user");
@@ -13,7 +14,9 @@ const MyProfile = () => {
   const [editing, setEditing] = useState(false);
   const placesLib = useMapsLibrary("places");
 
-  const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
+  const [refetch, setRefetch] = useState(false);
+
+  const { data: userFetch } = useDynamicFetch(`/api/users/${user?.userId}`, refetch);
   const [userData, setUserData] = useState({});
   const [editMode, setEditMode] = useState(false);
   const navigate = useNavigate();
@@ -287,6 +290,8 @@ const MyProfile = () => {
         }
       );
       console.log("Success:", response.data);
+      setRefetch(prev => !prev);
+      handleCancelEdit();
       // Handle success (e.g., show a success message or redirect)
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
@@ -342,6 +347,7 @@ const MyProfile = () => {
         }
       );
       console.log("Success:", response.data);
+      setRefetch(prev => !prev);
       document.getElementById("modal_editProfile").close()
       // Handle success (e.g., show a success message or redirect)
     } catch (error) {
