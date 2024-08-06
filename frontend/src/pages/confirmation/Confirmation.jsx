@@ -10,6 +10,8 @@ const Confirmation = () => {
     const { user } = useUser();
     const [orders, setOrders] = useState([]);
     const { data: orderFetch } = useFetch(`/api/orders/${user?.userId}`);
+    const [userData, setUserData] = useState({});
+    const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -19,6 +21,13 @@ const Confirmation = () => {
         }
         console.log(orderFetch);
     },[orderFetch]);
+
+    useEffect(() => {
+        if (userFetch != null) {
+          setUserData(userFetch.data);
+          console.log(userFetch.data);
+        }
+      }, [userFetch]);
 
     useEffect(() => {
         console.log("Confirmation Page: ", orderFetch);
@@ -52,15 +61,15 @@ const Confirmation = () => {
                         </div>
                         <div className="ml-5 mt-2 font-inter text-[15px] text-black text-left">
                             <div className="flex">
-                            <span className="font-bold w-[150px]">Name:</span> <span>Fernando Lopez</span>
+                            <span className="font-bold w-[150px]">Name:</span> <span>{userData.name}</span>
                             </div>
                             <div className="flex mt-2">
-                            <span className="font-bold w-[150px]">Contact Number:</span> <span>(+63) 998 765 4321</span>
+                            <span className="font-bold w-[150px]">Contact Number:</span> <span>{userData.phoneNumber}</span>
                             </div>
                             <div className="flex mt-2">
                             <span className="font-bold w-[150px]">Address:</span>
                             <div className="flex-1">
-                                Condo Residences, You know where street, Dasmarinas Barangay 123, Dasmarinas, Cavite, 1004
+                                {userData.address.fullAddress}
                             </div>
                             </div>
                         </div>
