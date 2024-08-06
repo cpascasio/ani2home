@@ -169,70 +169,77 @@ const ItemPage = () => {
                     </div>
 
                     {/* White Rectangle with Profile Pic and Shop Info */}
-                    <div className="my-6 bg-white border border-gray-300 rounded-lg shadow-md p-4 flex flex-col md:flex-row items-start md:items-center justify-between">
+                    <div className="my-6 bg-white border border-gray-300 rounded-lg shadow-md p-4 flex md:flex-row items-start md:items-center justify-between">
                         <div className="flex items-start md:items-center flex-1">
                             <img
                                 src={MyProfilePic}
                                 alt="Profile"
                                 className="w-12 h-12 bg-gray-300 rounded-full object-cover"
                             />
-                            <div className="ml-4">
-                                <div className="text-gray-900 text-md font-semibold truncate w-48 md:w-auto">Shop Name</div>
-                                <div className="flex items-center mt-1">
-                                    <span className="text-sm text-[#2979FF]">Verified</span>
-                                    <img
-                                        src={VerifiedUserIcon}
-                                        alt="Verified"
-                                        className="w-5 h-5 ml-2"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* <div className="border-l border-gray-500 h-8 mr-10 md:my-0 md:ml-4"></div>
-
-                        <div className="flex flex-col md:flex-row text-gray-600 text-sm md:w-2/3 w-full"> */}
-                            {/* Products and Followers Column */}
-                            {/* <div className="flex flex-col md:flex-row mb-4 md:mb-0 md:ml-5 md:mr-7 w-full md:w-auto">
-                                <div className="flex items-center mb-2 md:mb-0 md:mr-7">
-                                    <span className="mr-2">Products:</span>
-                                    <span className="text-[#E11919] font-bold">{numberOfProducts}</span>
-                                </div>
-                                <div className="flex items-center mb-2 md:mb-0">
-                                    <span className="mr-2">Followers:</span>
-                                    <span className="text-[#E11919] font-bold">{numberOfFollowers}</span>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col md:flex-row w-full md:w-auto"> */}
-                                {/* Ratings and Shop Rating Column */}
-                                {/* <div className="flex items-center mb-2 md:mb-0 md:mr-7">
-                                    <span className="mr-2">Ratings:</span>
-                                    <span className="text-[#E11919] font-bold">{numberOfRatings}</span>
-                                </div>
-                                <div className="flex items-center mb-2 md:mb-0">
-                                    <span className="mr-2">Shop Rating:</span>
-                                    <div className="flex items-center">
-                                        {generateStars(shopRating)}
-                                        <span className="ml-2 text-xs text-gray-700">{shopRating.toFixed(1)}</span>
+                            <div className="flex md:flex-row items-start md:items-center flex-1">
+                                <div className="ml-2 md:ml-4"> {/* Adjust margin for mobile view */}
+                                    <div className="text-gray-900 text-md font-semibold truncate w-auto">Shop Name</div>
+                                    <div className="flex items-center mt-1">
+                                        <span className="text-sm text-[#2979FF]">Verified</span>
+                                        <img
+                                            src={VerifiedUserIcon}
+                                            alt="Verified"
+                                            className="w-5 h-5 ml-2"
+                                        />
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={handleViewShop}
-                            className="bg-blue-500 text-white font-bold text-xs py-2 px-2 rounded-md hover:bg-blue-700 transition-colors duration-300 mt-4 md:mt-0"
-                        >
-                            <img
-                                src={StorefrontIcon}
-                                alt="Storefront"
-                                className="w-4 h-4 inline-block mr-1 mb-0.5"
-                            />
-                            View Shop
-                        </button> */}
+                                <div className="border-l border-gray-500 h-20 md:h-8 mx-4 mt-1 ml-3 mr-3 md:ml-8 md:mt-0 md:mx-6"></div> {/* Adjust margin for the border */}
+                                <div className="flex flex-col md:flex-row md:items-center">
+                                    <div className="flex flex-col md:flex-row md:items-center">
+                                        <div className="flex items-center md:mt-0 md:ml-4">
+                                            <span className="mr-2 text-xs md:text-sm">Products:</span>
+                                            <span className="text-[#E11919] font-bold text-xs md:text-sm md:mr-6">{numberOfProducts}</span>
+                                        </div>
+                                        <div className="flex items-center mt-2 md:mt-0 md:ml-4">
+                                            <span className="mr-2 text-xs md:text-sm">Followers:</span>
+                                            <span className="text-[#E11919] font-bold text-xs md:text-sm md:mr-6">{numberOfFollowers}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col md:flex-row md:items-center mt-2 md:mt-0 md:ml-5">
+                                        <div className="flex items-center">
+                                            <span className="mr-2 text-xs md:text-sm">Ratings:</span>
+                                            <span className="text-[#E11919] font-bold text-xs md:text-sm md:mr-5">{numberOfRatings}</span>
+                                        </div>
+                                        <div className="flex items-center mt-2 md:mt-0 md:ml-4">
+                                            <span className="mr-2 text-xs md:text-sm">Shop Rating:</span>
+                                            <div className="flex items-center">
+                                                {generateStars(shopRating)}
+                                                <span className="ml-2 text-xs text-gray-700 md:mr-5">{shopRating.toFixed(1)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={handleViewShop}
+                                        className="hidden md:block bg-blue-500 text-white font-bold text-xs py-2 px-2 rounded-md hover:bg-blue-700 transition-colors duration-300 mt-4 md:ml-6 md:mt-0"
+                                    >
+                                        <img
+                                            src={StorefrontIcon}
+                                            alt="Storefront"
+                                            className="w-4 h-4 inline-block mr-1 mb-0.5"
+                                        />
+                                        View Shop
+                                    </button>
+                                    {/* Button for mobile view */}
+                                    <button
+                                        onClick={handleViewShop}
+                                        className="block md:hidden bg-blue-500 text-white font-bold text-xs py-2 px-2 rounded-md hover:bg-blue-700 transition-colors duration-300 mt-4"
+                                    >
+                                        <img
+                                            src={StorefrontIcon}
+                                            alt="Storefront"
+                                            className="w-4 h-4 inline-block mr-1 mb-0.5"
+                                        />
+                                        View Shop
+                                    </button>
+                                </div>
+                            </div>   
+                        </div>               
                     </div>
-
 
 
                     {/* Additional Details Box */}
