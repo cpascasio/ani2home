@@ -58,7 +58,7 @@ const ProductCard = (product) => {
 
   const handleImageClick = () => {
     // Navigate to itemPage with product ID or other identifier
-    navigate('/itemPage');
+    navigate('/item/' + product.id);
   };
 
   const yellowStars = generateStars(product.rating);

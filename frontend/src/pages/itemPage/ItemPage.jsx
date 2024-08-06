@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Carrot from '../../assets/carrot.png';
 import Star from '../../assets/Star.png';
 import StarFilled from '../../assets/StarFilled.png';
@@ -7,7 +7,8 @@ import StorefrontIcon from '../../assets/storefront.png'; // Add your storefront
 import VerifiedUserIcon from '../../assets/verifiedUser.png'; // Add your verified user icon import
 import SortIcon from '../../assets/sort.png'; // Add sort icon import
 import FilterIcon from '../../assets/filter.png'; // Add filter icon import
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import useFetch from '../../../hooks/useFetch';
 
 // Function to generate star elements based on the rating
 const generateStars = (rating, isProductCard = false) => {
@@ -37,17 +38,57 @@ const generateStars = (rating, isProductCard = false) => {
 };
 
 const ItemPage = () => {
+
+    const { productId } = useParams(); // Get product ID from URL
+    const { data: productFetch } = useFetch(`/api/products/product/${productId}`); // Fetch product data
+
+    const [product, setProduct] = useState(""); // State for product data
+    const [seller, setSeller] = useState(""); // State for seller data
     const navigate = useNavigate();
     const [quantity, setQuantity] = useState(1); // State for quantity
     const [sortOrder, setSortOrder] = useState('Ascending'); // State for sorting
     const [filterRating, setFilterRating] = useState('All Stars'); // State for filtering
-    const rating = 4.9; // Example product rating
-    const shopRating = 4.7; // Example shop rating
-    const price = 100; // Example price
-    const productName = "Carrot"; // Example product name
-    const numberOfRatings = 100; // Example number of received ratings
-    const numberOfProducts = 50; // Example number of products in the shop
-    const numberOfFollowers = 1200; // Example number of followers
+    const [rating, setRating] = useState(4.9); // Example rating
+    const [shopRating, setShopRating] = useState(4.7); // Example shop rating
+    const [shopName, setShopName] = useState("Shop Name"); // Example shop name
+    //const rating = 4.9; // Example product rating
+    //const shopRating = 4.7; // Example shop rating
+    const [price, setPrice] = useState(100); // Example price
+    //const price = 100; // Example price
+    const [productName, setProductName] = useState("Carrot"); // Example product name
+    //const productName = "Carrot"; // Example product name
+    const [numberOfRatings, setNumberOfRatings] = useState(100); // Example number of received ratings
+    //const numberOfRatings = 100; // Example number of received ratings
+    const [numberOfProducts, setNumberOfProducts] = useState(50); // Example number of products in the shop
+    //const numberOfProducts = 50; // Example number of products in the shop
+    const [numberOfFollowers, setNumberOfFollowers] = useState(1200); // Example number of followers
+
+    useEffect(() => {
+        console.log(productId);
+    }, []);
+
+    useEffect(() => {
+        if (productFetch) {
+            setProduct(productFetch.product);
+            setSeller(productFetch.seller);
+        }
+    }, [productFetch]);
+
+    useEffect(() => {
+        if (product) {
+            setRating(product?.rating);
+            setPrice(product?.price);
+            setProductName(product?.productName);
+
+
+        }
+    }, [product]);
+
+    useEffect(() => {
+        if (seller) {
+            setShopName(seller?.name);
+        }
+    }, [seller]);
 
     const [ratingCounts, setRatingCounts] = useState({
         5: 10,  // Example count for 5-star reviews
@@ -57,9 +98,23 @@ const ItemPage = () => {
         1: 0    // Example count for 1-star reviews
     });
     
-    const handleAddToCart = () => {
-        navigate('/cart');
-    };
+    const handleAddToCart = async () => {
+        // Include user ID in the product data
+    
+        try {
+          // Create Axios POST request
+          await axios.post('http://localhost:3000/api/cart/add-to-cart', {
+              userId: user?.userId,
+              sellerId: product?.storeId,
+              productId: product?.id,
+              quantity: quantity,
+          });
+    
+          navigate("/cart");
+        } catch (error) {
+          console.error('hello Error adding to cart:', error);
+        }
+      };
 
     const handleIncrease = () => {
         setQuantity(prev => prev + 1);
@@ -70,7 +125,7 @@ const ItemPage = () => {
     };
 
     const handleViewShop = () => {
-        window.location.href = 'http://localhost:5173/shopProfile';
+        navigate('/profile/' + product?.storeId); // Navigate to shop profile
     };
 
     const handleSortChange = (e) => {
@@ -128,7 +183,7 @@ const ItemPage = () => {
                                 <div className="flex items-center justify-between">
                                     <div className="text-left text-[15px] text-[#E11919]">
                                         <span className="text-black">Price: </span>
-                                        ₱{price.toFixed(2)}
+                                        {`₱${price.toFixed(2)}`}
                                     </div>
                                     <div className="flex items-center space-x-2 lg:mr-6">
                                         <div className="text-left text-[15px] text-[#737373] mr-2">Quantity</div>
@@ -178,7 +233,7 @@ const ItemPage = () => {
                             />
                             <div className="flex md:flex-row items-start md:items-center flex-1">
                                 <div className="ml-2 md:ml-4"> {/* Adjust margin for mobile view */}
-                                    <div className="text-gray-900 text-md font-semibold truncate w-auto">Shop Name</div>
+                                    <div className="text-gray-900 text-md font-semibold truncate w-auto">{shopName}</div>
                                     <div className="flex items-center mt-1">
                                         <span className="text-sm text-[#2979FF]">Verified</span>
                                         <img
