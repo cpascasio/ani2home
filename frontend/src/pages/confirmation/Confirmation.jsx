@@ -1,5 +1,3 @@
-import Header from '../../components/Header.jsx';
-import Footer from '../../components/Footer.jsx';
 import ConfirmationIcon from '../../assets/confirmationIcon.png'; // Path to the confirmation icon
 import useFetch from '../../../hooks/useFetch.js';
 // import user contxt

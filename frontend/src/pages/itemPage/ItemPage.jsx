@@ -84,9 +84,8 @@ const ItemPage = () => {
     };
 
     return (
-        <div style={{ backgroundColor: '#e5e7eb', minHeight: '100vh' }} className="w-full pt-24">
-            <Header />
-            <div className="flex flex-col min-h-screen bg-gray-200">
+        <div  style={{ backgroundColor: '#e5e7eb'}} className='w-full pt-24'>
+            <div className="pt-5">
                 {/* Breadcrumb Navigation Container */}
                 <div className="relative w-full max-w-screen-md">
                     {/* Flex container for positioning */}
@@ -351,7 +350,6 @@ const ItemPage = () => {
                     </div>
                 </div>
             </div>
-            <Footer />
         </div>
     );
 };
