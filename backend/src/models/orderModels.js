@@ -48,6 +48,8 @@ const orderSchema = Joi.object({
       phoneNumber: Joi.string().optional(),
     }).optional(),
     note: Joi.string().optional(),
+    courier: Joi.string().optional(),
+    shippingId: Joi.string().optional(),
     paymentOption: Joi.string().optional(),
     paymentRefNo: Joi.string().optional()
   });

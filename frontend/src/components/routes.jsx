@@ -27,7 +27,7 @@ const routes = [
     { path: "/myOrders", element: <MyOrders />, name: "MyOrders" },
     { path: "/myShop", element: <MyShop />, name: "MyShop" },
     { path: "/cart", element: <Cart />, name: "Cart" },
-    { path: "/checkout", element: <Checkout />, name: "Checkout" },
+    { path: "/checkout/:sellerId", element: <Checkout />, name: "Checkout" },
     { path: "/confirmation", element: <Confirmation />, name: "Confirmation" },
     { path: "/itemPage", element: <ItemPage />, name: "ItemPage" }
     

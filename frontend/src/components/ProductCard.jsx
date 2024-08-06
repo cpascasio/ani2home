@@ -40,19 +40,17 @@ const ProductCard = (product) => {
 
   const handleAddToCart = async () => {
     // Include user ID in the product data
-    const cartItem = { ...product, userId: user.id };
 
     try {
       // Create Axios POST request
       await axios.post('http://localhost:3000/api/cart/add-to-cart', {
-        userId: user?.userId,
-        productId: product?.id,
-        quantity: 1
+          userId: user?.userId,
+          sellerId: product.storeId,
+          productId: product.id,
+          quantity: 1,
       });
 
-      // Add to cart context
-      addToCart(cartItem);
-      navigate('/cart');
+      navigate("/cart");
     } catch (error) {
       console.error('hello Error adding to cart:', error);
     }
