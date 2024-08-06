@@ -761,22 +761,20 @@ const handleCancelEdit = () => {
             </div>
           </div>
           
-          <div className="flex justify-between border p-2" style={{ marginBottom: 'auto'}}> {/* Inline style for margin-bottom */}
-  <button 
-    onClick={handleCancel} 
-    className="w-[122px] h-[40px] bg-gray-400 text-white border border-gray-300 rounded transition duration-300 ease-in-out hover:bg-red-500 font-inter font-bold text-[16px] mr-4 rounded-md"
-  >
-    Cancel
-  </button>
-  <button 
-    onClick={handlePlaceOrder} 
-    className="w-[122px] h-[40px] bg-green-900 font-inter font-bold text-white border border-gray-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition duration-300 ease-in-out rounded-md "
-  >
-    Place Order
-  </button>
-</div>
-
-
+          <div className="flex justify-between border p-2 pb-10" style={{ marginBottom: 'auto'}}> {/* Inline style for margin-bottom */}
+            <button 
+              onClick={handleCancel} 
+              className="w-[122px] h-[40px] bg-gray-400 text-white border border-gray-300 rounded transition duration-300 ease-in-out hover:bg-red-500 font-inter font-bold text-[16px] mr-4 rounded-md"
+            >
+              Cancel
+            </button>
+            <button 
+              onClick={handlePlaceOrder} 
+              className="w-[122px] h-[40px] bg-green-900 font-inter font-bold text-white border border-gray-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition duration-300 ease-in-out rounded-md "
+            >
+              Place Order
+            </button>
+          </div>
         </div>
       </div>
     </div>
