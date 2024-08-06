@@ -436,6 +436,9 @@ const handleCancelEdit = () => {
         const orderId = String(response.data.orderId);
         console.log("OrderID: ", orderId);
 
+        // add navigation to redirect to confirmation page
+        navigate('/confirmation', { state: { order: order, orderId: orderId }});
+
       })
       .catch((error) => {
         console.error('Error placing order or order details:', error);
