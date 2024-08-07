@@ -40,4 +40,3 @@ module.exports = productSchema;
 // Stock
 
 // add picture that displays the pictures already added to be 
-

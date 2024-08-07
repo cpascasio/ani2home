@@ -1,26 +1,26 @@
 const Footer = () => {
     return (
-        <div id="footer" className="w-full h-auto flex py-20 justify-center gap-52">
-            <div className="flex-col">
-                <b>Contact</b>
-                <p>email@dlsu.edu.ph</p>
-                <p>email@dlsu.edu.ph</p>
+        <div id="footer" className="bg-[#f5f0ec] py-8 px-4 md:px-24 lg:px-72 flex flex-col lg:flex-row lg:justify-between items-center lg:items-start w-full">
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left mb-8 lg:mb-0 px-4 lg:px-6">
+                <b className="text-lg font-semibold">Contact Us</b>
+                <p className="text-sm">ani2home@gmail.com</p>
+                <p className="text-sm">09123456789</p>
             </div>
-            <div className="flex-col">
-                <b>Our Company</b>
-                <a>Products</a>
-                <a>About Us</a>
-                <a>Contact Us</a>
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left mb-8 lg:mb-0 px-4 lg:px-6">
+                <b className="text-lg font-semibold">Browse</b>
+                <a href="/" className="text-sm">Home</a>
+                <a href="/aboutus" className="text-sm">About Us</a>
+                <a href="/products" className="text-sm">Shop</a>
             </div>
-            <div className="flex-col">
-                <b>Follow Us</b>
-                <a>Facebook</a>
-                <a>Twitter</a>
-                <a>LinkedIn</a>
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left mb-8 lg:mb-0 px-4 lg:px-6">
+                <b className="text-lg font-semibold">Follow Us</b>
+                <a href="#" className="text-sm">Facebook</a>
+                <a href="#" className="text-sm">Twitter</a>
+                <a href="#" className="text-sm">LinkedIn</a>
             </div>
-            <div className="flex-col">
-                <div id="footerLogo" className="h-20 w-20 inline-block align-middle">
-
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left px-4 lg:px-6">
+                <div id="footerLogo" className="h-16 w-16 md:h-20 md:w-20 bg-gray-300 flex items-center justify-center">
+                    {/* Footer Logo */}
                 </div>
             </div>
         </div>

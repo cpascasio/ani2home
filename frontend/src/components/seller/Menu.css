@@ -1,29 +1,107 @@
+.menu-container {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding-left: 20px;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 15%;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.user-profile-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-left: 20px;
+  white-space: nowrap;
+}
+
+.user-profile-menu .header {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #4a5568;
+  padding-bottom: 1.25rem;
+  margin-top: 1rem;
+  margin-left: 0;
+  white-space: nowrap;
+}
+
 .menu {
-    width: 200px;
-    background-color: #2f4f4f;
-    color: white;
-    height: 100vh;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 220px !important;
+  background-color: #0b472d;
+  color: #efefef;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  font-family: 'Roboto', sans-serif;
+  border-radius: 15px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  height: calc(60vh - 40px);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.menu h2 {
+  text-align: center;
+  margin: 0;
+  font-size: 1.75em;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #efefef;
+  padding-top: 50px;
+  border-bottom: 3px solid #67b045;
+  padding-bottom: 15px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  width: 100%;
+}
+
+.menu ul {
+  list-style-type: none;
+  padding-top: 30px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  flex: 1;
+}
+
+.menu li {
+  padding: 12px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  border-radius: 8px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+.menu li:hover {
+  background-color: #67b045;
+  transform: translateX(5px);
+}
+
+.menu li:active {
+  background-color: #67b045;
+}
+
+/* Mobile styles */
+@media (max-width: 1024px) {
+  .menu {
+    display: none;
   }
-  
-  .menu h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  
-  .menu ul {
-    list-style-type: none;
+
+  .sidebar {
+    width: 100%;
     padding: 0;
   }
-  
-  .menu li {
-    padding: 10px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .menu li:hover {
-    background-color: #4f6f6f;
-  }
-  
+}

@@ -25,5 +25,4 @@ dist-ssr
 
 .env
 
-
 src/config/serviceAccount.json

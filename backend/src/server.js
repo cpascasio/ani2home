@@ -3,7 +3,11 @@ const cors = require('cors'); // Import CORS module
 const middleware = require('./middleware'); // Import middleware
 const userRouters = require('./controllers/users'); // Import the user routes
 const productRoutes = require('./controllers/products'); // Import the product routes
+const cartRoutes = require('./controllers/cart'); // Import the product routes
+const orderRoutes = require('./controllers/order'); // Import the order routes
+const orderDetailsRoutes = require('./controllers/orderDetails'); // Import the order routes
 const webhooksRoutes = require('./controllers/webhooks'); // Import the product routes
+const lalamoveRoutes = require('./controllers/lalamove'); // Import the product routes
 
 require('dotenv').config();
 
@@ -11,6 +15,10 @@ const app = express();
 
 
 app.use(cors()); // Use CORS module
+
+// Increase payload size limit
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const port = process.env.PORT || 3000;
 
@@ -20,14 +28,29 @@ const apiRouter = express.Router();
 // Apply middleware specific to API routes
 //apiRouter.use(middleware.decodeToken); // checks if the user is authorized by checking the token
 
-// Mount the user routes to the API router
-apiRouter.use('/users', userRouters); // Use the user routes
-
 // product route
 apiRouter.use('/webhooks', webhooksRoutes);
 
+
+// Mount the user routes to the API router
+apiRouter.use('/users', userRouters); // Use the user routes
+
+
+// product route
+apiRouter.use('/lalamove', lalamoveRoutes);
+
+
 // product route
 apiRouter.use('/products', productRoutes);
+
+// product route
+apiRouter.use('/cart', cartRoutes);
+
+// product route
+apiRouter.use('/orders', orderRoutes);
+
+// product route
+apiRouter.use('/order-details', orderDetailsRoutes);
 
 // Middleware to parse JSON bodies
 app.use(express.json());

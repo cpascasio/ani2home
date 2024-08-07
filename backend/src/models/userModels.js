@@ -1,20 +1,32 @@
 const Joi = require('joi');
 
   const userSchema = Joi.object({
-    userId: Joi.string().required(),
-    name: Joi.string().default(""),
-    userName: Joi.string().required(),
-    email: Joi.string().email().required(),
-    dateOfBirth: Joi.date().iso().default(""),
-    userProfilePic: Joi.string().default('https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png'),
-    userCover: Joi.string().default('https://walker-web.imgix.net/cms/Gradient_builder_2.jpg?auto=format,compress&w=1920&h=1200&fit=crop&dpr=1.5'),
-    address: Joi.string().default(""),
-    phoneNumber: Joi.string().default(""),
-    followers: Joi.array().items(Joi.string()).default([]),
-    isStore : Joi.boolean().default(false),
-    isVerified: Joi.boolean().default(false)
+    userId: Joi.string().optional(),
+    name: Joi.string().optional(),
+    userName: Joi.string().optional(),
+    email: Joi.string().email().optional(),
+    dateOfBirth: Joi.date().iso().optional(),
+    userProfilePic: Joi.string().optional(),
+    userCover: Joi.string().optional(),
+    address: Joi.object({
+      fullAddress: Joi.string().optional(),
+      streetAddress: Joi.string().optional(),
+      city: Joi.string().optional(),
+      province: Joi.string().optional(),
+      barangay: Joi.string().optional(),
+      region: Joi.string().optional(),
+      country: Joi.string().optional(),
+      postalCode: Joi.string().optional(),
+      lng: Joi.number().optional(),
+      lat: Joi.number().optional(),
+    }).optional(),
+    phoneNumber: Joi.string().optional(),
+    followers: Joi.array().items(Joi.string()).optional(),
+    isStore : Joi.boolean().optional(),
+    bio: Joi.string().optional(),
+    isVerified: Joi.boolean().optional(),
 });
 
-  
+
 
   module.exports = userSchema;
