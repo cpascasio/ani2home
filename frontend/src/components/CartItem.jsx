@@ -101,10 +101,10 @@ const CartItem = ({ product }) => {
     return (
         <div className="bg-white p-4 flex flex-col lg:flex-row lg:items-center lg:justify-between w-full max-w-5xl mx-auto my-4 border border-gray-300 relative">
             <div className="flex flex-row items-start lg:flex-row lg:items-start">
-                <img src={products.picture} alt="Product" className="w-[100px] h-[100px]" />
+                <img src={products?.pictures} alt="Product" className="w-[100px] h-[100px]" />
                 <div className="flex flex-col lg:ml-4 items-start mt-2 lg:mt-1">
-                    <div className="w-full line-clamp-2 text-[15px] font-inter text-[#737373] text-left lg:text-left mb-3 mt-3">
-                        {products.description}
+                    <div className="w-full line-clamp-2 text-[15px] font-bold font-inter text-[#737373] text-left lg:text-left mb-3 mt-3">
+                        {products.productName}
                     </div>
                     <div className="flex items-center justify-center mt-2">
                         <img src={StarFilled} alt="Star Filled" className="w-4 h-4" />

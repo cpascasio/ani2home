@@ -157,8 +157,8 @@ useEffect(() => {
 
     setProductTotal(total);
     setGrossTotal(total + shippingFee);
-    setHandlingFee(0.04 * total);
-    setTotalPayment(total + shippingFee + (0.04 * total));
+    setHandlingFee(0.06 * total);
+    setTotalPayment(total + shippingFee + (0.06 * total));
 
   }, [shippingFee]);
 
@@ -413,12 +413,12 @@ const handleCancelEdit = () => {
       userId: user?.userId,
       sellerId: sellerId, // update card model to have a sellerId ty
       shippingFee: shippingFee,
-      totalPrice,
+      totalPrice: totalPayment,
       status: "In Process",
       deliveryAddress: {
         fullName,
-        province,
-        barangay,
+        province: addressDetails.province,
+        barangay: addressDetails.barangay,
         city,
         address: addressDetails.fullAddress,
         phoneNumber
@@ -699,7 +699,7 @@ const handleCancelEdit = () => {
             </div>
             <div className="ml-auto flex flex-col items-center justify-center mt-5 mx-12">
               <div className="font-inter text-[17px] text-black">Price</div>
-              <div className="font-inter text-[15px] text-black">₱{shippingFee}</div>
+              <div className="font-inter text-[15px] text-black">₱{shippingFee.toFixed(2)}</div>
             </div>
           </div>
 
@@ -775,24 +775,24 @@ const handleCancelEdit = () => {
             </div>
             <div className="flex justify-between mb-2">
               <div className="font-inter text-[13px] text-[#737373]">Product Total</div>
-              <div className="font-inter text-[13px] text-[#737373]">₱{productTotal}</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{productTotal.toFixed(2)}</div>
             </div>
             <div className="flex justify-between mb-2">
               <div className="font-inter text-[13px] text-[#737373]">Shipping Fee</div>
-              <div className="font-inter text-[13px] text-[#737373]">₱{shippingFee}</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{shippingFee.toFixed(2)}</div>
             </div>
             <div className="flex justify-between mb-2">
               <div className="font-inter text-[13px] text-[#737373]">Gross Total</div>
-              <div className="font-inter text-[13px] text-[#737373]">₱{grossTotal}</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{grossTotal.toFixed(2)}</div>
             </div>
             <div className="flex justify-between mb-2">
               <div className="font-inter text-[13px] text-[#737373]">Handling Fee</div>
-              <div className="font-inter text-[13px] text-[#737373]">₱{handlingFee}</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{handlingFee.toFixed(2)}</div>
             </div>
             <hr className="border-t border-gray-300 my-2" />
             <div className="flex justify-between mt-2">
               <div className="font-inter text-[15px] text-[#737373]">Total Payment</div>
-              <div className="font-inter text-[15px] text-[#E11919]">₱{totalPayment}</div>
+              <div className="font-inter text-[15px] text-[#E11919]">₱{totalPayment.toFixed(2)}</div>
             </div>
           </div>
           
