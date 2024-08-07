@@ -37,6 +37,7 @@ const Checkout = () => {
     setSellerAddress({
       lat: seller?.address?.lat || 14.3879953,
       lng: seller?.address?.lng || 120.9879423,
+      address: seller?.address?.fullAddress
     });
   }, [seller]);
 
@@ -65,7 +66,8 @@ const Checkout = () => {
   const [city, setCity] = useState('Bacoor');
   const [note, setNote] = useState(''); // State for the note
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
+  const [shippingFee, setShippingFee] = useState(50);
+  const [grossTotal, setGrossTotal] = useState(50);
   const [originalFullName, setOriginalFullName] = useState(fullName);
   const [originalPhoneNumber, setOriginalPhoneNumber] = useState(phoneNumber);
   const [originalAddress, setOriginalAddress] = useState(address);
@@ -115,9 +117,28 @@ useEffect(() => {
   // useEffect when buyerAddress and 
 
   useEffect(() => {
-    
 
-  }, [buyerAddress, sellerAddress]);
+    const payload = {
+      "co1": {
+        "lat": sellerAddress.lat ? sellerAddress.lat.toString() : "",
+        "lng": sellerAddress.lng ? sellerAddress.lng.toString() : ""
+      },
+      "address1": sellerAddress.address || "",
+      "co2": {
+        "lat": buyerAddress.lat ? buyerAddress.lat.toString() : "",
+        "lng": buyerAddress.lng ? buyerAddress.lng.toString() : ""
+      },
+      "address2": addressDetails.fullAddress || ""
+    };
+
+
+    axios.post('http://localhost:3000/api/lalamove/getQuotation', payload)
+      .then((response) => {
+        console.log('Quotation:', response.data);
+        setShippingFee(response.data.shippingFee);
+      })
+
+  }, [buyerAddress, sellerAddress, addressDetails]);
 
 const handleEditToggle = () => {
   setEditing(!editing);
@@ -179,6 +200,9 @@ const handleCancelEdit = () => {
   const handleNoteChange = (e) => {
     setNote(e.target.value);
   };
+
+  useEffect(() => {
+  }, [shippingFee]);
 
   const [selectedPaymentOption, setSelectedPaymentOption] = useState('');
   const paymentOptions = ['Cash on Delivery', 'GCash'];
@@ -345,7 +369,8 @@ const handleCancelEdit = () => {
    const token = user?.token; // Replace with your actual token retrieval method
   };
 
-  let totalPrice = 0;
+  let totalPrice = 0.0;
+
 
 
   if (items.length > 0) {
@@ -355,6 +380,8 @@ const handleCancelEdit = () => {
       totalPrice += items[i].product.price * items[i].quantity;
     }
   }
+
+
   // const totalPrice = cartItems.reduce((acc, items) => acc + (items.product.price * items.quantity), 0);
 
   //console.log("Total Price : ", totalPrice );
@@ -660,7 +687,7 @@ const handleCancelEdit = () => {
             </div>
             <div className="ml-auto flex flex-col items-center justify-center mt-5 mx-12">
               <div className="font-inter text-[17px] text-black">Price</div>
-              <div className="font-inter text-[15px] text-black">₱{formatNumber(50.00.toFixed(2))}</div>
+              <div className="font-inter text-[15px] text-black">₱{shippingFee}</div>
             </div>
           </div>
 
@@ -739,8 +766,12 @@ const handleCancelEdit = () => {
               <div className="font-inter text-[13px] text-[#737373]">₱{formatNumber(totalPrice.toFixed(2))}</div>
             </div>
             <div className="flex justify-between mb-2">
-              <div className="font-inter text-[13px] text-[#737373]">Shipping Total</div>
-              <div className="font-inter text-[13px] text-[#737373]">₱{formatNumber(50.00.toFixed(2))}</div>
+              <div className="font-inter text-[13px] text-[#737373]">Shipping Fee</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{shippingFee}</div>
+            </div>
+            <div className="flex justify-between mb-2">
+              <div className="font-inter text-[13px] text-[#737373]">Gross Total</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{grossTotal}</div>
             </div>
             <hr className="border-t border-gray-300 my-2" />
             <div className="flex justify-between mt-2">
