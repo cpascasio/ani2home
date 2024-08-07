@@ -37,6 +37,7 @@ const Checkout = () => {
     setSellerAddress({
       lat: seller?.address?.lat || 14.3879953,
       lng: seller?.address?.lng || 120.9879423,
+      address: seller?.address?.fullAddress
     });
   }, [seller]);
 
@@ -65,7 +66,8 @@ const Checkout = () => {
   const [city, setCity] = useState('Bacoor');
   const [note, setNote] = useState(''); // State for the note
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
+  const [shippingFee, setShippingFee] = useState(50);
+  const [grossTotal, setGrossTotal] = useState(50);
   const [originalFullName, setOriginalFullName] = useState(fullName);
   const [originalPhoneNumber, setOriginalPhoneNumber] = useState(phoneNumber);
   const [originalAddress, setOriginalAddress] = useState(address);
@@ -110,7 +112,33 @@ useEffect(() => {
   }
 }, [userData]);
 
-  
+
+
+  // useEffect when buyerAddress and 
+
+  useEffect(() => {
+
+    const payload = {
+      "co1": {
+        "lat": sellerAddress.lat ? sellerAddress.lat.toString() : "",
+        "lng": sellerAddress.lng ? sellerAddress.lng.toString() : ""
+      },
+      "address1": sellerAddress.address || "",
+      "co2": {
+        "lat": buyerAddress.lat ? buyerAddress.lat.toString() : "",
+        "lng": buyerAddress.lng ? buyerAddress.lng.toString() : ""
+      },
+      "address2": addressDetails.fullAddress || ""
+    };
+
+
+    axios.post('http://localhost:3000/api/lalamove/getQuotation', payload)
+      .then((response) => {
+        console.log('Quotation:', response.data);
+        setShippingFee(response.data.shippingFee);
+      })
+
+  }, [buyerAddress, sellerAddress, addressDetails]);
 
 const handleEditToggle = () => {
   setEditing(!editing);
@@ -149,20 +177,32 @@ const handlePostalCodeChange = (e) => {
 };
 
 const handleCancelEdit = () => {
+  console.log("Cancel button clicked");
+  setEditing(false);
   setFullName(userData?.name);
   setPhoneNumber(userData?.phoneNumber);
   setAddress(userData?.address?.fullAddress);
   setProvince(userData?.address?.province);
   setBarangay(userData?.address?.barangay);
   setCity(userData?.address?.city);
-  setCountry(userData?.address?.country);
+  //setCountry(userData?.address?.country);
   setPostalCode(userData?.address?.postalCode);
-  setEditing(false);
+    setCountryCode(userData.phoneNumber ? userData.phoneNumber.slice(0, 3) : '');
+    setPhoneNumber(userData.phoneNumber ? userData.phoneNumber.slice(3) : '');
+    setAddressDetails(userData?.address || '');
+    setBuyerAddress({
+      lat: userData?.address?.lat,
+      lng: userData?.address?.lng,
+    });
+  
 };
 
   const handleNoteChange = (e) => {
     setNote(e.target.value);
   };
+
+  useEffect(() => {
+  }, [shippingFee]);
 
   const [selectedPaymentOption, setSelectedPaymentOption] = useState('');
   const paymentOptions = ['Cash on Delivery', 'GCash'];
@@ -317,51 +357,20 @@ const handleCancelEdit = () => {
     data.address = {};
 
     // Check if fields have been changed
-    if (formData.get("newStreetAddress") !== userData?.address?.streetAddress) {
-      data.address.street = formData.get("newStreetAddress") || "";
-    }
-    if (formData.get("newProvice") !== userData?.address?.province) {
-      data.address.province = formData.get("newProvice") || "";
-    }
-    if (formData.get("newRegion") !== userData?.address?.region) {
-      data.address.region = formData.get("newRegion") || "";
-    }
-    if (formData.get("newCity") !== userData?.address?.city) {
-      data.address.city = formData.get("newCity") || "";
-    }
-    if (formData.get("newBarangay") !== userData?.address?.barangay) {
-      data.address.barangay = formData.get("newBarangay") || "";
-    }
-    if (formData.get("newCountry") !== userData?.address?.country) {
-      data.address.country = formData.get("newCountry") || "";
-    }
-    if (formData.get("newPostalCode") !== userData?.address?.postalCode) {
-      data.address.postalCode = formData.get("newPostalCode") || "";
-    }
+
+
+
+    setBuyerAddress({
+      lat: addressDetails.lat,
+      lng: addressDetails.lng,
+    });
 
     // Get the token from localStorage or any other source
-    const token = user?.token; // Replace with your actual token retrieval method
-
-    try {
-      const response = await axios.put(
-        `http://localhost:3000/api/users/edit-user/${user?.userId}`, // Include userId in the URL
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
-          },
-        }
-      );
-      console.log("Success:", response.data);
-      // Handle success (e.g., show a success message or redirect)
-    } catch (error) {
-      console.error("Error:", error.response?.data || error.message);
-      // Handle error (e.g., show an error message)
-    }
+   const token = user?.token; // Replace with your actual token retrieval method
   };
 
-  let totalPrice = 0;
+  let totalPrice = 0.0;
+
 
 
   if (items.length > 0) {
@@ -371,6 +380,8 @@ const handleCancelEdit = () => {
       totalPrice += items[i].product.price * items[i].quantity;
     }
   }
+
+
   // const totalPrice = cartItems.reduce((acc, items) => acc + (items.product.price * items.quantity), 0);
 
   //console.log("Total Price : ", totalPrice );
@@ -628,6 +639,7 @@ const handleCancelEdit = () => {
                     <button
                       type="Submit"
                       className="btn btn-sm bg-green-900 rounded text-white transition duration-300 ease-in-out hover:bg-blue-500 border-none px-5"
+                      onClick={handleSubmitAddress}
                     >
                       Save
                     </button>
@@ -641,7 +653,7 @@ const handleCancelEdit = () => {
                 onClick={handleEditToggle}
               >
                 <div className="font-inter text-[15px] text-[#737373]">{fullName} | {phoneNumber}</div>
-                <div className="font-inter text-[15px] text-[#737373]">{address}</div>
+                <div className="font-inter text-[15px] text-[#737373]">{addressDetails?.fullAddress}</div>
               </div>
             )}
           </div>
@@ -675,7 +687,7 @@ const handleCancelEdit = () => {
             </div>
             <div className="ml-auto flex flex-col items-center justify-center mt-5 mx-12">
               <div className="font-inter text-[17px] text-black">Price</div>
-              <div className="font-inter text-[15px] text-black">₱{formatNumber(50.00.toFixed(2))}</div>
+              <div className="font-inter text-[15px] text-black">₱{shippingFee}</div>
             </div>
           </div>
 
@@ -754,8 +766,12 @@ const handleCancelEdit = () => {
               <div className="font-inter text-[13px] text-[#737373]">₱{formatNumber(totalPrice.toFixed(2))}</div>
             </div>
             <div className="flex justify-between mb-2">
-              <div className="font-inter text-[13px] text-[#737373]">Shipping Total</div>
-              <div className="font-inter text-[13px] text-[#737373]">₱{formatNumber(50.00.toFixed(2))}</div>
+              <div className="font-inter text-[13px] text-[#737373]">Shipping Fee</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{shippingFee}</div>
+            </div>
+            <div className="flex justify-between mb-2">
+              <div className="font-inter text-[13px] text-[#737373]">Gross Total</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{grossTotal}</div>
             </div>
             <hr className="border-t border-gray-300 my-2" />
             <div className="flex justify-between mt-2">
