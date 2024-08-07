@@ -110,7 +110,14 @@ useEffect(() => {
   }
 }, [userData]);
 
-  
+
+
+  // useEffect when buyerAddress and 
+
+  useEffect(() => {
+    
+
+  }, [buyerAddress, sellerAddress]);
 
 const handleEditToggle = () => {
   setEditing(!editing);
@@ -149,15 +156,24 @@ const handlePostalCodeChange = (e) => {
 };
 
 const handleCancelEdit = () => {
+  console.log("Cancel button clicked");
+  setEditing(false);
   setFullName(userData?.name);
   setPhoneNumber(userData?.phoneNumber);
   setAddress(userData?.address?.fullAddress);
   setProvince(userData?.address?.province);
   setBarangay(userData?.address?.barangay);
   setCity(userData?.address?.city);
-  setCountry(userData?.address?.country);
+  //setCountry(userData?.address?.country);
   setPostalCode(userData?.address?.postalCode);
-  setEditing(false);
+    setCountryCode(userData.phoneNumber ? userData.phoneNumber.slice(0, 3) : '');
+    setPhoneNumber(userData.phoneNumber ? userData.phoneNumber.slice(3) : '');
+    setAddressDetails(userData?.address || '');
+    setBuyerAddress({
+      lat: userData?.address?.lat,
+      lng: userData?.address?.lng,
+    });
+  
 };
 
   const handleNoteChange = (e) => {
@@ -317,48 +333,16 @@ const handleCancelEdit = () => {
     data.address = {};
 
     // Check if fields have been changed
-    if (formData.get("newStreetAddress") !== userData?.address?.streetAddress) {
-      data.address.street = formData.get("newStreetAddress") || "";
-    }
-    if (formData.get("newProvice") !== userData?.address?.province) {
-      data.address.province = formData.get("newProvice") || "";
-    }
-    if (formData.get("newRegion") !== userData?.address?.region) {
-      data.address.region = formData.get("newRegion") || "";
-    }
-    if (formData.get("newCity") !== userData?.address?.city) {
-      data.address.city = formData.get("newCity") || "";
-    }
-    if (formData.get("newBarangay") !== userData?.address?.barangay) {
-      data.address.barangay = formData.get("newBarangay") || "";
-    }
-    if (formData.get("newCountry") !== userData?.address?.country) {
-      data.address.country = formData.get("newCountry") || "";
-    }
-    if (formData.get("newPostalCode") !== userData?.address?.postalCode) {
-      data.address.postalCode = formData.get("newPostalCode") || "";
-    }
+
+
+
+    setBuyerAddress({
+      lat: addressDetails.lat,
+      lng: addressDetails.lng,
+    });
 
     // Get the token from localStorage or any other source
-    const token = user?.token; // Replace with your actual token retrieval method
-
-    try {
-      const response = await axios.put(
-        `http://localhost:3000/api/users/edit-user/${user?.userId}`, // Include userId in the URL
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
-          },
-        }
-      );
-      console.log("Success:", response.data);
-      // Handle success (e.g., show a success message or redirect)
-    } catch (error) {
-      console.error("Error:", error.response?.data || error.message);
-      // Handle error (e.g., show an error message)
-    }
+   const token = user?.token; // Replace with your actual token retrieval method
   };
 
   let totalPrice = 0;
@@ -628,6 +612,7 @@ const handleCancelEdit = () => {
                     <button
                       type="Submit"
                       className="btn btn-sm bg-green-900 rounded text-white transition duration-300 ease-in-out hover:bg-blue-500 border-none px-5"
+                      onClick={handleSubmitAddress}
                     >
                       Save
                     </button>
@@ -641,7 +626,7 @@ const handleCancelEdit = () => {
                 onClick={handleEditToggle}
               >
                 <div className="font-inter text-[15px] text-[#737373]">{fullName} | {phoneNumber}</div>
-                <div className="font-inter text-[15px] text-[#737373]">{address}</div>
+                <div className="font-inter text-[15px] text-[#737373]">{addressDetails?.fullAddress}</div>
               </div>
             )}
           </div>
