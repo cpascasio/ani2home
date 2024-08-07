@@ -3,9 +3,13 @@ import Header from '../../components/Header.jsx';
 import Footer from '../../components/Footer.jsx';
 import { Dialog } from '@headlessui/react';
 import Star from '../../components/StarRating.jsx';
+import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
+import { useEffect } from 'react';
+import { useUser } from '../../context/UserContext.jsx';
 
 
 const MyOrders = () => {
+  const { user } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isOrderReceived, setIsOrderReceived] = useState(false);
@@ -17,7 +21,11 @@ const MyOrders = () => {
   const [reviewComment, setReviewComment] = useState('');
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [verificationCode, setVerificationCode] = useState('')
-
+  const [refetch, setRefetch] = useState(false);
+  const { data: userFetch } = useDynamicFetch(`/api/users/${user?.userId}`, refetch);
+  const [userData, setUserData] = useState({});
+  
+  /*
   const userData = {
     userProfilePic: '/assets/userProfilePic.png',
     email: 'youremail@gmail.com',
@@ -26,6 +34,22 @@ const MyOrders = () => {
     // max: 448 cHARACTERS
     bio: "I was supposed to be sent away But they forgot to come and get me I was a functioning alcoholic Til nobody noticed my new aesthetic All of this to say I hope you're okay But you're the reason And no one here's to blame But what about your quiet treason? And for a fortnight there, we were forever Run into you sometimes, ask about the weather Now you're in my backyard, turned into good neighbors Your wife waters flowers Your wife waters flowers"
   };
+  */
+
+  useEffect(() => {
+    if (userFetch != null) {
+      setUserData(userFetch.data);
+      //setUserProfilePic(userFetch?.data?.userProfilePic);
+      console.log(userFetch.data);
+    }
+  }, [userFetch]);
+
+  useEffect(() => {
+    if (userData != null) {
+      console.log("USERDATA: ");
+      console.log(userData);
+    }
+  }, [userData]);
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -110,7 +134,7 @@ const MyOrders = () => {
               {userData.name || 'Fernando Lopez'}
             </h1>
             <div className="italic mb-2 font-inter text-sm">
-              {userData.address || 'Dasmarinas, Cavite'}
+              {userData.address?.fullAddress || 'Dasmarinas, Cavite'}
             </div>
             <button className="rounded border border-[#D9D9D9] bg-[#D9D9D9] text-[#0C482E] p-2 px-5 mx-[20%] font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500"
               onClick={handleOpenVerificationModal}>
@@ -146,7 +170,7 @@ const MyOrders = () => {
               {userData.name || 'Fernando Lopez'}
             </h1>
             <div className="italic mb-2 md:mb-4 font-inter text-sm md:text-base">
-              {userData.address || 'Dasmarinas, Cavite'}
+              {userData.address?.fullAddress || 'Dasmarinas, Cavite'}
             </div>
             <div className="md:mb-6 text-justify font-inter text-sm md:text-base">
               {userData.bio || 'Fernando is the proud owner of Pogi Farms where he passionately practices sustainable agriculture. He cultivates organic produce on his expansive land and welcomes visitors for educational farm tours, promoting community engagement and environmental awareness.'}

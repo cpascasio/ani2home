@@ -7,7 +7,6 @@ import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { Autocomplete } from "@react-google-maps/api";
 import LocationIcon from "../../assets/location.png"; // Path to the location icon
 import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
-import { set } from "date-fns";
 
 const MyProfile = () => {
   const userLog = localStorage.getItem("user");

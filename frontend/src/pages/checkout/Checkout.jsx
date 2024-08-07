@@ -66,7 +66,10 @@ const Checkout = () => {
   const [city, setCity] = useState('Bacoor');
   const [note, setNote] = useState(''); // State for the note
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [productTotal, setProductTotal] = useState(0);
   const [shippingFee, setShippingFee] = useState(50);
+  const [totalPayment, setTotalPayment] = useState(0);
+  const [handlingFee, setHandlingFee] = useState(0);
   const [grossTotal, setGrossTotal] = useState(50);
   const [originalFullName, setOriginalFullName] = useState(fullName);
   const [originalPhoneNumber, setOriginalPhoneNumber] = useState(phoneNumber);
@@ -135,10 +138,29 @@ useEffect(() => {
     axios.post('http://localhost:3000/api/lalamove/getQuotation', payload)
       .then((response) => {
         console.log('Quotation:', response.data);
-        setShippingFee(response.data.shippingFee);
+        setShippingFee(Number(response.data.shippingFee));
       })
 
   }, [buyerAddress, sellerAddress, addressDetails]);
+
+  useEffect(() => {
+
+    let total = 0;
+
+    if (items.length > 0) {
+      for (let i = 0; i < items.length; i++) {
+        console.log("Price: ", items[i].product.price); // debug
+        console.log("Quantity : ", items[i].quantity); // debug
+        total += items[i].product.price * items[i].quantity;
+      }
+    }
+
+    setProductTotal(total);
+    setGrossTotal(total + shippingFee);
+    setHandlingFee(0.04 * total);
+    setTotalPayment(total + shippingFee + (0.04 * total));
+
+  }, [shippingFee]);
 
 const handleEditToggle = () => {
   setEditing(!editing);
@@ -201,11 +223,11 @@ const handleCancelEdit = () => {
     setNote(e.target.value);
   };
 
-  useEffect(() => {
-  }, [shippingFee]);
 
   const [selectedPaymentOption, setSelectedPaymentOption] = useState('');
   const paymentOptions = ['Cash on Delivery', 'GCash'];
+  // Ensure totalPrice and shippingFee are numbers
+  //let totalPrice = 0;
 
   const handleDropdownToggle = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -369,17 +391,7 @@ const handleCancelEdit = () => {
    const token = user?.token; // Replace with your actual token retrieval method
   };
 
-  let totalPrice = 0.0;
-
-
-
-  if (items.length > 0) {
-    for (let i = 0; i < items.length; i++) {
-      console.log("Price: ", items[i].product.price); // debug
-      console.log("Quantity : ", items[i].quantity); // debug
-      totalPrice += items[i].product.price * items[i].quantity;
-    }
-  }
+  
 
 
   // const totalPrice = cartItems.reduce((acc, items) => acc + (items.product.price * items.quantity), 0);
@@ -400,7 +412,7 @@ const handleCancelEdit = () => {
     const order = {
       userId: user?.userId,
       sellerId: sellerId, // update card model to have a sellerId ty
-      shippingFee: 50,
+      shippingFee: shippingFee,
       totalPrice,
       status: "In Process",
       deliveryAddress: {
@@ -708,7 +720,7 @@ const handleCancelEdit = () => {
               Order Total ({cartItems.length} Items):
             </div>
             <div className="font-inter text-[15px] text-[#E11919] mr-12">
-              ₱{formatNumber(totalPrice.toFixed(2))}
+              ₱{formatNumber(productTotal.toFixed(2))}
             </div>
           </div>
 
@@ -763,7 +775,7 @@ const handleCancelEdit = () => {
             </div>
             <div className="flex justify-between mb-2">
               <div className="font-inter text-[13px] text-[#737373]">Product Total</div>
-              <div className="font-inter text-[13px] text-[#737373]">₱{formatNumber(totalPrice.toFixed(2))}</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{productTotal}</div>
             </div>
             <div className="flex justify-between mb-2">
               <div className="font-inter text-[13px] text-[#737373]">Shipping Fee</div>
@@ -773,10 +785,14 @@ const handleCancelEdit = () => {
               <div className="font-inter text-[13px] text-[#737373]">Gross Total</div>
               <div className="font-inter text-[13px] text-[#737373]">₱{grossTotal}</div>
             </div>
+            <div className="flex justify-between mb-2">
+              <div className="font-inter text-[13px] text-[#737373]">Handling Fee</div>
+              <div className="font-inter text-[13px] text-[#737373]">₱{handlingFee}</div>
+            </div>
             <hr className="border-t border-gray-300 my-2" />
             <div className="flex justify-between mt-2">
               <div className="font-inter text-[15px] text-[#737373]">Total Payment</div>
-              <div className="font-inter text-[15px] text-[#E11919]">₱{formatNumber((totalPrice + 50).toFixed(2))}</div>
+              <div className="font-inter text-[15px] text-[#E11919]">₱{totalPayment}</div>
             </div>
           </div>
           
