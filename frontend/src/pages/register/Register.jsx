@@ -36,29 +36,29 @@ const Register = () => {
       const userId = userCredential.user.uid; // Get the user's UID
       const userData = {
         address: {
-          barangay: '', // Initialize with empty string or provided value
-          city: '', // Initialize with empty string or provided value
-          country: '', // Initialize with empty string or provided value
-          fullAddress: '', // Initialize with empty string or provided value
-          lat: null, // Initialize with null or provided value
-          lng: null, // Initialize with null or provided value
-          postalCode: '', // Initialize with empty string or provided value
-          province: '', // Initialize with empty string or provided value
-          region: '', // Initialize with empty string or provided value
-          streetAddress: '', // Initialize with empty string or provided value
+          barangay: '', 
+          city: '', 
+          country: '', 
+          fullAddress: '', 
+          lat: null, 
+          lng: null, 
+          postalCode: '', 
+          province: '', 
+          region: '', 
+          streetAddress: '', 
         },
-        bio: '', // Initialize with empty string or provided value
-        dateOfBirth: '', // Initialize with empty string or provided value
-        email: email, // Use the email from the sign-up form
-        followers: [], // Initialize with an empty array
-        isStore: false, // Default to false
-        isVerified: false, // Default to false
-        name: username, // Use the username from the sign-up form
-        phoneNumber: '', // Initialize with empty string or provided value
-        userCover: '', // Initialize with empty string or provided value
-        userName: username, // Use the username from the sign-up form
-        userProfilePic: '', // Initialize with empty string or provided value
-        createdAt: new Date(), // Add a timestamp
+        bio: '', 
+        dateOfBirth: '', 
+        email: email, 
+        followers: [], 
+        isStore: false, 
+        isVerified: false, 
+        name: username, 
+        phoneNumber: '', 
+        userCover: '', 
+        userName: username, 
+        userProfilePic: '', 
+        createdAt: new Date(), 
       };
   
       // Add the user document to the "users" collection in Firestore

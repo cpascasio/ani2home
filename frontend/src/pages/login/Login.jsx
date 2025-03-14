@@ -75,14 +75,11 @@ const Login = () => {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log(userCredential.user);
   
-      // Update authenticated state
       setAuthenticated(true);
   
-      // Redirect the user to the desired route (e.g., '/myProfile')
-      navigate('/myProfile'); // Replace '/myProfile' with your desired route
+      navigate('/myProfile'); 
     } catch (error) {
       console.error(error.message);
-      // Optionally, update UI to reflect the error
     }
   };
 
