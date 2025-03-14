@@ -157,55 +157,45 @@ const checkUserExists = async (userId) => {
 
 
 router.post('/create-user', async (req, res) => {
-  // Validate the request body against the schema
-
- 
-
-
-
-
-
   console.log('Request body:', req.body);
 
-  // get rememberMe from the request body
-  const rememberMe = req.body.rememberMe;
+  const userId = req.body.userId;
 
-  // check firebase db users collection for userid if existing
-  const userId = req.body.userId; // Assuming userId is part of the request body
   try {
+    // Check if the user already exists in Firestore
     const userExists = await checkUserExists(userId);
 
     if (userExists) {
+      console.log('User already exists:', userId);
       return res.status(400).json({
         message: 'User already exists',
         state: 'error',
       });
     }
-  } catch (error) {
-    console.error('Error checking user existence:', error);
-    return res.status(500).json({
-      message: 'Error checking user existence',
-      state: 'error',
-    });
-  }
 
-  const { error, value } = userSchema.validate(req.body);
-  if (error) {
-    return res.status(400).send(error.details[0].message);
-  }
-  
-  console.log(value);
+    // Validate the request body
+    const { error, value } = userSchema.validate(req.body);
+    if (error) {
+      console.log('Validation error:', error.details[0].message);
+      return res.status(400).send(error.details[0].message);
+    }
 
-  try {
-    // Assuming 'add' is a method to add a new document. This might need to be adjusted based on your DB API.
+    console.log('Validated request body:', value);
+
+    // Add the user to Firestore
     await addUserToFirestore(value);
-    await createCartForUser(userId); // Create cart for the user after adding the user to Firestore
-    res.status(201).json({ 
+    console.log('User added to Firestore:', userId);
+
+    // Create a cart for the user
+    await createCartForUser(userId);
+    console.log('Cart created for user:', userId);
+
+    res.status(201).json({
       message: 'User created successfully',
-      state: 'success'
+      state: 'success',
     });
   } catch (error) {
-    console.error('Error creating user:', error);
+    console.error('Error in /create-user:', error);
     res.status(500).json({
       message: 'Error creating user',
       state: 'error',

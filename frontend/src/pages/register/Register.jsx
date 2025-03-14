@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../../config/firebase-config"; // Adjust the import path as necessary
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../../config/firebase-config"
 
 const Register = () => {
   const [authenticated, setAuthenticated] = useState(false || window.localStorage.getItem("authenticated") === "true");
@@ -16,32 +18,68 @@ const Register = () => {
 
   const handleEmailSignUp = async (email, password) => {
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError('Passwords do not match');
       return;
     }
+  
     try {
+      // Create user in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log(userCredential.user);
-
+      console.log('User created in Firebase Auth:', userCredential.user);
+  
       // Update the user's profile with the displayName
       await updateProfile(userCredential.user, {
         displayName: username,
       });
-
-      // Update authenticated state or perform other actions
+  
+      // Add user data to Firestore
+      const userId = userCredential.user.uid; // Get the user's UID
+      const userData = {
+        address: {
+          barangay: '', // Initialize with empty string or provided value
+          city: '', // Initialize with empty string or provided value
+          country: '', // Initialize with empty string or provided value
+          fullAddress: '', // Initialize with empty string or provided value
+          lat: null, // Initialize with null or provided value
+          lng: null, // Initialize with null or provided value
+          postalCode: '', // Initialize with empty string or provided value
+          province: '', // Initialize with empty string or provided value
+          region: '', // Initialize with empty string or provided value
+          streetAddress: '', // Initialize with empty string or provided value
+        },
+        bio: '', // Initialize with empty string or provided value
+        dateOfBirth: '', // Initialize with empty string or provided value
+        email: email, // Use the email from the sign-up form
+        followers: [], // Initialize with an empty array
+        isStore: false, // Default to false
+        isVerified: false, // Default to false
+        name: username, // Use the username from the sign-up form
+        phoneNumber: '', // Initialize with empty string or provided value
+        userCover: '', // Initialize with empty string or provided value
+        userName: username, // Use the username from the sign-up form
+        userProfilePic: '', // Initialize with empty string or provided value
+        createdAt: new Date(), // Add a timestamp
+      };
+  
+      // Add the user document to the "users" collection in Firestore
+      await setDoc(doc(db, 'users', userId), userData);
+      console.log('User added to Firestore:', userData);
+  
+      // Update authenticated state and store token
       setAuthenticated(true);
-      window.localStorage.setItem("authenticated", "true");
+      window.localStorage.setItem('authenticated', 'true');
       const tokenResult = await userCredential.user.getIdTokenResult();
-      console.log(tokenResult.token);
-
+      console.log('Firebase ID token:', tokenResult.token);
+  
       // Clear input fields after successful registration
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-      setUsername("");
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setUsername('');
+      setError(''); // Clear any previous errors
     } catch (error) {
-      console.error(error.message);
-      setError(error.message);
+      console.error('Error during sign-up:', error.message);
+      setError(error.message); // Set error message for the user
     }
   };
 

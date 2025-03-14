@@ -73,16 +73,14 @@ const Login = () => {
   const handleLogin = async () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // User account created & signed in
       console.log(userCredential.user);
-      // Update authenticated state or perform other actions
+  
+      // Update authenticated state
       setAuthenticated(true);
-      //window.localStorage.setItem('authenticated', 'true');
-      // Optionally, get the token as you did in the useEffect
-      //const tokenResult = await userCredential.user.getIdTokenResult();
-      //setToken(tokenResult.token);
+  
+      // Redirect the user to the desired route (e.g., '/myProfile')
+      navigate('/myProfile'); // Replace '/myProfile' with your desired route
     } catch (error) {
-      // Handle Errors here.
       console.error(error.message);
       // Optionally, update UI to reflect the error
     }
@@ -91,65 +89,58 @@ const Login = () => {
   const handleEmailSignUp = async () => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
-      console.log("🚀 ~ handleEmailSignUp ~ result:", result);
-      // User account created & signed in
-      //console.log(userCredential.user);
-      // Update authenticated state or perform other actions
-      //setAuthenticated(true);
-      //window.localStorage.setItem('authenticated', 'true');
-      // Optionally, get the token as you did in the useEffect
-      //const tokenResult = await userCredential.user.getIdTokenResult();
-      //setToken(tokenResult.token);
-
       const user = result.user;
-      console.log("🚀 ~ handleEmailSignUp ~ user:", user);
-
+  
       // Update the user's profile with the displayName
       await updateProfile(user, {
         displayName: username,
       });
-
-      // Here, you can use the token or user information for your application's login logic
+  
       if (user) {
-        setAuthenticated(true); // Set auth to true if Google login is successful
-
-        // Retrieve the Firebase token instead of the Google token for backend API calls
+        setAuthenticated(true);
+  
+        // Retrieve the Firebase token for backend API calls
         const tokenResult = await user.getIdTokenResult();
-        console.log("🚀 ~ handleGoogleLogin ~ tokenResult:", tokenResult);
-        //setToken(tokenResult);
-
-        const userId = user?.uid;
-
-        //const phoneNumber = user.providerData[0]?.phoneNumber;
-        //const userProfilePic = user.providerData[0]?.photoURL;
-        //const name = result?._tokenResponse.firstName + " " + result?._tokenResponse.lastName;
-
-        //localStorage.setItem('user', JSON.stringify({username: userName, userId: userId, token}));
-
-        console.log("USERINPUTS" + userId, email, username);
-
-        // Only create the user in the backend if they are a new user
-        const payload = {};
-
-        if (userId) payload.userId = userId;
-        if (email) payload.email = email;
-        if (username) payload.userName = username;
-
+        const userId = user.uid;
+  
+        console.log("Creating Firestore document for user:", userId);
+  
+        // Create a user document in Firestore
+        await setDoc(doc(db, "users", userId), {
+          userId: userId,
+          email: email,
+          username: username,
+          createdAt: new Date(),
+        });
+  
+        console.log("Firestore document created successfully");
+  
+        // Create the user in the backend
+        const payload = {
+          userId: userId,
+          email: email,
+          userName: username,
+        };
+  
+        console.log("Sending payload to backend:", payload);
+  
         await axios.post("http://localhost:3000/api/users/create-user", payload, {
           headers: {
             Authorization: `Bearer ${tokenResult.token}`,
             "Content-Type": "application/json",
           },
         });
-
+  
+        console.log("Backend user creation successful");
+  
+        // Clear form fields
         setEmail("");
         setPassword("");
         setUsername("");
       }
     } catch (error) {
-      // Handle Errors here.
-      console.error(error.message);
-      // Optionally, update UI to reflect the error
+      console.error("Error during email sign-up:", error.message);
+      console.error("Full error object:", error);
     }
   };
 
