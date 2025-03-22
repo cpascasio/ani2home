@@ -95,17 +95,23 @@ const Login = () => {
       if (!user) {
         throw new Error("User not signed in");
       }
-
+  
       // Step 4: Verify the MFA token during login
-      const verifyResponse = await axios.post(`http://localhost:3000/api/users/verify-mfa-login/${user?.userId}`, { token: mfaToken });
+      const verifyResponse = await axios.post(
+        `http://localhost:3000/api/users/verify-mfa-login/${user.uid}`,
+        { token: mfaToken }
+      );
+  
       if (verifyResponse.data.state !== "success") {
         throw new Error("Invalid MFA token");
       }
-
+  
+  
       // Step 5: Complete the login
       setAuthenticated(true);
       setShowMfaModal(false);
       navigate("/myProfile");
+  
     } catch (error) {
       console.error("MFA verification failed:", error.message);
       alert(`MFA verification failed: ${error.message}`);

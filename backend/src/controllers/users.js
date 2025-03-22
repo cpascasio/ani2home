@@ -394,7 +394,7 @@ router.post('/verify-mfa-login/:uid', async (req, res) => {
       state: 'success'
     });
   } catch (error) {
-    console.error('Error verifying MFA token:', error);
+    console.error('Error verifying MFA token:', error); // Debugging
     res.status(500).json({ message: 'Error verifying MFA token', state: 'error' });
   }
 });
