@@ -5,6 +5,8 @@ const fs = require('fs');
 const userSchema = require('../models/userModels'); // Import the userSchema
 const cartSchema = require('../models/cartModels');
 const cloudinary = require('../config/cloudinary');
+const otplib = require("otplib");
+const qrcode = require("qrcode");
 //const userSchema = require('../models/userModels');
 
 // Initialize Firebase Admin SDK
@@ -84,7 +86,7 @@ const addUserToFirestore = async (value) => {
       "followers": [],
       "isStore": false,
       "bio": "",
-      "isVerified": false
+      "isVerified": false,
     };
 
     // Merge userData into default_var
@@ -286,6 +288,77 @@ router.put('/edit-user/:uid', async (req, res) => {
   } catch (error) {
     console.error('Error updating user:', error);
     res.status(500).json({ message: 'Error updating user', state: 'error' });
+  }
+});
+
+// POST route to enable MFA for a user
+router.post('/:uid/enable-mfa', async (req, res) => {
+  const { uid } = req.params;
+
+  try {
+    // Generate a secret for the user
+    const secret = otplib.authenticator.generateSecret();
+
+    // Create a QR code URL for the user to scan
+    const otpauth = otplib.authenticator.keyuri(uid, 'Ani2Home', secret);
+    const qrCodeUrl = await qrcode.toDataURL(otpauth);
+
+    // Store the secret in the user's document in Firestore
+    await db.collection('users').doc(uid).update({
+      mfaSecret: secret,
+      mfaEnabled: false // MFA is not enabled until the user verifies the token
+    });
+
+    // Return the QR code URL and the secret (for debugging purposes)
+    res.status(200).json({
+      message: 'MFA secret generated successfully',
+      state: 'success',
+      data: {
+        qrCodeUrl,
+        secret
+      }
+    });
+  } catch (error) {
+    console.error('Error enabling MFA:', error);
+    res.status(500).json({ message: 'Error enabling MFA', state: 'error' });
+  }
+});
+
+// POST route to verify the MFA token and enable MFA
+router.post('/:uid/verify-mfa', async (req, res) => {
+  const { uid } = req.params;
+  const { token } = req.body;
+
+  try {
+    // Fetch the user's document from Firestore
+    const userDoc = await db.collection('users').doc(uid).get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: 'User not found', state: 'error' });
+    }
+
+    const userData = userDoc.data();
+    const secret = userData.mfaSecret;
+
+    // Verify the token
+    const isValid = otplib.authenticator.check(token, secret);
+
+    if (!isValid) {
+      return res.status(400).json({ message: 'Invalid token', state: 'error' });
+    }
+
+    // Enable MFA for the user
+    await db.collection('users').doc(uid).update({
+      mfaEnabled: true
+    });
+
+    res.status(200).json({
+      message: 'MFA enabled successfully',
+      state: 'success'
+    });
+  } catch (error) {
+    console.error('Error verifying MFA token:', error);
+    res.status(500).json({ message: 'Error verifying MFA token', state: 'error' });
   }
 });
 

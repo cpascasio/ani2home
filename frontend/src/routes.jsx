@@ -1,18 +1,19 @@
 import React from "react";
-import HomePage from "../pages/homepage/HomePage";
-import Login from "../pages/login/Login";
-import Register from "../pages/register/Register"
-import Products from "../pages/products/Products";
-import AboutUs from "../pages/about/About";
-import Seller from "../pages/seller/Seller";
-import ShopProfile from "../pages/shopprofile/ShopProfile";
-import MyProfile from "../pages/myProfile/MyProfile";
-import MyOrders from "../pages/myOrders/MyOrders";
-import MyShop from "../pages/myShop/MyShop";
-import Cart from "../pages/cart/Cart";
-import Checkout from "../pages/checkout/Checkout";
-import Confirmation from "../pages/confirmation/Confirmation";
-import ItemPage from "../pages/itemPage/ItemPage";
+import HomePage from "./pages/homepage/HomePage";
+import Login from "./pages/login/Login";
+import Register from "./pages/register/Register"
+import Products from "./pages/products/Products";
+import AboutUs from "./pages/about/About";
+import Seller from "./pages/seller/Seller";
+import ShopProfile from "./pages/shopprofile/ShopProfile";
+import MyProfile from "./pages/myProfile/MyProfile";
+import MyOrders from "./pages/myOrders/MyOrders";
+import MyShop from "./pages/myShop/MyShop";
+import Cart from "./pages/cart/Cart";
+import Checkout from "./pages/checkout/Checkout";
+import Confirmation from "./pages/confirmation/Confirmation";
+import ItemPage from "./pages/itemPage/ItemPage";
+import EnableMFA from "./pages/enableMfa/EnableMFA";
 
 const routes = [
     {/* CTRL + CLICK the elements to go to the file */ },
@@ -29,7 +30,8 @@ const routes = [
     { path: "/cart", element: <Cart />, name: "Cart" },
     { path: "/checkout/:sellerId", element: <Checkout />, name: "Checkout" },
     { path: "/confirmation", element: <Confirmation />, name: "Confirmation" },
-    { path: "/item/:productId", element: <ItemPage />, name: "ItemPage" }
+    { path: "/item/:productId", element: <ItemPage />, name: "ItemPage" },
+    { path: "/enableMFA", element: <EnableMFA />, name: "EnableMFA" }
     
 ];
 

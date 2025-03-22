@@ -622,6 +622,14 @@ const MyProfile = () => {
                     My Shop
                   </a>
                 </li>
+                <li>
+                  <button
+                    className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
+                    onClick={() => navigate("/enable-mfa", { state: { user } })}
+                  >
+                    Enable Multi-Factor Authentication (MFA)
+                  </button>
+                </li>
               </ul>
             </div>
           </div>

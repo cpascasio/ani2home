@@ -35,10 +35,8 @@ apiRouter.use('/webhooks', webhooksRoutes);
 // Mount the user routes to the API router
 apiRouter.use('/users', userRouters); // Use the user routes
 
-
 // product route
 apiRouter.use('/lalamove', lalamoveRoutes);
-
 
 // product route
 apiRouter.use('/products', productRoutes);
