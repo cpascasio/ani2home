@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { auth, provider } from "../../config/firebase-config"; 
+import { auth, provider, db } from "../../config/firebase-config"; // Ensure Firestore is imported
 import {
   signInWithPopup,
   GoogleAuthProvider,
@@ -8,6 +8,7 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore"; // Import Firestore functions
 import { useUser } from "../../../src/context/UserContext.jsx";
 import GoogleIcon from "../../assets/google-icon.png"; 
 import { useNavigate } from "react-router-dom";
@@ -18,6 +19,8 @@ const Login = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mfaToken, setMfaToken] = useState(""); // State for MFA token
+  const [showMfaModal, setShowMfaModal] = useState(false); // State to control MFA modal
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,87 +60,55 @@ const Login = () => {
     return () => unsubscribe();
   }, [dispatch]);
 
-  useEffect(() => {
-    console.log("AUTHENTICATED? " + (user ? "true" : "false"));
-  }, []);
-
-  useEffect(() => {
-    console.log("USERACCOUNT " + (user ? user?.username : "false"));
-  }, [user]);
-
-  const handleLogout = () => {
-    setAuthenticated(false);
-    auth.signOut();
-  };
-
   const handleLogin = async () => {
     try {
+      // Step 1: Sign in with email and password
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log(userCredential.user);
-  
+      const user = userCredential.user;
+      console.log("User signed in:", user);
+
+      // Step 2: Check if MFA is enabled for the user
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) {
+        throw new Error("User document not found");
+      }
+
+      const userData = userDoc.data();
+      if (userData.mfaEnabled) {
+        // Step 3: Show MFA modal
+        setShowMfaModal(true);
+        return;
+      }
+
+      // Step 4: Complete the login
       setAuthenticated(true);
-  
-      navigate('/myProfile'); 
+      navigate("/myProfile");
     } catch (error) {
-      console.error(error.message);
+      console.error("Login failed:", error.message);
+      alert(`Login failed: ${error.message}`);
     }
   };
 
-  const handleEmailSignUp = async () => {
+  const handleMfaSubmit = async () => {
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      const user = result.user;
-  
-      // Update the user's profile with the displayName
-      await updateProfile(user, {
-        displayName: username,
-      });
-  
-      if (user) {
-        setAuthenticated(true);
-  
-        // Retrieve the Firebase token for backend API calls
-        const tokenResult = await user.getIdTokenResult();
-        const userId = user.uid;
-  
-        console.log("Creating Firestore document for user:", userId);
-  
-        // Create a user document in Firestore
-        await setDoc(doc(db, "users", userId), {
-          userId: userId,
-          email: email,
-          username: username,
-          createdAt: new Date(),
-        });
-  
-        console.log("Firestore document created successfully");
-  
-        // Create the user in the backend
-        const payload = {
-          userId: userId,
-          email: email,
-          userName: username,
-        };
-  
-        console.log("Sending payload to backend:", payload);
-  
-        await axios.post("http://localhost:3000/api/users/create-user", payload, {
-          headers: {
-            Authorization: `Bearer ${tokenResult.token}`,
-            "Content-Type": "application/json",
-          },
-        });
-  
-        console.log("Backend user creation successful");
-  
-        // Clear form fields
-        setEmail("");
-        setPassword("");
-        setUsername("");
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error("User not signed in");
       }
+
+      // Step 4: Verify the MFA token during login
+      const verifyResponse = await axios.post(`http://localhost:3000/api/users/verify-mfa-login/${user?.userId}`, { token: mfaToken });
+      if (verifyResponse.data.state !== "success") {
+        throw new Error("Invalid MFA token");
+      }
+
+      // Step 5: Complete the login
+      setAuthenticated(true);
+      setShowMfaModal(false);
+      navigate("/myProfile");
     } catch (error) {
-      console.error("Error during email sign-up:", error.message);
-      console.error("Full error object:", error);
+      console.error("MFA verification failed:", error.message);
+      alert(`MFA verification failed: ${error.message}`);
     }
   };
 
@@ -253,6 +224,28 @@ const Login = () => {
             </a>
           </p>
         </div>
+
+        {/* MFA Modal */}
+        {showMfaModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-xl font-bold mb-4">Enter MFA Token</h3>
+              <input
+                type="text"
+                value={mfaToken}
+                onChange={(e) => setMfaToken(e.target.value)}
+                placeholder="Enter MFA token"
+                className="w-full p-3 rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent mb-4"
+              />
+              <button
+                onClick={handleMfaSubmit}
+                className="w-full p-3 bg-[#209D48] text-white rounded-lg hover:bg-[#67B045] focus:outline-none focus:ring focus:ring-[#67B045]"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

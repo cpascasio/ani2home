@@ -300,22 +300,17 @@ router.post('/enable-mfa/:uid', async (req, res) => {
   try {
     // Generate a secret for the user
     const secret = otplib.authenticator.generateSecret();
-    console.log(`Generated MFA secret: ${secret}`); // Debugging
 
     // Create a QR code URL for the user to scan
     const otpauth = otplib.authenticator.keyuri(uid, 'Ani2Home', secret);
-    console.log(`Generated OTP Auth URI: ${otpauth}`); // Debugging
 
     const qrCodeUrl = await qrcode.toDataURL(otpauth);
-    console.log(`Generated QR Code URL: ${qrCodeUrl}`); // Debugging
 
     // Store the secret in the user's document in Firestore
-    console.log(`Attempting to update Firestore for user ID: ${uid}`); // Debugging
     await db.collection('users').doc(uid).update({
       mfaSecret: secret,
       mfaEnabled: false // MFA is not enabled until the user verifies the token
     });
-    console.log(`Firestore updated successfully for user ID: ${uid}`); // Debugging
 
     // Return the QR code URL and the secret (for debugging purposes)
     res.status(200).json({
@@ -326,7 +321,6 @@ router.post('/enable-mfa/:uid', async (req, res) => {
         secret
       }
     });
-    console.log(`Response sent for user ID: ${uid}`); // Debugging
   } catch (error) {
     console.error('Error enabling MFA:', error); // Debugging
     res.status(500).json({ message: 'Error enabling MFA', state: 'error' });
@@ -371,5 +365,38 @@ router.post('/verify-mfa/:uid', async (req, res) => {
   }
 });
 
+// POST route to verify the MFA token during login
+router.post('/verify-mfa-login/:uid', async (req, res) => {
+  const { uid } = req.params;
+  const { token } = req.body;
+
+  try {
+    // Fetch the user's document from Firestore
+    const userDoc = await db.collection('users').doc(uid).get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: 'User not found', state: 'error' });
+    }
+
+    const userData = userDoc.data();
+    const secret = userData.mfaSecret;
+
+    // Verify the token
+    const isValid = otplib.authenticator.check(token, secret);
+
+    if (!isValid) {
+      return res.status(400).json({ message: 'Invalid token', state: 'error' });
+    }
+
+    // Return success (no need to enable MFA here)
+    res.status(200).json({
+      message: 'MFA token verified successfully',
+      state: 'success'
+    });
+  } catch (error) {
+    console.error('Error verifying MFA token:', error);
+    res.status(500).json({ message: 'Error verifying MFA token', state: 'error' });
+  }
+});
 
 module.exports = router;
