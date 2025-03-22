@@ -654,7 +654,7 @@ const MyProfile = () => {
                   Delivery Address
                 </div>
               </div>
-              <Map
+              {/* <Map
                 mapId="profileMap"
                 defaultZoom={13}
                 defaultCenter={{ lat: 14.3879953, lng: 120.9879423 }}
@@ -679,7 +679,7 @@ const MyProfile = () => {
                 style={{ width: "100%", height: "400px" }}
               >
                 <Marker position={markerPosition} />
-              </Map>
+              </Map> */}
               {editing ? (
                 <div className="bg-white p-5 mb-5">
                   <h2 className="text-lg text-left font-bold text-gray-600">

@@ -11,14 +11,19 @@ const EnableMFA = () => {
   const location = useLocation();
   const user = location.state?.user; // Pass user data via location state if needed
 
-  // Generate the MFA secret and QR code
   const generateMFA = async () => {
-    try {
-      // Call the backend to generate the MFA secret
-      const response = await axios.post(`/api/users/${user?.userId}/enable-mfa`);
-      const { qrCodeUrl, secret } = response.data.data;
+    if (!user?.userId) {
+      setError("User ID is missing. Please try again.");
+      return;
+    }
 
-      // Display the QR code
+    const url = `http://localhost:3000/api/users/enable-mfa/${user?.userId}`;
+    console.log("Making request to:", url); // Debugging
+  
+    try {
+      const response = await axios.post(url);
+      const { qrCodeUrl, secret } = response.data.data;
+  
       setQrCodeUrl(qrCodeUrl);
       setSuccess("MFA secret generated successfully. Scan the QR code with your authenticator app.");
     } catch (error) {
@@ -31,13 +36,13 @@ const EnableMFA = () => {
   const verifyMFA = async () => {
     try {
       // Call the backend to verify the token
-      const response = await axios.post(`/api/users/${user?.userId}/verify-mfa`, {
+      const response = await axios.post(`http://localhost:3000/api/users/verify-mfa/${user?.userId}`, {
         token: verificationCode,
       });
 
       if (response.data.state === "success") {
         setSuccess("MFA enabled successfully!");
-        navigate("/my-profile"); // Redirect to the profile page
+        navigate("/myProfile"); // Redirect to the profile page
       } else {
         setError("Invalid token. Please try again.");
       }

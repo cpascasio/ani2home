@@ -209,6 +209,7 @@ router.post('/create-user', async (req, res) => {
 // GET route to fetch a user by UID
 router.get('/:uid', async (req, res) => {
   const { uid } = req.params;
+
   try {
     const doc = await db.collection('users').doc(uid).get();
     if (!doc.exists) {
@@ -292,22 +293,29 @@ router.put('/edit-user/:uid', async (req, res) => {
 });
 
 // POST route to enable MFA for a user
-router.post('/:uid/enable-mfa', async (req, res) => {
+router.post('/enable-mfa/:uid', async (req, res) => {
   const { uid } = req.params;
+  console.log(`Received request to enable MFA for user ID: ${uid}`); // Debugging
 
   try {
     // Generate a secret for the user
     const secret = otplib.authenticator.generateSecret();
+    console.log(`Generated MFA secret: ${secret}`); // Debugging
 
     // Create a QR code URL for the user to scan
     const otpauth = otplib.authenticator.keyuri(uid, 'Ani2Home', secret);
+    console.log(`Generated OTP Auth URI: ${otpauth}`); // Debugging
+
     const qrCodeUrl = await qrcode.toDataURL(otpauth);
+    console.log(`Generated QR Code URL: ${qrCodeUrl}`); // Debugging
 
     // Store the secret in the user's document in Firestore
+    console.log(`Attempting to update Firestore for user ID: ${uid}`); // Debugging
     await db.collection('users').doc(uid).update({
       mfaSecret: secret,
       mfaEnabled: false // MFA is not enabled until the user verifies the token
     });
+    console.log(`Firestore updated successfully for user ID: ${uid}`); // Debugging
 
     // Return the QR code URL and the secret (for debugging purposes)
     res.status(200).json({
@@ -318,14 +326,15 @@ router.post('/:uid/enable-mfa', async (req, res) => {
         secret
       }
     });
+    console.log(`Response sent for user ID: ${uid}`); // Debugging
   } catch (error) {
-    console.error('Error enabling MFA:', error);
+    console.error('Error enabling MFA:', error); // Debugging
     res.status(500).json({ message: 'Error enabling MFA', state: 'error' });
   }
 });
 
 // POST route to verify the MFA token and enable MFA
-router.post('/:uid/verify-mfa', async (req, res) => {
+router.post('/verify-mfa/:uid', async (req, res) => {
   const { uid } = req.params;
   const { token } = req.body;
 
