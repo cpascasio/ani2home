@@ -215,19 +215,93 @@ router.post('/create-product', async (req, res) => {
 
 // Route to update a product
 router.put('/:productId', async (req, res) => {
-    const { error, value } = productSchema.validate(req.body);
-    console.log("🚀 ~ router.put ~ value:", value)
+    const { id, ...rest } = req.body; 
+    const { error, value } = productSchema.validate(rest); 
+
+    console.log('Request body:', value);
+    console.log('Product ID from body:', id); 
 
     if (error) {
         return res.status(400).json({ error: error.details[0].message });
     }
 
     try {
-        const productRef = db.collection('products').doc(req.params.productId);
+        const productRef = db.collection('products').doc(id); 
+        const productDoc = await productRef.get();
+
+        if (!productDoc.exists) {
+            return res.status(404).json({ message: 'Product not found', state: 'error' });
+        }
+
+        // Fetch the old values
+        const oldData = productDoc.data();
+
+        // Update Firestore document with the new values
         await productRef.update(value);
+
+        // Compare old and new values
+        const changes = {};
+        for (const key in value) {
+            if (value[key] !== oldData[key]) {
+                changes[key] = {
+                    old: oldData[key],
+                    new: value[key],
+                };
+            }
+        }
+
+        // Log the successful product update with changes
+        const logData = {
+            timestamp: new Intl.DateTimeFormat('en-PH', {
+                timeZone: 'Asia/Manila',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+            }).format(new Date()),
+            userId: req.headers['x-user-id'] || 'unknown', // Extract userId from the headers
+            action: 'update_product',
+            resource: `products/${id}`,
+            status: 'success',
+            details: {
+                message: 'Product updated successfully',
+                productId: id,
+                changes, // Include old and new values
+            },
+        };
+
+        logger.info(logData); // Log to console/file
+        await logToFirestore(logData); // Log to Firestore
+
         res.status(200).json({ message: 'Product updated successfully' });
     } catch (error) {
         console.error('Error updating product:', error);
+
+        // Log the error
+        const logData = {
+            timestamp: new Intl.DateTimeFormat('en-PH', {
+                timeZone: 'Asia/Manila',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+            }).format(new Date()),
+            userId: req.headers['x-user-id'] || 'unknown', // Extract userId from the headers
+            action: 'update_product',
+            resource: `products/${id}`,
+            status: 'failed',
+            error: error.message,
+        };
+
+        logger.error(logData); // Log to console/file
+        await logToFirestore(logData); // Log to Firestore
+
         res.status(500).send('Error updating product');
     }
 });
