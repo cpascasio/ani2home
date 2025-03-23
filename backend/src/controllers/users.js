@@ -433,12 +433,57 @@ router.post('/verify-mfa/:uid', async (req, res) => {
       mfaEnabled: true
     });
 
+    const logData = {
+      timestamp: new Intl.DateTimeFormat('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(new Date()),
+      userId: uid,
+      action: 'verify_mfa',
+      resource: `users/${uid}`,
+      status: 'success',
+      details: {
+        message: 'MFA enabled successfully',
+      },
+    };
+
+    logger.info(logData); 
+    await logToFirestore(logData); 
+
     res.status(200).json({
       message: 'MFA enabled successfully',
       state: 'success'
     });
   } catch (error) {
     console.error('Error verifying MFA token:', error);
+
+    const logData = {
+      timestamp: new Intl.DateTimeFormat('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(new Date()),
+      userId: uid,
+      action: 'verify_mfa',
+      resource: `users/${uid}`,
+      status: 'failed',
+      error: error.message,
+    };
+
+    logger.error(logData); 
+    await logToFirestore(logData);
+
     res.status(500).json({ message: 'Error verifying MFA token', state: 'error' });
   }
 });
