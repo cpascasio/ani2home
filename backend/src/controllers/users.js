@@ -1,57 +1,57 @@
-const express = require('express');
-const admin = require('firebase-admin');
+const express = require("express");
+const admin = require("firebase-admin");
 const router = express.Router();
-const fs = require('fs');
-const userSchema = require('../models/userModels');
-const cartSchema = require('../models/cartModels');
-const cloudinary = require('../config/cloudinary');
+const fs = require("fs");
+const userSchema = require("../models/userModels");
+const cartSchema = require("../models/cartModels");
+const cloudinary = require("../config/cloudinary");
 const otplib = require("otplib");
 const qrcode = require("qrcode");
-const { logger, logToFirestore } = require('../config/firebase-config');
-const { timeStamp } = require('console');
+const { logger, logToFirestore } = require("../config/firebase-config");
+const { timeStamp } = require("console");
 
 // Firestore database reference
 const db = admin.firestore();
 
-
 // GET route to fetch all users
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const usersSnapshot = await db.collection('users').get();
-    
+    const usersSnapshot = await db.collection("users").get();
+
     if (usersSnapshot.empty) {
-      return res.status(404).json({ message: 'No users found', state: 'error' });
+      return res
+        .status(404)
+        .json({ message: "No users found", state: "error" });
     }
 
-    const usersList = usersSnapshot.docs.map(doc => ({
+    const usersList = usersSnapshot.docs.map((doc) => ({
       id: doc.id,
-      ...doc.data()
+      ...doc.data(),
     }));
 
     res.status(200).json({
-      message: 'Users retrieved successfully',
-      state: 'success',
-      data: usersList
+      message: "Users retrieved successfully",
+      state: "success",
+      data: usersList,
     });
   } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ message: 'Error fetching users', state: 'error' });
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Error fetching users", state: "error" });
   }
 });
 
-
 // POST route to create a new user
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   const { email, name } = req.body;
   try {
-    const user = await db.collection('users').add({
+    const user = await db.collection("users").add({
       email,
       name,
     });
     res.status(201).json({ id: user.id });
   } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).send('Error creating user');
+    console.error("Error creating user:", error);
+    res.status(500).send("Error creating user");
   }
 });
 
@@ -61,29 +61,29 @@ const addUserToFirestore = async (value) => {
     const { userId, ...userData } = value;
 
     let default_var = {
-      "name": "",
-      "userName": "",
-      "email": "",
-      "dateOfBirth": "",
-      "userProfilePic": "",
-      "userCover": "",
-      "address": {
-        "fullAddress": "",
-        "streetAddress": "",
-        "city": "",
-        "province": "",
-        "barangay": "",
-        "region": "",
-        "country": "",
-        "postalCode": "",
-        "lng": 0,
-        "lat": 0
+      name: "",
+      userName: "",
+      email: "",
+      dateOfBirth: "",
+      userProfilePic: "",
+      userCover: "",
+      address: {
+        fullAddress: "",
+        streetAddress: "",
+        city: "",
+        province: "",
+        barangay: "",
+        region: "",
+        country: "",
+        postalCode: "",
+        lng: 0,
+        lat: 0,
       },
-      "phoneNumber": "",
-      "followers": [],
-      "isStore": false,
-      "bio": "",
-      "isVerified": false,
+      phoneNumber: "",
+      followers: [],
+      isStore: false,
+      bio: "",
+      isVerified: false,
     };
 
     // Merge userData into default_var
@@ -92,51 +92,47 @@ const addUserToFirestore = async (value) => {
       ...userData,
       address: {
         ...default_var.address,
-        ...userData.address
-      }
+        ...userData.address,
+      },
     };
 
     // Add user data to Firestore, excluding the userId from the document fields
-    await db.collection('users').doc(userId).set(mergedData);
+    await db.collection("users").doc(userId).set(mergedData);
 
-    console.log('User data successfully written to Firestore');
+    console.log("User data successfully written to Firestore");
   } catch (error) {
-    console.error('Error adding user data to Firestore:', error);
+    console.error("Error adding user data to Firestore:", error);
   }
 };
 
 // create cart for user
 const createCartForUser = async (userId) => {
-
   const data = {
     cart: [],
-  }
+  };
 
   // validate the cart
   const { error, value } = cartSchema.validate(data);
 
   if (error) {
-    console.error('Validation Error:', error.details[0].message); // Log the validation error
-    throw new Error('Error creating cart for user');
+    console.error("Validation Error:", error.details[0].message); // Log the validation error
+    throw new Error("Error creating cart for user");
   }
 
   try {
     // Assuming 'add' is a method to add a new document. This might need to be adjusted based on your DB API.
-    await db.collection('cart').doc(userId).set(value);
-    console.log('Cart created successfully');
+    await db.collection("cart").doc(userId).set(value);
+    console.log("Cart created successfully");
   } catch (error) {
-    console.error('Error creating cart:', error);
-    throw new Error('Error creating cart for user');
+    console.error("Error creating cart:", error);
+    throw new Error("Error creating cart for user");
   }
-
 };
-
-
 
 const checkUserExists = async (userId) => {
   try {
     console.log("USERID:", userId);
-    const userDocRef = db.collection('users').doc(userId);
+    const userDocRef = db.collection("users").doc(userId);
     const userDoc = await userDocRef.get();
 
     if (userDoc.exists) {
@@ -147,16 +143,13 @@ const checkUserExists = async (userId) => {
       return false;
     }
   } catch (error) {
-    console.error('Error checking user existence:', error);
+    console.error("Error checking user existence:", error);
     throw error;
   }
-
-
 };
 
-
-router.post('/create-user', async (req, res) => {
-  console.log('Request body:', req.body);
+router.post("/create-user", async (req, res) => {
+  console.log("Request body:", req.body);
 
   const userId = req.body.userId;
 
@@ -165,106 +158,109 @@ router.post('/create-user', async (req, res) => {
     const userExists = await checkUserExists(userId);
 
     if (userExists) {
-      console.log('User already exists:', userId);
+      console.log("User already exists:", userId);
       return res.status(400).json({
-        message: 'User already exists',
-        state: 'error',
+        message: "User already exists",
+        state: "error",
       });
     }
 
     // Validate the request body
     const { error, value } = userSchema.validate(req.body);
     if (error) {
-      console.log('Validation error:', error.details[0].message);
+      console.log("Validation error:", error.details[0].message);
       return res.status(400).send(error.details[0].message);
     }
 
-    console.log('Validated request body:', value);
+    console.log("Validated request body:", value);
 
     // Add the user to Firestore
     await addUserToFirestore(value);
-    console.log('User added to Firestore:', userId);
+    console.log("User added to Firestore:", userId);
 
     // Create a cart for the user
     await createCartForUser(userId);
-    console.log('Cart created for user:', userId);
+    console.log("Cart created for user:", userId);
 
     const logData = {
-      timestamp: new Intl.DateTimeFormat('en-PH', {
-        timeZone: 'Asia/Manila',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
+      timestamp: new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
         hour12: false,
       }).format(new Date()),
       userId,
-      action: 'create_user',
+      action: "create_user",
       resource: `users/${userId}`,
-      status: 'success',
+      status: "success",
     };
 
     logger.info(logData);
     await logToFirestore(logData);
 
     res.status(201).json({
-      message: 'User created successfully',
-      state: 'success',
+      message: "User created successfully",
+      state: "success",
     });
   } catch (error) {
-    console.error('Error in /create-user:', error);
+    console.error("Error in /create-user:", error);
     res.status(500).json({
-      message: 'Error creating user',
-      state: 'error',
+      message: "Error creating user",
+      state: "error",
     });
   }
 });
 
-
 // GET route to fetch a user by UID
-router.get('/:uid', async (req, res) => {
+router.get("/:uid", async (req, res) => {
   const { uid } = req.params;
 
   try {
-    const doc = await db.collection('users').doc(uid).get();
+    const doc = await db.collection("users").doc(uid).get();
     if (!doc.exists) {
-      return res.status(404).json({ message: 'User not found', state: 'error' });
+      return res
+        .status(404)
+        .json({ message: "User not found", state: "error" });
     }
     res.status(200).json({
-      message: 'User found',
-      state: 'success',
-      data: doc.data()
+      message: "User found",
+      state: "success",
+      data: doc.data(),
     });
   } catch (error) {
-    console.error('Error fetching user:', error);
-    res.status(500).json({ message: 'Error fetching user', state: 'error' });
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Error fetching user", state: "error" });
   }
 });
 
 /// GET route to fetch a user by UID and return the isStore attribute only
-router.get('/:uid/isStore', async (req, res) => {
+router.get("/:uid/isStore", async (req, res) => {
   const { uid } = req.params;
   try {
-    const doc = await db.collection('users').doc(uid).get();
+    const doc = await db.collection("users").doc(uid).get();
     if (!doc.exists) {
-      return res.status(404).json({ message: 'User not found', state: 'error' });
+      return res
+        .status(404)
+        .json({ message: "User not found", state: "error" });
     }
     const userData = doc.data();
     res.status(200).json({
-      message: 'User found',
-      state: 'success',
-      data: userData.isStore
+      message: "User found",
+      state: "success",
+      data: userData.isStore,
     });
   } catch (error) {
-    console.error('Error fetching user:', error);
-    res.status(500).json({ message: 'Error fetching user', state: 'error' });
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Error fetching user", state: "error" });
   }
 });
 
 // PUT route to update a user by UID
-router.put('/edit-user/:uid', async (req, res) => {
+router.put("/edit-user/:uid", async (req, res) => {
   const { uid } = req.params;
   const { error, value } = userSchema.validate(req.body);
 
@@ -276,11 +272,13 @@ router.put('/edit-user/:uid', async (req, res) => {
   }
 
   try {
-    const userDocRef = db.collection('users').doc(uid);
+    const userDocRef = db.collection("users").doc(uid);
     const userDoc = await userDocRef.get();
 
     if (!userDoc.exists) {
-      return res.status(404).json({ message: 'User not found', state: 'error' });
+      return res
+        .status(404)
+        .json({ message: "User not found", state: "error" });
     }
 
     // Fetch the old values
@@ -292,8 +290,8 @@ router.put('/edit-user/:uid', async (req, res) => {
     let newUserProfilePic = oldData.userProfilePic;
     if (userProfilePic) {
       const uploadResponse = await cloudinary.uploader.upload(userProfilePic, {
-        folder: 'ani2home',
-        resource_type: 'image',
+        folder: "ani2home",
+        resource_type: "image",
       });
 
       newUserProfilePic = uploadResponse.secure_url;
@@ -317,20 +315,20 @@ router.put('/edit-user/:uid', async (req, res) => {
     }
 
     const logData = {
-      timestamp: new Intl.DateTimeFormat('en-PH', {
-        timeZone: 'Asia/Manila',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
+      timestamp: new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
         hour12: false,
       }).format(new Date()),
       uid,
-      action: 'edit_user',
+      action: "edit_user",
       resource: `users/${uid}`,
-      status: 'success',
+      status: "success",
       changes,
     };
 
@@ -338,40 +336,40 @@ router.put('/edit-user/:uid', async (req, res) => {
     await logToFirestore(logData);
 
     res.status(200).json({
-      message: 'User updated successfully',
-      state: 'success',
+      message: "User updated successfully",
+      state: "success",
     });
   } catch (error) {
-    console.error('Error updating user:', error);
+    console.error("Error updating user:", error);
 
     // Log the error
     const logData = {
-      timestamp: new Intl.DateTimeFormat('en-PH', {
-        timeZone: 'Asia/Manila',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
+      timestamp: new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
         hour12: false,
       }).format(new Date()),
       uid,
-      action: 'edit_user',
+      action: "edit_user",
       resource: `users/${uid}`,
-      status: 'failed',
+      status: "failed",
       error: error.message,
     };
 
     logger.error(logData);
     await logToFirestore(logData);
 
-    res.status(500).json({ message: 'Error updating user', state: 'error' });
+    res.status(500).json({ message: "Error updating user", state: "error" });
   }
 });
 
 // POST route to enable MFA for a user
-router.post('/enable-mfa/:uid', async (req, res) => {
+router.post("/enable-mfa/:uid", async (req, res) => {
   const { uid } = req.params;
   console.log(`Received request to enable MFA for user ID: ${uid}`); // Debugging
 
@@ -380,42 +378,44 @@ router.post('/enable-mfa/:uid', async (req, res) => {
     const secret = otplib.authenticator.generateSecret();
 
     // Create a QR code URL for the user to scan
-    const otpauth = otplib.authenticator.keyuri(uid, 'Ani2Home', secret);
+    const otpauth = otplib.authenticator.keyuri(uid, "Ani2Home", secret);
 
     const qrCodeUrl = await qrcode.toDataURL(otpauth);
 
     // Store the secret in the user's document in Firestore
-    await db.collection('users').doc(uid).update({
+    await db.collection("users").doc(uid).update({
       mfaSecret: secret,
-      mfaEnabled: false // MFA is not enabled until the user verifies the token
+      mfaEnabled: false, // MFA is not enabled until the user verifies the token
     });
 
     // Return the QR code URL and the secret (for debugging purposes)
     res.status(200).json({
-      message: 'MFA secret generated successfully',
-      state: 'success',
+      message: "MFA secret generated successfully",
+      state: "success",
       data: {
         qrCodeUrl,
-        secret
-      }
+        secret,
+      },
     });
   } catch (error) {
-    console.error('Error enabling MFA:', error); // Debugging
-    res.status(500).json({ message: 'Error enabling MFA', state: 'error' });
+    console.error("Error enabling MFA:", error); // Debugging
+    res.status(500).json({ message: "Error enabling MFA", state: "error" });
   }
 });
 
 // POST route to verify the MFA token and enable MFA
-router.post('/verify-mfa/:uid', async (req, res) => {
+router.post("/verify-mfa/:uid", async (req, res) => {
   const { uid } = req.params;
   const { token } = req.body;
 
   try {
     // Fetch the user's document from Firestore
-    const userDoc = await db.collection('users').doc(uid).get();
+    const userDoc = await db.collection("users").doc(uid).get();
 
     if (!userDoc.exists) {
-      return res.status(404).json({ message: 'User not found', state: 'error' });
+      return res
+        .status(404)
+        .json({ message: "User not found", state: "error" });
     }
 
     const userData = userDoc.data();
@@ -425,80 +425,84 @@ router.post('/verify-mfa/:uid', async (req, res) => {
     const isValid = otplib.authenticator.check(token, secret);
 
     if (!isValid) {
-      return res.status(400).json({ message: 'Invalid token', state: 'error' });
+      return res.status(400).json({ message: "Invalid token", state: "error" });
     }
 
     // Enable MFA for the user
-    await db.collection('users').doc(uid).update({
-      mfaEnabled: true
+    await db.collection("users").doc(uid).update({
+      mfaEnabled: true,
     });
 
     const logData = {
-      timestamp: new Intl.DateTimeFormat('en-PH', {
-        timeZone: 'Asia/Manila',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
+      timestamp: new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
         hour12: false,
       }).format(new Date()),
       userId: uid,
-      action: 'verify_mfa',
+      action: "verify_mfa",
       resource: `users/${uid}`,
-      status: 'success',
+      status: "success",
       details: {
-        message: 'MFA enabled successfully',
+        message: "MFA enabled successfully",
       },
     };
 
-    logger.info(logData); 
-    await logToFirestore(logData); 
+    logger.info(logData);
+    await logToFirestore(logData);
 
     res.status(200).json({
-      message: 'MFA enabled successfully',
-      state: 'success'
+      message: "MFA enabled successfully",
+      state: "success",
     });
   } catch (error) {
-    console.error('Error verifying MFA token:', error);
+    console.error("Error verifying MFA token:", error);
 
     const logData = {
-      timestamp: new Intl.DateTimeFormat('en-PH', {
-        timeZone: 'Asia/Manila',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
+      timestamp: new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
         hour12: false,
       }).format(new Date()),
       userId: uid,
-      action: 'verify_mfa',
+      action: "verify_mfa",
       resource: `users/${uid}`,
-      status: 'failed',
+      status: "failed",
       error: error.message,
     };
 
-    logger.error(logData); 
+    logger.error(logData);
     await logToFirestore(logData);
 
-    res.status(500).json({ message: 'Error verifying MFA token', state: 'error' });
+    res
+      .status(500)
+      .json({ message: "Error verifying MFA token", state: "error" });
   }
 });
 
 // POST route to verify the MFA token during login
-router.post('/verify-mfa-login/:uid', async (req, res) => {
+router.post("/verify-mfa-login/:uid", async (req, res) => {
   const { uid } = req.params;
   const { token } = req.body;
 
   try {
     // Fetch the user's document from Firestore
-    const userDoc = await db.collection('users').doc(uid).get();
+    const userDoc = await db.collection("users").doc(uid).get();
 
     if (!userDoc.exists) {
-      return res.status(404).json({ message: 'User not found', state: 'error' });
+      return res
+        .status(404)
+        .json({ message: "User not found", state: "error" });
     }
 
     const userData = userDoc.data();
@@ -508,17 +512,19 @@ router.post('/verify-mfa-login/:uid', async (req, res) => {
     const isValid = otplib.authenticator.check(token, secret);
 
     if (!isValid) {
-      return res.status(400).json({ message: 'Invalid token', state: 'error' });
+      return res.status(400).json({ message: "Invalid token", state: "error" });
     }
 
     // Return success (no need to enable MFA here)
     res.status(200).json({
-      message: 'MFA token verified successfully',
-      state: 'success'
+      message: "MFA token verified successfully",
+      state: "success",
     });
   } catch (error) {
-    console.error('Error verifying MFA token:', error); // Debugging
-    res.status(500).json({ message: 'Error verifying MFA token', state: 'error' });
+    console.error("Error verifying MFA token:", error); // Debugging
+    res
+      .status(500)
+      .json({ message: "Error verifying MFA token", state: "error" });
   }
 });
 

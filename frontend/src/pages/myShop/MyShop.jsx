@@ -8,17 +8,19 @@ import OrdersTable from "../../components/seller/OrdersTable";
 import Overview from "../../components/seller/Overview";
 
 const MyShop = () => {
-  const [selectedMenu, setSelectedMenu] = useState('overview');
+  const [selectedMenu, setSelectedMenu] = useState("overview");
   const { user } = useUser();
-  const { data: userData } = useFetch('/api/users/' + (user ? user?.userId : '') + '/isStore');
+  const { data: userData } = useFetch(
+    "/api/users/" + (user ? user?.userId : "") + "/isStore"
+  );
 
   const renderContent = () => {
     switch (selectedMenu) {
       // case 'overview':
       //   return <Overview />;
-      case 'inventory':
+      case "inventory":
         return <InventoryTable />;
-      case 'orders':
+      case "orders":
         return <OrdersTable />;
       default:
         return null;

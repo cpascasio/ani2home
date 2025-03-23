@@ -16,7 +16,6 @@ const Menu = ({ onSelectMenu }) => {
       <div className="flex flex-col w-full max-w-screen-xl mx-auto p-4 bg-gray-200">
         {/* Sidebar Section */}
         <div className="sidebar w-full lg:w-1/5 p-4 flex flex-col space-y-4">
-          
           {/* Mobile Collapse for My Shop */}
           <div className="block lg:hidden w-full">
             <button

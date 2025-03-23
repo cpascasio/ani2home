@@ -19,13 +19,15 @@ const EnableMFA = () => {
 
     const url = `http://localhost:3000/api/users/enable-mfa/${user?.userId}`;
     console.log("Making request to:", url); // Debugging
-  
+
     try {
       const response = await axios.post(url);
       const { qrCodeUrl, secret } = response.data.data;
-  
+
       setQrCodeUrl(qrCodeUrl);
-      setSuccess("MFA secret generated successfully. Scan the QR code with your authenticator app.");
+      setSuccess(
+        "MFA secret generated successfully. Scan the QR code with your authenticator app."
+      );
     } catch (error) {
       console.error("Error generating MFA:", error);
       setError("Failed to generate MFA. Please try again.");
@@ -36,9 +38,12 @@ const EnableMFA = () => {
   const verifyMFA = async () => {
     try {
       // Call the backend to verify the token
-      const response = await axios.post(`http://localhost:3000/api/users/verify-mfa/${user?.userId}`, {
-        token: verificationCode,
-      });
+      const response = await axios.post(
+        `http://localhost:3000/api/users/verify-mfa/${user?.userId}`,
+        {
+          token: verificationCode,
+        }
+      );
 
       if (response.data.state === "success") {
         setSuccess("MFA enabled successfully!");
@@ -55,7 +60,9 @@ const EnableMFA = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Enable Multi-Factor Authentication</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">
+          Enable Multi-Factor Authentication
+        </h1>
 
         {!qrCodeUrl ? (
           <button
@@ -67,9 +74,14 @@ const EnableMFA = () => {
         ) : (
           <>
             <p className="text-gray-600 mb-4">
-              Scan the QR code below with your authenticator app (e.g., Google Authenticator).
+              Scan the QR code below with your authenticator app (e.g., Google
+              Authenticator).
             </p>
-            <img src={qrCodeUrl} alt="MFA QR Code" className="w-48 h-48 mx-auto mb-4" />
+            <img
+              src={qrCodeUrl}
+              alt="MFA QR Code"
+              className="w-48 h-48 mx-auto mb-4"
+            />
             <input
               type="text"
               value={verificationCode}

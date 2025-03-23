@@ -1,21 +1,21 @@
-const Joi = require('joi');
+const Joi = require("joi");
 
 const now = new Date().toISOString();
 
 const productSchema = Joi.object({
-    // productId: Joi.string().guid({ version: 'uuidv4' }).required(),
-    storeId: Joi.string().optional(),
-    productName: Joi.string().optional(),
-    productDescription: Joi.string().optional(),
-    dateAdded: Joi.date().iso().optional(),
-    rating: Joi.number().min(0).max(5).precision(1).optional(),
-    isKilo: Joi.boolean().optional(),
-    totalSales: Joi.number().optional(),
-    stock: Joi.number().optional(),
-    price: Joi.number().precision(2).optional(),
-    pictures: Joi.array().items(Joi.string()).max(5).optional(),
-    type: Joi.string().optional(),
-    category: Joi.string().valid('Vegetable', 'Fruit').optional()
+  // productId: Joi.string().guid({ version: 'uuidv4' }).required(),
+  storeId: Joi.string().optional(),
+  productName: Joi.string().optional(),
+  productDescription: Joi.string().optional(),
+  dateAdded: Joi.date().iso().optional(),
+  rating: Joi.number().min(0).max(5).precision(1).optional(),
+  isKilo: Joi.boolean().optional(),
+  totalSales: Joi.number().optional(),
+  stock: Joi.number().optional(),
+  price: Joi.number().precision(2).optional(),
+  pictures: Joi.array().items(Joi.string()).max(5).optional(),
+  type: Joi.string().optional(),
+  category: Joi.string().valid("Vegetable", "Fruit").optional(),
 });
 
 module.exports = productSchema;
@@ -39,4 +39,4 @@ module.exports = productSchema;
 // price per kilo or per piece
 // Stock
 
-// add picture that displays the pictures already added to be 
+// add picture that displays the pictures already added to be

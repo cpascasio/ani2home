@@ -1,5 +1,5 @@
-import React from 'react';
-import './Overview.css'; 
+import React from "react";
+import "./Overview.css";
 
 const Overview = () => {
   const productsAvailable = 50;
@@ -17,7 +17,9 @@ const Overview = () => {
           <h2 className="text-lg text-white font-semibold mb-2">Products</h2>
           <div className="flex-1">
             <div className="bg-[#d9d9d9] p-4 rounded-lg shadow-md h-full flex flex-col justify-center">
-              <h4 className="text-sm font-medium">Number of Products Available</h4>
+              <h4 className="text-sm font-medium">
+                Number of Products Available
+              </h4>
               <p className="text-xl font-bold">{productsAvailable}</p>
             </div>
           </div>
@@ -50,7 +52,9 @@ const Overview = () => {
           </div>
           <div className="flex-1 mt-3">
             <div className="bg-[#d9d9d9] p-4 rounded-lg shadow-md h-full flex flex-col justify-center">
-              <h4 className="text-sm font-medium">Number of Delivered Orders</h4>
+              <h4 className="text-sm font-medium">
+                Number of Delivered Orders
+              </h4>
               <p className="text-xl font-bold">{deliveredOrders}</p>
             </div>
           </div>

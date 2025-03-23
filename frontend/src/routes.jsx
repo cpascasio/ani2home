@@ -1,7 +1,7 @@
 import React from "react";
 import HomePage from "./pages/homepage/HomePage";
 import Login from "./pages/login/Login";
-import Register from "./pages/register/Register"
+import Register from "./pages/register/Register";
 import Products from "./pages/products/Products";
 import AboutUs from "./pages/about/About";
 import Seller from "./pages/seller/Seller";
@@ -16,24 +16,24 @@ import ItemPage from "./pages/itemPage/ItemPage";
 import EnableMFA from "./pages/enableMfa/EnableMFA";
 
 const routes = [
-    {/* CTRL + CLICK the elements to go to the file */ },
-    { path: "/", element: <HomePage />, name: "Homepage" },
-    { path: "/login", element: <Login />, name: "Login" },
-    { path: "/register", element: <Register />, name: "Register" },
-    { path: "/aboutus", element: <AboutUs />, name: "AboutUs" },
-    { path: "/products", element: <Products />, name: "Products" },
-    { path: "/seller", element: <Seller />, name: "Seller" },
-    { path: "/profile/:sellerId", element: <ShopProfile />, name: "ShopProfile" },
-    { path: "/myProfile", element: <MyProfile />, name: "MyProfile" },
-    { path: "/myOrders", element: <MyOrders />, name: "MyOrders" },
-    { path: "/myShop", element: <MyShop />, name: "MyShop" },
-    { path: "/cart", element: <Cart />, name: "Cart" },
-    { path: "/checkout/:sellerId", element: <Checkout />, name: "Checkout" },
-    { path: "/confirmation", element: <Confirmation />, name: "Confirmation" },
-    { path: "/item/:productId", element: <ItemPage />, name: "ItemPage" },
-    { path: "/enable-mfa", element: <EnableMFA />, name: "EnableMFA" }
-    
+  {
+    /* CTRL + CLICK the elements to go to the file */
+  },
+  { path: "/", element: <HomePage />, name: "Homepage" },
+  { path: "/login", element: <Login />, name: "Login" },
+  { path: "/register", element: <Register />, name: "Register" },
+  { path: "/aboutus", element: <AboutUs />, name: "AboutUs" },
+  { path: "/products", element: <Products />, name: "Products" },
+  { path: "/seller", element: <Seller />, name: "Seller" },
+  { path: "/profile/:sellerId", element: <ShopProfile />, name: "ShopProfile" },
+  { path: "/myProfile", element: <MyProfile />, name: "MyProfile" },
+  { path: "/myOrders", element: <MyOrders />, name: "MyOrders" },
+  { path: "/myShop", element: <MyShop />, name: "MyShop" },
+  { path: "/cart", element: <Cart />, name: "Cart" },
+  { path: "/checkout/:sellerId", element: <Checkout />, name: "Checkout" },
+  { path: "/confirmation", element: <Confirmation />, name: "Confirmation" },
+  { path: "/item/:productId", element: <ItemPage />, name: "ItemPage" },
+  { path: "/enable-mfa", element: <EnableMFA />, name: "EnableMFA" },
 ];
 
 export default routes;
-

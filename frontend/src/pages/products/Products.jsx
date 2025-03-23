@@ -1,23 +1,27 @@
-import { useState, useEffect } from 'react';
-import useFetch from '../../../hooks/useFetch';
-import ProductCard from '../../components/ProductCard';
+import { useState, useEffect } from "react";
+import useFetch from "../../../hooks/useFetch";
+import ProductCard from "../../components/ProductCard";
 
 // Importing images
-import HorizontalLines from '../../assets/horizontallines.png';
-import SortUp from '../../assets/SortUp.png';
-import SortDown from '../../assets/SortDown.png';
-import Footer from '../../components/Footer';
+import HorizontalLines from "../../assets/horizontallines.png";
+import SortUp from "../../assets/SortUp.png";
+import SortDown from "../../assets/SortDown.png";
+import Footer from "../../components/Footer";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [sortedProducts, setSortedProducts] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(window.location.hash.replace('#', '') || 'All');
-  const [selectedButton, setSelectedButton] = useState('default');
+  const [selectedCategory, setSelectedCategory] = useState(
+    window.location.hash.replace("#", "") || "All"
+  );
+  const [selectedButton, setSelectedButton] = useState("default");
   const [isAscending, setIsAscending] = useState(true);
   const [isCollapseOpen, setIsCollapseOpen] = useState(false);
   const [isSortOptionsOpen, setIsSortOptionsOpen] = useState(false);
 
-  const { data: productsFetch } = useFetch(`/api/products/category/${selectedCategory}`);
+  const { data: productsFetch } = useFetch(
+    `/api/products/category/${selectedCategory}`
+  );
 
   useEffect(() => {
     if (productsFetch) {
@@ -35,35 +39,37 @@ const Products = () => {
   const sortProducts = (products, criteria, ascending) => {
     return [...products].sort((a, b) => {
       let comparison = 0;
-      
+
       // Default to an empty string if 'name' is undefined
-      const nameA = a.productName || '';
-      const nameB = b.productName || '';
-      
-      if (criteria === 'default') {
+      const nameA = a.productName || "";
+      const nameB = b.productName || "";
+
+      if (criteria === "default") {
         comparison = nameA.localeCompare(nameB);
-      } else if (criteria === 'topSales') {
+      } else if (criteria === "topSales") {
         const salesA = a.totalSales || 0;
         const salesB = b.totalSales || 0;
         comparison = salesA - salesB;
-      } else if (criteria === 'topRated') {
+      } else if (criteria === "topRated") {
         const ratingA = a.rating || 0;
         const ratingB = b.rating || 0;
         comparison = ratingA - ratingB;
       }
-      
+
       return ascending ? comparison : -comparison;
     });
   };
 
   const getButtonClassName = (buttonType) => {
     return `text-base font-inter rounded px-4 py-2 w-auto h-auto flex items-center justify-center cursor-pointer transition-colors duration-300 ${
-      selectedButton === buttonType ? 'bg-[#67B045] text-white' : 'bg-white text-[#1E1E1E]'
+      selectedButton === buttonType
+        ? "bg-[#67B045] text-white"
+        : "bg-white text-[#1E1E1E]"
     }`;
   };
 
   return (
-    <div style={{ backgroundColor: '#e5e7eb' }} className='w-full pt-24'>
+    <div style={{ backgroundColor: "#e5e7eb" }} className="w-full pt-24">
       <div className="px-5 sm:px-10 md:px-20 lg:px-40 bg-gray-200 min-h-screen">
         <div className="flex flex-col sm:flex-row w-full max-w-screen-xl mx-auto p-4">
           {/* Categories Section */}
@@ -76,21 +82,33 @@ const Products = () => {
               >
                 <span className="flex-1">Categories</span>
                 <svg
-                  className={`w-4 h-4 transition-transform ${isCollapseOpen ? 'rotate-180' : 'rotate-0'}`}
+                  className={`w-4 h-4 transition-transform ${isCollapseOpen ? "rotate-180" : "rotate-0"}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
               {isCollapseOpen && (
-                <div className="bg-[#67B045] text-white p-4 w-auto max-w-md mx-auto"> {/* Adjusted width */}
-                  {['All Products', 'Fruits', 'Vegetables', 'Artisanal Food'].map((category) => (
+                <div className="bg-[#67B045] text-white p-4 w-auto max-w-md mx-auto">
+                  {" "}
+                  {/* Adjusted width */}
+                  {[
+                    "All Products",
+                    "Fruits",
+                    "Vegetables",
+                    "Artisanal Food",
+                  ].map((category) => (
                     <a
                       key={category}
                       href={`#${category.toLowerCase()}`}
-                      className={`block text-[16px] ${selectedCategory === category ? 'font-bold text-gray-200' : 'text-gray-200'} mb-3 hover:text-blue-300`}
+                      className={`block text-[16px] ${selectedCategory === category ? "font-bold text-gray-200" : "text-gray-200"} mb-3 hover:text-blue-300`}
                       onClick={() => handleCategoryClick(category)}
                     >
                       {category}
@@ -102,20 +120,26 @@ const Products = () => {
             {/* Desktop Categories */}
             <div className="hidden sm:block">
               <div className="flex items-center text-gray-600 mb-3">
-                <img src={HorizontalLines} alt="Categories Icon" className="w-5 h-5" />
+                <img
+                  src={HorizontalLines}
+                  alt="Categories Icon"
+                  className="w-5 h-5"
+                />
                 <span className="text-xl font-bold pl-2">Categories</span>
               </div>
               <div className="flex flex-col text-left">
-                {['All Products', 'Fruits', 'Vegetables', 'Artisanal Food'].map((category) => (
-                  <a
-                    key={category}
-                    href={`#${category.toLowerCase()}`}
-                    className={`text-[16px] ${selectedCategory === category ? 'font-bold text-gray-800' : 'text-gray-800'} mb-3 hover:text-blue-500`}
-                    onClick={() => handleCategoryClick(category)}
-                  >
-                    {category}
-                  </a>
-                ))}
+                {["All Products", "Fruits", "Vegetables", "Artisanal Food"].map(
+                  (category) => (
+                    <a
+                      key={category}
+                      href={`#${category.toLowerCase()}`}
+                      className={`text-[16px] ${selectedCategory === category ? "font-bold text-gray-800" : "text-gray-800"} mb-3 hover:text-blue-500`}
+                      onClick={() => handleCategoryClick(category)}
+                    >
+                      {category}
+                    </a>
+                  )
+                )}
               </div>
             </div>
           </div>
@@ -124,7 +148,9 @@ const Products = () => {
             <div className="flex items-center justify-between px-4 py-2 mb-4 rounded-lg bg-[#0B472D] shadow-md">
               {/* Sort by and Collapse */}
               <div className="flex items-center space-x-4">
-                <span className="text-white text-lg sm:text-2xl font-inter">Sort by</span>
+                <span className="text-white text-lg sm:text-2xl font-inter">
+                  Sort by
+                </span>
                 {/* Container for sort options */}
                 <div className="relative flex items-center space-x-2">
                   {/* Mobile Sort Options Toggle Button */}
@@ -136,29 +162,31 @@ const Products = () => {
                   </button>
                   {/* Mobile Sort Options Menu */}
                   {isSortOptionsOpen && (
-                    <div className="absolute top-full left-0 w-auto max-w-md bg-[#67B045] text-white rounded mt-2 p-2"> {/* Adjusted width and padding */}
+                    <div className="absolute top-full left-0 w-auto max-w-md bg-[#67B045] text-white rounded mt-2 p-2">
+                      {" "}
+                      {/* Adjusted width and padding */}
                       <div
-                        className={getButtonClassName('default')}
+                        className={getButtonClassName("default")}
                         onClick={() => {
-                          setSelectedButton('default');
+                          setSelectedButton("default");
                           setIsSortOptionsOpen(false);
                         }}
                       >
                         Default
                       </div>
                       <div
-                        className={getButtonClassName('topSales')}
+                        className={getButtonClassName("topSales")}
                         onClick={() => {
-                          setSelectedButton('topSales');
+                          setSelectedButton("topSales");
                           setIsSortOptionsOpen(false);
                         }}
                       >
                         Top Sales
                       </div>
                       <div
-                        className={getButtonClassName('topRated')}
+                        className={getButtonClassName("topRated")}
                         onClick={() => {
-                          setSelectedButton('topRated');
+                          setSelectedButton("topRated");
                           setIsSortOptionsOpen(false);
                         }}
                       >
@@ -169,20 +197,20 @@ const Products = () => {
                   {/* Desktop Sort Options */}
                   <div className="hidden sm:flex items-center space-x-2">
                     <div
-                      className={getButtonClassName('default')}
-                      onClick={() => setSelectedButton('default')}
+                      className={getButtonClassName("default")}
+                      onClick={() => setSelectedButton("default")}
                     >
                       Default
                     </div>
                     <div
-                      className={getButtonClassName('topSales')}
-                      onClick={() => setSelectedButton('topSales')}
+                      className={getButtonClassName("topSales")}
+                      onClick={() => setSelectedButton("topSales")}
                     >
                       Top Sales
                     </div>
                     <div
-                      className={getButtonClassName('topRated')}
-                      onClick={() => setSelectedButton('topRated')}
+                      className={getButtonClassName("topRated")}
+                      onClick={() => setSelectedButton("topRated")}
                     >
                       Top Rated
                     </div>
@@ -192,7 +220,7 @@ const Products = () => {
               {/* Ascending/Descending */}
               <div className="flex items-center space-x-2">
                 <span className="text-white font-inter text-sm sm:text-lg">
-                  {isAscending ? 'Ascending' : 'Descending'}
+                  {isAscending ? "Ascending" : "Descending"}
                 </span>
                 <button
                   onClick={(e) => {
@@ -203,7 +231,7 @@ const Products = () => {
                 >
                   <img
                     src={isAscending ? SortUp : SortDown}
-                    alt={isAscending ? 'Sort Ascending' : 'Sort Descending'}
+                    alt={isAscending ? "Sort Ascending" : "Sort Descending"}
                     className="w-6 h-6"
                   />
                 </button>

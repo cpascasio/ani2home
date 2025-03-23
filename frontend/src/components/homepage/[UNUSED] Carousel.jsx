@@ -1,5 +1,5 @@
-import React from 'react';
-import Slider from 'react-slick';
+import React from "react";
+import Slider from "react-slick";
 
 // Custom arrow components
 const NextArrow = (props) => {
@@ -9,8 +9,19 @@ const NextArrow = (props) => {
       className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer bg-gray-800 p-3 rounded-full text-white z-10"
       onClick={onClick}
     >
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+      <svg
+        className="w-8 h-8"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M9 5l7 7-7 7"
+        ></path>
       </svg>
     </div>
   );
@@ -23,8 +34,19 @@ const PrevArrow = (props) => {
       className="absolute top-1/2 left-4 transform -translate-y-1/2 cursor-pointer bg-gray-800 p-3 rounded-full text-white z-10"
       onClick={onClick}
     >
-      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path>
+      <svg
+        className="w-8 h-8"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M15 19l-7-7 7-7"
+        ></path>
       </svg>
     </div>
   );

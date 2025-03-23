@@ -6,7 +6,7 @@ import axios from "axios";
 import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { Autocomplete } from "@react-google-maps/api";
 import LocationIcon from "../../assets/location.png"; // Path to the location icon
-import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
+import useDynamicFetch from "../../../hooks/useDynamicFetch.js";
 
 const MyProfile = () => {
   const userLog = localStorage.getItem("user");
@@ -16,7 +16,10 @@ const MyProfile = () => {
 
   const [refetch, setRefetch] = useState(false);
 
-  const { data: userFetch } = useDynamicFetch(`/api/users/${user?.userId}`, refetch);
+  const { data: userFetch } = useDynamicFetch(
+    `/api/users/${user?.userId}`,
+    refetch
+  );
   const [userData, setUserData] = useState({});
   const [editMode, setEditMode] = useState(false);
   const navigate = useNavigate();
@@ -66,7 +69,6 @@ const MyProfile = () => {
       lat: userData?.address?.lat,
     });
   }, [userData]);
-
 
   const handleMapClick = async (event) => {
     const latitude = event.detail.latLng.lat;
@@ -310,7 +312,7 @@ const MyProfile = () => {
         }
       );
       console.log("Success:", response.data);
-      setRefetch(prev => !prev);
+      setRefetch((prev) => !prev);
       handleCancelEdit();
       // Handle success (e.g., show a success message or redirect)
     } catch (error) {
@@ -338,8 +340,7 @@ const MyProfile = () => {
     // Create an object to hold form values
     const data = {};
 
-
-    if(userProfilePic !== null){
+    if (userProfilePic !== null) {
       data.userProfilePic = userProfilePic;
     }
 
@@ -361,23 +362,23 @@ const MyProfile = () => {
     }
 
     // Get the token from localStorage or any other source
-    const token = user?.token; 
+    const token = user?.token;
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/users/edit-user/${user?.userId}`, 
+        `http://localhost:3000/api/users/edit-user/${user?.userId}`,
         data,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, 
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       console.log("Success:", response.data);
-      setRefetch(prev => !prev);
+      setRefetch((prev) => !prev);
       setUserProfilePic(null);
-      document.getElementById("modal_editProfile").close()
+      document.getElementById("modal_editProfile").close();
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
     }
@@ -1225,7 +1226,11 @@ const MyProfile = () => {
                           Are you sure you want to delete your account? This
                           action cannot be undone.
                         </p>
-                        <form method="dialog" className="space-y-4" onSubmit={handleDelAcc}>
+                        <form
+                          method="dialog"
+                          className="space-y-4"
+                          onSubmit={handleDelAcc}
+                        >
                           <div className="flex flex-col">
                             <input
                               type="text"
@@ -1337,7 +1342,8 @@ const MyProfile = () => {
                                   document.getElementById("confirmationShop");
                                 const deleteBtnShop =
                                   document.getElementById("deleteBtnShop");
-                                  deleteBtnShop.disabled = input.value !== "CONFIRM";
+                                deleteBtnShop.disabled =
+                                  input.value !== "CONFIRM";
                               }}
                             />
                             <label

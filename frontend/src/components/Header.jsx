@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
-import { FiMenu, FiArrowRight, FiX, FiChevronDown, FiShoppingCart, FiSearch } from 'react-icons/fi';
-import { FaUserCircle } from 'react-icons/fa';
-import { useMotionValueEvent, AnimatePresence, useScroll, motion } from 'framer-motion';
-import useMeasure from 'react-use-measure';
-import logoImage from '../assets/logo.png';
-import logoTitle from '../assets/logotitle.png';
+import React, { useState } from "react";
+import {
+  FiMenu,
+  FiArrowRight,
+  FiX,
+  FiChevronDown,
+  FiShoppingCart,
+  FiSearch,
+} from "react-icons/fi";
+import { FaUserCircle } from "react-icons/fa";
+import {
+  useMotionValueEvent,
+  AnimatePresence,
+  useScroll,
+  motion,
+} from "framer-motion";
+import useMeasure from "react-use-measure";
+import logoImage from "../assets/logo.png";
+import logoTitle from "../assets/logotitle.png";
 
 const Header = () => {
   return (
@@ -18,7 +30,7 @@ const FlyoutNav = () => {
   const [scrolled, setScrolled] = React.useState(false);
   const { scrollY } = useScroll();
 
-  useMotionValueEvent(scrollY, 'change', (latest) => {
+  useMotionValueEvent(scrollY, "change", (latest) => {
     setScrolled(latest > 0);
   });
 
@@ -26,7 +38,7 @@ const FlyoutNav = () => {
     <nav
       className={`fixed top-0 z-50 w-full px-6 text-white 
       transition-all duration-300 ease-out lg:px-12
-      ${scrolled ? 'bg-[#072C1C] py-3 shadow-xl' : 'bg-[#67B045]/0 py-6 shadow-none'}`}
+      ${scrolled ? "bg-[#072C1C] py-3 shadow-xl" : "bg-[#67B045]/0 py-6 shadow-none"}`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <Logo />
@@ -48,19 +60,10 @@ const FlyoutNav = () => {
 
 const Logo = () => (
   <a href="/" className="flex items-center gap-2">
-    <img
-      src={logoImage}
-      alt="Ani2Home Logo"
-      className="w-10 h-auto"
-    />
-    <img
-      src={logoTitle}
-      alt="Ani2Home Title"
-      className="w-13 h-12"
-    />
+    <img src={logoImage} alt="Ani2Home Logo" className="w-10 h-auto" />
+    <img src={logoTitle} alt="Ani2Home Title" className="w-13 h-12" />
   </a>
 );
-
 
 const NavLinks = () => (
   <div className="flex items-center gap-8 pl-8">
@@ -75,11 +78,11 @@ const NavLink = ({ children, href }) => (
     href={href}
     className="relative font-bold"
     style={{
-      color: '#209D48',
-      transition: 'color 0.3s ease',
+      color: "#209D48",
+      transition: "color 0.3s ease",
     }}
-    onMouseEnter={(e) => (e.currentTarget.style.color = '#67b045')}
-    onMouseLeave={(e) => (e.currentTarget.style.color = '#209D48')}
+    onMouseEnter={(e) => (e.currentTarget.style.color = "#67b045")}
+    onMouseLeave={(e) => (e.currentTarget.style.color = "#209D48")}
   >
     {children}
   </a>
@@ -92,28 +95,26 @@ const SearchBar = () => (
       placeholder="What are you looking for?"
       className="rounded-full px-6 py-3 outline-none w-full max-w-lg pl-4"
       style={{
-        backgroundColor: '#d9d9d9',
-        color: '#0B472D',
-        placeholderColor: '#D9D9D9',
+        backgroundColor: "#d9d9d9",
+        color: "#0B472D",
+        placeholderColor: "#D9D9D9",
       }}
     />
   </div>
 );
 
 const CartIcon = () => {
-  const [color, setColor] = React.useState('#209D48');
+  const [color, setColor] = React.useState("#209D48");
 
   return (
-    <a 
-      href="/cart" 
+    <a
+      href="/cart"
       className="relative"
-      onMouseEnter={() => setColor('#67b045')} 
-      onMouseLeave={() => setColor('#209D48')}
+      onMouseEnter={() => setColor("#67b045")}
+      onMouseLeave={() => setColor("#209D48")}
     >
       <FiShoppingCart size={24} style={{ color }} />
-      <span
-        className="absolute -top-2 -right-2 rounded-full bg-red-600 text-xs text-white px-1"
-      >
+      <span className="absolute -top-2 -right-2 rounded-full bg-red-600 text-xs text-white px-1">
         3
       </span>
     </a>
@@ -121,20 +122,19 @@ const CartIcon = () => {
 };
 
 const ProfileIcon = () => {
-  const [color, setColor] = React.useState('#209D48');
+  const [color, setColor] = React.useState("#209D48");
 
   return (
-    <a 
-      href="/myProfile" 
+    <a
+      href="/myProfile"
       className="relative"
-      onMouseEnter={() => setColor('#67b045')} 
-      onMouseLeave={() => setColor('#209D48')}
+      onMouseEnter={() => setColor("#67b045")}
+      onMouseLeave={() => setColor("#209D48")}
     >
       <FaUserCircle size={24} style={{ color }} />
     </a>
   );
 };
-
 
 const MobileMenu = () => {
   const [open, setOpen] = useState(false);
@@ -194,9 +194,6 @@ const MobileMenu = () => {
     </div>
   );
 };
-
-
-
 
 const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
   const [ref, { height }] = useMeasure();

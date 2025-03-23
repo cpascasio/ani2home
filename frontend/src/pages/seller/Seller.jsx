@@ -8,15 +8,15 @@ import OrdersTable from "../../components/seller/OrdersTable";
 import Overview from "../../components/seller/Overview";
 
 const Seller = () => {
-  const [selectedMenu, setSelectedMenu] = useState('overview');
+  const [selectedMenu, setSelectedMenu] = useState("overview");
 
   const renderContent = () => {
     switch (selectedMenu) {
-      case 'overview':
+      case "overview":
         return <Overview />;
-      case 'inventory':
+      case "inventory":
         return <InventoryTable />;
-      case 'orders':
+      case "orders":
         return <OrdersTable />;
       default:
         return null;
@@ -29,7 +29,6 @@ const Seller = () => {
 
   const [userData, setUserData] = useState("");
 
-
   useEffect(() => {
     console.log(userFetch);
     console.log(userFetch?.data?.isStore);
@@ -38,7 +37,7 @@ const Seller = () => {
 
   useEffect(() => {
     console.log(userData);
-  } , [userData]);
+  }, [userData]);
 
   useEffect(() => {
     console.log(user);
@@ -55,9 +54,7 @@ const Seller = () => {
           {renderContent()}
         </div>
       </div>
-      <footer className="bg-gray-200 py-4">
-        {/* Footer content */}
-      </footer>
+      <footer className="bg-gray-200 py-4">{/* Footer content */}</footer>
     </div>
   );
 };

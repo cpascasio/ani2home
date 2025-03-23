@@ -1,12 +1,11 @@
-import React from 'react';
-import backgroundImage from '../../assets/product-categories-bg.svg';
-import category1Image from '../../assets/category1.png';
-import category2Image from '../../assets/category2.png';
-import category3Image from '../../assets/category3.png';
+import React from "react";
+import backgroundImage from "../../assets/product-categories-bg.svg";
+import category1Image from "../../assets/category1.png";
+import category2Image from "../../assets/category2.png";
+import category3Image from "../../assets/category3.png";
 import { useNavigate } from "react-router-dom";
 
 const ProductCategories = () => {
-
   const navigate = useNavigate();
 
   return (
@@ -22,10 +21,10 @@ const ProductCategories = () => {
         <h1
           className="text-3xl md:text-4xl lg:text-5xl font-bold text-center"
           style={{
-            color: '#1F934C',
-            textShadow: '2px 2px 3px rgba(0, 0, 0, 0.3)',
-            fontFamily: 'Arial, sans-serif',
-            marginTop: '1%', // Adjust vertical position
+            color: "#1F934C",
+            textShadow: "2px 2px 3px rgba(0, 0, 0, 0.3)",
+            fontFamily: "Arial, sans-serif",
+            marginTop: "1%", // Adjust vertical position
           }}
         >
           Our Products
@@ -33,13 +32,15 @@ const ProductCategories = () => {
         <p
           className="text-md md:text-lg lg:text-xl text-center max-w-2xl"
           style={{
-            color: '#0b472d',
-            fontFamily: 'Arial, sans-serif',
-            marginTop: '1%', // Adjust vertical position
+            color: "#0b472d",
+            fontFamily: "Arial, sans-serif",
+            marginTop: "1%", // Adjust vertical position
           }}
         >
-          Explore a selection of <strong> fresh, local produce and artisanal food</strong>, directly sourced 
-          from nearby farmers and markets, and discover the essence of <strong>farm-to-table living</strong>.
+          Explore a selection of{" "}
+          <strong> fresh, local produce and artisanal food</strong>, directly
+          sourced from nearby farmers and markets, and discover the essence of{" "}
+          <strong>farm-to-table living</strong>.
         </p>
 
         {/* Buttons Container */}
@@ -48,12 +49,12 @@ const ProductCategories = () => {
           <button
             className="relative flex items-center justify-center w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full bg-green-600 text-white font-bold text-base sm:text-lg md:text-xl hover:bg-green-700 transition-all duration-300 hover:scale-110"
             style={{
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
               backgroundImage: `url(${category1Image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundSize: "cover",
+              backgroundPosition: "center",
             }}
-            onClick={() => navigate('/products#fruits')}
+            onClick={() => navigate("/products#fruits")}
           >
             <span className="z-10">Fruits</span>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90 rounded-full"></div>
@@ -64,12 +65,12 @@ const ProductCategories = () => {
           <button
             className="relative flex items-center justify-center w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full bg-green-600 text-white font-bold text-base sm:text-lg md:text-xl hover:bg-green-700 transition-all duration-300 hover:scale-110"
             style={{
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
               backgroundImage: `url(${category2Image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundSize: "cover",
+              backgroundPosition: "center",
             }}
-            onClick={() => navigate('/products#vegetables')}
+            onClick={() => navigate("/products#vegetables")}
           >
             <span className="z-10">Vegetables</span>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90 rounded-full"></div>
@@ -80,12 +81,12 @@ const ProductCategories = () => {
           <button
             className="relative flex items-center justify-center w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full bg-green-600 text-white font-bold text-base sm:text-lg md:text-xl hover:bg-red-700 transition-all duration-300 hover:scale-110"
             style={{
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
               backgroundImage: `url(${category3Image})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundSize: "cover",
+              backgroundPosition: "center",
             }}
-            onClick={() => navigate('/products#artisanal%20food')}
+            onClick={() => navigate("/products#artisanal%20food")}
           >
             <span className="z-10">Artisanal Food</span>
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-90 rounded-full"></div>

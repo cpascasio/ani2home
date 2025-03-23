@@ -41,7 +41,7 @@
   color: #efefef;
   padding: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   border-radius: 15px;
   margin-top: 20px;
   display: flex;
@@ -78,7 +78,9 @@
 .menu li {
   padding: 12px 15px;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition:
+    background-color 0.3s,
+    transform 0.2s;
   border-radius: 8px;
   text-align: center;
   display: flex;
