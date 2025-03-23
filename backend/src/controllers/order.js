@@ -4,13 +4,10 @@ const router = express.Router();
 const placeOrderSchema = require('../models/placeOrderModels');
 const orderDetailsSchema = require('../models/orderDetailsModels');
 const orderSchema = require('../models/orderModels');
-
 //const productRoutes = require('express').Router();
 
 // Firestore database reference
 const db = admin.firestore();
-
-
 
 router.post('/place-order', async (req, res) => {
 
@@ -20,7 +17,6 @@ router.post('/place-order', async (req, res) => {
 
     // Destructure req.body to separate items and the rest of the data
     const { items, ...order } = value;
-
 
     if (error) {
         console.error('Validation Error:', error.details[0].message); // Log the validation error
@@ -71,7 +67,6 @@ router.post('/place-order', async (req, res) => {
     }
 });
 
-
 // route for post order
 router.post('/create-order', async (req, res) => {
     const { error, value } = orderSchema.validate(req.body);
@@ -93,18 +88,6 @@ router.post('/create-order', async (req, res) => {
     }
 });
 
-// route to get order
-// router.get('/:userId', async (req, res) => {
-//     try {
-//         const snapshot = await db.collection('orders').where('userId', '==', req.params.userId).get();
-//         const orders = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-//         res.status(200).json(orders);
-//     } catch (error) {
-//         console.error('Error getting orders:', error);
-//         res.status(500).send('Error getting orders');
-//     }
-// });
-// route to get order
 router.get('/:userId', async (req, res) => {
     try {
         const snapshot = await db.collection('orders').where('userId', '==', req.params.userId).get();
