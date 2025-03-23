@@ -106,12 +106,41 @@ const Login = () => {
         throw new Error("Invalid MFA token");
       }
   
-  
       // Step 5: Complete the login
       setAuthenticated(true);
       setShowMfaModal(false);
-      navigate("/myProfile");
   
+      // Retrieve the Firebase token for backend API calls
+      const tokenResult = await user.getIdTokenResult();
+      console.log("🚀 ~ handleMfaSubmit ~ tokenResult:", tokenResult);
+  
+      const userId = user?.uid;
+      const email = user.providerData[0]?.email;
+      const userName = user.providerData[0]?.displayName?.replace(/\s+/g, "");
+      const phoneNumber = user.providerData[0]?.phoneNumber;
+      const userProfilePic = user.providerData[0]?.photoURL;
+      const name = user.displayName;
+  
+      // Only create the user in the backend if they are a new user
+      if (user.metadata.creationTime === user.metadata.lastSignInTime) {
+        const payload = {};
+  
+        if (userId) payload.userId = userId;
+        if (email) payload.email = email;
+        if (userName) payload.userName = userName;
+        if (phoneNumber) payload.phoneNumber = phoneNumber;
+        if (userProfilePic) payload.userProfilePic = userProfilePic;
+        if (name.trim()) payload.name = name;
+  
+        await axios.post("http://localhost:3000/api/users/create-user", payload, {
+          headers: {
+            Authorization: `Bearer ${tokenResult.token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      }
+  
+      navigate('/myProfile');
     } catch (error) {
       console.error("MFA verification failed:", error.message);
       alert(`MFA verification failed: ${error.message}`);
@@ -124,54 +153,60 @@ const Login = () => {
       console.log("🚀 ~ handleGoogleLogin ~ result:", result);
       const credential = GoogleAuthProvider.credentialFromResult(result);
       console.log("🚀 ~ handleGoogleLogin ~ credential:", credential);
-      //const token = credential.accessToken;
       const user = result.user;
-
+  
       console.log(user);
-
-      // Here, you can use the token or user information for your application's login logic
-      if (user) {
-        setAuthenticated(true); // Set auth to true if Google login is successful
-
-        // Retrieve the Firebase token instead of the Google token for backend API calls
-        const tokenResult = await user.getIdTokenResult();
-        console.log("🚀 ~ handleGoogleLogin ~ tokenResult:", tokenResult);
-        //setToken(tokenResult);
-
-        const userId = user?.uid;
-        const email = user.providerData[0]?.email;
-        const userName = user.providerData[0]?.displayName?.replace(/\s+/g, "");
-        const phoneNumber = user.providerData[0]?.phoneNumber;
-        const userProfilePic = user.providerData[0]?.photoURL;
-        const name = result?._tokenResponse.firstName + " " + result?._tokenResponse.lastName;
-
-        //localStorage.setItem('user', JSON.stringify({username: userName, userId: userId, token}));
-
-        console.log(userId, email, userName, phoneNumber, userProfilePic, name);
-
-        // Only create the user in the backend if they are a new user
-        if (result?._tokenResponse.isNewUser) {
-          const payload = {};
-
-          if (userId) payload.userId = userId;
-          if (email) payload.email = email;
-          if (userName) payload.userName = userName;
-          if (phoneNumber) payload.phoneNumber = phoneNumber;
-          if (userProfilePic) payload.userProfilePic = userProfilePic;
-          if (name.trim()) payload.name = name;
-
-          await axios.post("http://localhost:3000/api/users/create-user", payload, {
-            headers: {
-              Authorization: `Bearer ${tokenResult.token}`,
-              "Content-Type": "application/json",
-            },
-          });
-        }
+  
+      // Step 1: Check if MFA is enabled for the user
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) {
+        throw new Error("User document not found");
       }
-
+  
+      const userData = userDoc.data();
+      if (userData.mfaEnabled) {
+        // Step 2: Show MFA modal
+        setShowMfaModal(true);
+        return;
+      }
+  
+      // Step 3: Complete the login if MFA is not enabled
+      setAuthenticated(true);
+  
+      // Retrieve the Firebase token for backend API calls
+      const tokenResult = await user.getIdTokenResult();
+      console.log("🚀 ~ handleGoogleLogin ~ tokenResult:", tokenResult);
+  
+      const userId = user?.uid;
+      const email = user.providerData[0]?.email;
+      const userName = user.providerData[0]?.displayName?.replace(/\s+/g, "");
+      const phoneNumber = user.providerData[0]?.phoneNumber;
+      const userProfilePic = user.providerData[0]?.photoURL;
+      const name = result?._tokenResponse.firstName + " " + result?._tokenResponse.lastName;
+  
+      // Only create the user in the backend if they are a new user
+      if (result?._tokenResponse.isNewUser) {
+        const payload = {};
+  
+        if (userId) payload.userId = userId;
+        if (email) payload.email = email;
+        if (userName) payload.userName = userName;
+        if (phoneNumber) payload.phoneNumber = phoneNumber;
+        if (userProfilePic) payload.userProfilePic = userProfilePic;
+        if (name.trim()) payload.name = name;
+  
+        await axios.post("http://localhost:3000/api/users/create-user", payload, {
+          headers: {
+            Authorization: `Bearer ${tokenResult.token}`,
+            "Content-Type": "application/json",
+          },
+        });
+      }
+  
       navigate('/myProfile');
     } catch (error) {
-      console.error(error);
+      console.error("Google login failed:", error.message);
+      alert(`Google login failed: ${error.message}`);
     }
   };
 
