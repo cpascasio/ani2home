@@ -262,7 +262,6 @@ router.put('/:productId', async (req, res) => {
                 second: '2-digit',
                 hour12: false,
             }).format(new Date()),
-            userId: req.headers['x-user-id'] || 'unknown', // Extract userId from the headers
             action: 'update_product',
             resource: `products/${id}`,
             status: 'success',
@@ -292,7 +291,6 @@ router.put('/:productId', async (req, res) => {
                 second: '2-digit',
                 hour12: false,
             }).format(new Date()),
-            userId: req.headers['x-user-id'] || 'unknown', // Extract userId from the headers
             action: 'update_product',
             resource: `products/${id}`,
             status: 'failed',
@@ -308,14 +306,72 @@ router.put('/:productId', async (req, res) => {
 
 // Route to delete a product
 router.delete('/:productId', async (req, res) => {
+    const { productId } = req.params;
+  
     try {
-        const productRef = db.collection('products').doc(req.params.productId);
-        await productRef.delete();
-        res.status(200).json({ message: 'Product deleted successfully' });
+      const productRef = db.collection('products').doc(productId);
+      const productDoc = await productRef.get();
+  
+      // Check if the product exists
+      if (!productDoc.exists) {
+        return res.status(404).json({ message: 'Product not found', state: 'error' });
+      }
+  
+      // Delete the product
+      await productRef.delete();
+  
+      // Log the successful deletion
+      const logData = {
+        timestamp: new Intl.DateTimeFormat('en-PH', {
+          timeZone: 'Asia/Manila',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }).format(new Date()),
+        action: 'delete_product',
+        resource: `products/${productId}`,
+        status: 'success',
+        details: {
+          message: 'Product deleted successfully',
+          productId: productId,
+        },
+      };
+  
+      logger.info(logData); // Log to console/file
+      await logToFirestore(logData); // Log to Firestore
+  
+      res.status(200).json({ message: 'Product deleted successfully' });
     } catch (error) {
-        console.error('Error deleting product:', error);
-        res.status(500).send('Error deleting product');
+      console.error('Error deleting product:', error);
+  
+      // Log the error
+      const logData = {
+        timestamp: new Intl.DateTimeFormat('en-PH', {
+          timeZone: 'Asia/Manila',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }).format(new Date()),
+        userId: req.headers['x-user-id'] || 'unknown', // Extract userId from the headers
+        action: 'delete_product',
+        resource: `products/${productId}`,
+        status: 'failed',
+        error: error.message,
+      };
+  
+      logger.error(logData); // Log to console/file
+      await logToFirestore(logData); // Log to Firestore
+  
+      res.status(500).send('Error deleting product');
     }
-});
+  });
 
 module.exports = router;

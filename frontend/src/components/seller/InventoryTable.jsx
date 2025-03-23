@@ -152,15 +152,26 @@ const InventoryTable = () => {
   };
 
   const handleDelete = async (productId) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this product?");
+    if (!confirmDelete) return;
+
+    console.log("Deleting product with ID:", productId);
+  
     try {
       await axios.delete(`http://localhost:3000/api/products/${productId}`, {
         headers: {
-          'Authorization': `Bearer ${user?.token}`
-        }
+          Authorization: `Bearer ${user?.token}`,
+        },
       });
+  
       setProducts(products.filter(product => product.productId !== productId));
+  
+      alert("Product deleted successfully!");
     } catch (error) {
       console.error("There was an error!", error);
+  
+      // Optional: Show an error message to the user
+      alert("Failed to delete the product. Please try again.");
     }
   };
 
@@ -222,7 +233,7 @@ const InventoryTable = () => {
                   </button>
                   <button
                     className="px-2 py-1 text-xs md:text-sm bg-red-500 text-white rounded-lg hover:bg-red-600"
-                    onClick={() => handleDelete(item.productId)}
+                    onClick={() => handleDelete(item.id)}
                   >
                     Delete
                   </button>
