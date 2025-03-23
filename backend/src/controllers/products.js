@@ -4,6 +4,7 @@ const router = express.Router();
 const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
 const productSchema = require('../models/productModels');
+const { logger, logToFirestore } = require('../config/firebase-config');
 
 // Firestore database reference
 const db = admin.firestore();
@@ -124,45 +125,93 @@ router.get('/category/:categ', async (req, res) => {
 // Route to create a new product
 router.post('/create-product', async (req, res) => {
     const { error, value } = productSchema.validate(req.body);
-
+  
     // Add these fields to the value
     value.dateAdded = new Date().toISOString();
     value.rating = 0;
     value.totalSales = 0;
-
+  
     if (error) {
-        return res.status(400).json({ error: error.details[0].message });
+      return res.status(400).json({ error: error.details[0].message });
     }
-
+  
     try {
-        // Check if pictures exist and is an array
-        if (value.pictures) {
-            const uploadPromises = value.pictures.map(async (picture) => {
-                const result = await cloudinary.uploader.upload(picture, {
-                    folder: 'ani2home',
-        resource_type: 'image' // Optional: if you have an upload preset
-                });
-                return result.secure_url;
-            });
-
-            // Wait for all uploads to complete
-            value.pictures = await Promise.all(uploadPromises);
-        }
-
-        const newProductRef = db.collection('products').doc();
-        await newProductRef.set(value);
-        res.status(201).json({ 
-            message: 'Product created successfully', 
-            product: { 
-                ...value, 
-                productId: newProductRef.id // Include the document ID
-            } 
+      // Check if pictures exist and is an array
+      if (value.pictures) {
+        const uploadPromises = value.pictures.map(async (picture) => {
+          const result = await cloudinary.uploader.upload(picture, {
+            folder: 'ani2home',
+            resource_type: 'image', // Optional: if you have an upload preset
+          });
+          return result.secure_url;
         });
+  
+        // Wait for all uploads to complete
+        value.pictures = await Promise.all(uploadPromises);
+      }
+  
+      const newProductRef = db.collection('products').doc();
+      await newProductRef.set(value);
+  
+      // Log the successful product creation
+      const logData = {
+        timestamp: new Intl.DateTimeFormat('en-PH', {
+          timeZone: 'Asia/Manila',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }).format(new Date()),
+        action: 'create_product',
+        resource: `products/${newProductRef.id}`,
+        status: 'success',
+        details: {
+          message: 'Product created successfully',
+          productId: newProductRef.id,
+        },
+      };
+  
+      logger.info(logData); // Log to console/file
+      await logToFirestore(logData); // Log to Firestore
+  
+      res.status(201).json({
+        message: 'Product created successfully',
+        product: {
+          ...value,
+          productId: newProductRef.id, // Include the document ID
+        },
+      });
     } catch (error) {
-        console.error('Error creating product:', error);
-        res.status(500).send('Error creating product');
+      console.error('Error creating product:', error);
+  
+      // Log the error
+      const logData = {
+        timestamp: new Intl.DateTimeFormat('en-PH', {
+          timeZone: 'Asia/Manila',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }).format(new Date()),
+        userId: req.user?.uid || 'unknown', // Include the user ID who attempted to create the product
+        action: 'create_product',
+        resource: 'products',
+        status: 'failed',
+        error: error.message,
+      };
+  
+      logger.error(logData); // Log to console/file
+      await logToFirestore(logData); // Log to Firestore
+  
+      res.status(500).send('Error creating product');
     }
-});
+  });
 
 // Route to update a product
 router.put('/:productId', async (req, res) => {
