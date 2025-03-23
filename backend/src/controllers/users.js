@@ -190,7 +190,16 @@ router.post('/create-user', async (req, res) => {
     console.log('Cart created for user:', userId);
 
     const logData = {
-      timestamp: new Date().toISOString(),
+      timestamp: new Intl.DateTimeFormat('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(new Date()),
       userId,
       action: 'create_user',
       resource: `users/${userId}`,
@@ -274,28 +283,89 @@ router.put('/edit-user/:uid', async (req, res) => {
       return res.status(404).json({ message: 'User not found', state: 'error' });
     }
 
+    // Fetch the old values
+    const oldData = userDoc.data();
+
     // Extract userProfilePic from value
     const { userProfilePic, ...rest } = value;
 
-    // Upload userProfilePic to Cloudinary if it exists
+    let newUserProfilePic = oldData.userProfilePic;
     if (userProfilePic) {
       const uploadResponse = await cloudinary.uploader.upload(userProfilePic, {
         folder: 'ani2home',
-        resource_type: 'image'
+        resource_type: 'image',
       });
 
-      // Replace userProfilePic with the URL from Cloudinary
-      rest.userProfilePic = uploadResponse.secure_url;
+      newUserProfilePic = uploadResponse.secure_url;
     }
 
+    // Prepare the new data
+    const newData = { ...rest, userProfilePic: newUserProfilePic };
+
     // Update Firestore document with the modified value
-    await userDocRef.update(rest);
-    res.status(200).json({ 
+    await userDocRef.update(newData);
+
+    // Compare old and new values
+    const changes = {};
+    for (const key in newData) {
+      if (newData[key] !== oldData[key]) {
+        changes[key] = {
+          old: oldData[key],
+          new: newData[key],
+        };
+      }
+    }
+
+    const logData = {
+      timestamp: new Intl.DateTimeFormat('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(new Date()),
+      uid,
+      action: 'edit_user',
+      resource: `users/${uid}`,
+      status: 'success',
+      changes,
+    };
+
+    logger.info(logData);
+    await logToFirestore(logData);
+
+    res.status(200).json({
       message: 'User updated successfully',
-      state: 'success'
+      state: 'success',
     });
   } catch (error) {
     console.error('Error updating user:', error);
+
+    // Log the error
+    const logData = {
+      timestamp: new Intl.DateTimeFormat('en-PH', {
+        timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(new Date()),
+      uid,
+      action: 'edit_user',
+      resource: `users/${uid}`,
+      status: 'failed',
+      error: error.message,
+    };
+
+    logger.error(logData);
+    await logToFirestore(logData);
+
     res.status(500).json({ message: 'Error updating user', state: 'error' });
   }
 });

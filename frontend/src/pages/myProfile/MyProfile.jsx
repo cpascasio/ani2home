@@ -330,7 +330,7 @@ const MyProfile = () => {
   };
 
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Prevent the default form submission behavior
+    event.preventDefault();
 
     // Collect form data
     const formData = new FormData(event.target);
@@ -339,9 +339,9 @@ const MyProfile = () => {
     const data = {};
 
 
-  if(userProfilePic !== null){
-    data.userProfilePic = userProfilePic;
-  }
+    if(userProfilePic !== null){
+      data.userProfilePic = userProfilePic;
+    }
 
     // Check if fields have been changed
     if (formData.get("newName") !== userData?.name) {
@@ -361,16 +361,16 @@ const MyProfile = () => {
     }
 
     // Get the token from localStorage or any other source
-    const token = user?.token; // Replace with your actual token retrieval method
+    const token = user?.token; 
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/users/edit-user/${user?.userId}`, // Include userId in the URL
+        `http://localhost:3000/api/users/edit-user/${user?.userId}`, 
         data,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+            Authorization: `Bearer ${token}`, 
           },
         }
       );
@@ -378,10 +378,8 @@ const MyProfile = () => {
       setRefetch(prev => !prev);
       setUserProfilePic(null);
       document.getElementById("modal_editProfile").close()
-      // Handle success (e.g., show a success message or redirect)
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      // Handle error (e.g., show an error message)
     }
   };
 
