@@ -156,23 +156,7 @@ const Login = () => {
       const user = result.user;
   
       console.log(user);
-  
-      // Step 1: Check if MFA is enabled for the user
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists()) {
-        throw new Error("User document not found");
-      }
-  
-      const userData = userDoc.data();
-      if (userData.mfaEnabled) {
-        // Step 2: Show MFA modal
-        setShowMfaModal(true);
-        return;
-      }
-  
-      // Step 3: Complete the login if MFA is not enabled
-      setAuthenticated(true);
-  
+
       // Retrieve the Firebase token for backend API calls
       const tokenResult = await user.getIdTokenResult();
       console.log("🚀 ~ handleGoogleLogin ~ tokenResult:", tokenResult);
@@ -202,6 +186,22 @@ const Login = () => {
           },
         });
       }
+  
+      // Step 1: Check if MFA is enabled for the user
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) {
+        throw new Error("User document not found");
+      }
+  
+      const userData = userDoc.data();
+      if (userData.mfaEnabled) {
+        // Step 2: Show MFA modal
+        setShowMfaModal(true);
+        return;
+      }
+  
+      // Step 3: Complete the login if MFA is not enabled
+      setAuthenticated(true);
   
       navigate('/myProfile');
     } catch (error) {

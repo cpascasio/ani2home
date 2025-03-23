@@ -23,7 +23,6 @@ const Register = () => {
     }
   
     try {
-      // Create user in Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log('User created in Firebase Auth:', userCredential.user);
   
@@ -32,38 +31,28 @@ const Register = () => {
         displayName: username,
       });
   
-      // Add user data to Firestore
-      const userId = userCredential.user.uid; // Get the user's UID
+      // Prepare user data for the backend
+      const userId = userCredential.user.uid;
       const userData = {
-        address: {
-          barangay: '', 
-          city: '', 
-          country: '', 
-          fullAddress: '', 
-          lat: null, 
-          lng: null, 
-          postalCode: '', 
-          province: '', 
-          region: '', 
-          streetAddress: '', 
-        },
-        bio: '', 
-        dateOfBirth: '', 
-        email: email, 
-        followers: [], 
-        isStore: false, 
-        isVerified: false, 
+        userId, // Include the userId in the request body
         name: username, 
-        phoneNumber: '', 
-        userCover: '', 
         userName: username, 
-        userProfilePic: '', 
-        createdAt: new Date(), 
       };
   
-      // Add the user document to the "users" collection in Firestore
-      await setDoc(doc(db, 'users', userId), userData);
-      console.log('User added to Firestore:', userData);
+      // Call the /create-user POST route
+      const response = await fetch('http://localhost:3000/api/users/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+  
+      // Check if the request was successful
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create user in backend');
+      }
   
       // Update authenticated state and store token
       setAuthenticated(true);
@@ -76,7 +65,7 @@ const Register = () => {
       setPassword('');
       setConfirmPassword('');
       setUsername('');
-      setError(''); // Clear any previous errors
+      setError('');
     } catch (error) {
       console.error('Error during sign-up:', error.message);
       setError(error.message); // Set error message for the user

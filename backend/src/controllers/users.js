@@ -2,16 +2,13 @@ const express = require('express');
 const admin = require('firebase-admin');
 const router = express.Router();
 const fs = require('fs');
-const userSchema = require('../models/userModels'); // Import the userSchema
+const userSchema = require('../models/userModels');
 const cartSchema = require('../models/cartModels');
 const cloudinary = require('../config/cloudinary');
 const otplib = require("otplib");
 const qrcode = require("qrcode");
-//const userSchema = require('../models/userModels');
-
-// Initialize Firebase Admin SDK
-// Note: Ensure you've initialized Firebase Admin SDK elsewhere in your project,
-// usually in your main server file, with the necessary configuration.
+const { logger, logToFirestore } = require('../config/firebase-config');
+const { timeStamp } = require('console');
 
 // Firestore database reference
 const db = admin.firestore();
@@ -191,6 +188,17 @@ router.post('/create-user', async (req, res) => {
     // Create a cart for the user
     await createCartForUser(userId);
     console.log('Cart created for user:', userId);
+
+    const logData = {
+      timestamp: new Date().toISOString(),
+      userId,
+      action: 'create_user',
+      resource: `users/${userId}`,
+      status: 'success',
+    };
+
+    logger.info(logData);
+    await logToFirestore(logData);
 
     res.status(201).json({
       message: 'User created successfully',
