@@ -1,4 +1,5 @@
 const admin = require("firebase-admin");
+const winston = require('winston');
 require('dotenv').config();
 
 
@@ -18,4 +19,23 @@ admin.initializeApp({
   })
 });
 
-module.exports = admin; // asd
+// Create Winston logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'logs/combined.log' }),
+  ],
+});
+
+// Log to Firestore
+const logToFirestore = async (logData) => {
+  try {
+    await admin.firestore().collection('auditLogs').add(logData);
+  } catch (error) {
+    console.error('Failed to log to Firestore:', error);
+  }
+};
+
+module.exports = { admin, logger, logToFirestore };

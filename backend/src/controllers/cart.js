@@ -1,7 +1,7 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const router = express.Router();
-
+const { logger, logToFirestore } = require('../config/firebase-config');
 
 const cartSchema = require('../models/cartModels');
 
@@ -107,15 +107,16 @@ router.get('/checkout/:userId/:sellerId', async (req, res) => {
 
 // Route to add to cart
 router.post('/add-to-cart', async (req, res) => {
-    // add to cart collections given productId in req
-
     const { userId, sellerId, productId, quantity } = req.body;
 
+    // Log the incoming request body
     console.log('Request body:', req.body);
 
     try {
+        // Fetch the user's cart document from Firestore
         const userCartDoc = await db.collection('cart').doc(userId).get();
 
+        // Log the existing cart data
         console.log('User cart doc:', userCartDoc.data());
 
         let cartData = [];
@@ -123,10 +124,16 @@ router.post('/add-to-cart', async (req, res) => {
             cartData = userCartDoc.data().cart || [];
         }
 
+        // Log the current cart data
+        console.log('Current cart data:', cartData);
+
         let sellerExists = false;
+
+        // Check if the seller already exists in the cart
         if (cartData.length > 0) {
             for (let seller of cartData) {
                 if (seller.sellerId === sellerId) {
+                    // Add the product to the seller's items
                     seller.items.push({ productId, quantity });
                     sellerExists = true;
                     break;
@@ -134,6 +141,7 @@ router.post('/add-to-cart', async (req, res) => {
             }
         }
 
+        // If the seller doesn't exist, add a new seller entry
         if (!sellerExists) {
             cartData.push({
                 sellerId,
@@ -141,13 +149,75 @@ router.post('/add-to-cart', async (req, res) => {
             });
         }
 
+        // Log the updated cart data
+        console.log('Updated cart data:', cartData);
+
+        // Save the updated cart data to Firestore
         await db.collection('cart').doc(userId).set({ cart: cartData }, { merge: true });
 
+        // Log success
         console.log('Cart updated in Firestore');
+
+        // Create logData for successful operation
+        const logData = {
+            timestamp: new Intl.DateTimeFormat('en-PH', {
+                timeZone: 'Asia/Manila',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+            }).format(new Date()),
+            userId,
+            action: 'add_to_cart',
+            resource: `cart/${userId}`,
+            status: 'success',
+            details: {
+                sellerId,
+                productId,
+                quantity,
+            },
+        };
+
+        // Log to console/file
+        logger.info(logData);
+
+        // Log to Firestore
+        await logToFirestore(logData);
 
         res.status(201).json({ message: 'Product added to cart successfully', cart: cartData });
     } catch (error) {
+        // Log the error
         console.error('Error adding product to cart:', error);
+
+        // Create logData for failed operation
+        const logData = {
+            timestamp: new Intl.DateTimeFormat('en-PH', {
+                timeZone: 'Asia/Manila',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+            }).format(new Date()),
+            userId,
+            action: 'add_to_cart',
+            resource: `cart/${userId}`,
+            status: 'failed',
+            error: error.message,
+            requestBody: req.body,
+        };
+
+        // Log to console/file
+        logger.error(logData);
+
+        // Log to Firestore
+        await logToFirestore(logData);
+
         res.status(500).send('Error adding product to cart');
     }
 });
@@ -172,14 +242,40 @@ router.post('/add-to-cart', async (req, res) => {
 
 // route for remove cart items
 router.delete('/remove-from-cart', async (req, res) => {
-    try {
-        const { userId, productId } = req.body;
+    const { userId, productId } = req.body;
 
+    // Log the incoming request body
+    console.log('Request body:', req.body);
+
+    try {
         // Get the user's cart document
         const userDocRef = db.collection('cart').doc(userId);
         const userDoc = await userDocRef.get();
 
         if (!userDoc.exists) {
+            // Log the error if the user is not found
+            const logData = {
+                timestamp: new Intl.DateTimeFormat('en-PH', {
+                    timeZone: 'Asia/Manila',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false,
+                }).format(new Date()),
+                userId,
+                action: 'remove_from_cart',
+                resource: `cart/${userId}`,
+                status: 'failed',
+                error: 'User not found',
+                requestBody: req.body,
+            };
+
+            logger.error(logData); // Log to console/file
+            await logToFirestore(logData); // Log to Firestore
+
             return res.status(404).send('User not found');
         }
 
@@ -209,18 +305,76 @@ router.delete('/remove-from-cart', async (req, res) => {
             })
             .filter(cartEntry => cartEntry.items.length > 0);
 
+        // Log the updated cart data
+        console.log('Updated Cart Data:', updatedCart);
+
         // Update the user's cart document
         await userDocRef.update({ cart: updatedCart });
 
+        // Log success
+        console.log('Product removed from cart:', productId);
+
+        // Create logData for successful operation
+        const logData = {
+            timestamp: new Intl.DateTimeFormat('en-PH', {
+                timeZone: 'Asia/Manila',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+            }).format(new Date()),
+            userId,
+            action: 'remove_from_cart',
+            resource: `cart/${userId}`,
+            status: 'success',
+            details: {
+                productId,
+                updatedCart,
+            },
+        };
+
+        // Log to console/file
+        logger.info(logData);
+
+        // Log to Firestore
+        await logToFirestore(logData);
+
         res.json({ message: 'Product removed from cart' });
     } catch (error) {
+        // Log the error
         console.error('Error removing product from cart:', error);
+
+        // Create logData for failed operation
+        const logData = {
+            timestamp: new Intl.DateTimeFormat('en-PH', {
+                timeZone: 'Asia/Manila',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+            }).format(new Date()),
+            userId,
+            action: 'remove_from_cart',
+            resource: `cart/${userId}`,
+            status: 'failed',
+            error: error.message,
+            requestBody: req.body,
+        };
+
+        // Log to console/file
+        logger.error(logData);
+
+        // Log to Firestore
+        await logToFirestore(logData);
+
         res.status(500).send('Error removing product from cart');
     }
 });
-
-
-
-
 
 module.exports = router;

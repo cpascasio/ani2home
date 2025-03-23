@@ -370,29 +370,43 @@ const handleCancelEdit = () => {
 
   const handleSubmitAddress = async (event) => {
     event.preventDefault(); // Prevent the default form submission behavior
-
+  
     // Collect form data
     const formData = new FormData(event.target);
-
-    // Create an object to hold form values
-    const data = {};
-    data.address = {};
-
-    // Check if fields have been changed
-
-
-
+  
+    // Create an object to hold the updated address details
+    const updatedAddressDetails = {
+      fullAddress: formData.get('newStreetAddress'),
+      streetAddress: formData.get('newStreetAddress'),
+      city: formData.get('newCity'),
+      province: formData.get('newProvice'),
+      barangay: formData.get('newBarangay'),
+      region: formData.get('newRegion'),
+      country: formData.get('newCountry'),
+      postalCode: formData.get('newPostalCode'),
+      lat: addressDetails.lat, // Keep the existing latitude
+      lng: addressDetails.lng, // Keep the existing longitude
+    };
+  
+    // Update the addressDetails state
+    setAddressDetails(updatedAddressDetails);
+  
+    // Update the buyerAddress state (if needed)
     setBuyerAddress({
       lat: addressDetails.lat,
       lng: addressDetails.lng,
     });
-
-    // Get the token from localStorage or any other source
-   const token = user?.token; // Replace with your actual token retrieval method
-  };
-
   
-
+    // Update the fullName and phoneNumber states
+    setFullName(formData.get('fullName'));
+    setPhoneNumber(formData.get('phoneNumber'));
+  
+    // Close the editing mode
+    setEditing(false);
+  
+    // Optionally, show a success message
+    alert('Address updated successfully!');
+  };
 
   // const totalPrice = cartItems.reduce((acc, items) => acc + (items.product.price * items.quantity), 0);
 
@@ -408,63 +422,97 @@ const handleCancelEdit = () => {
   };
 
   const handlePlaceOrder = () => {
-
+    // Validate required fields
+    if (!fullName || typeof fullName !== 'string') {
+      console.error('Full name is missing or invalid:', fullName);
+      alert('Please provide a valid full name.');
+      return;
+    }
+  
+    if (!addressDetails.fullAddress || typeof addressDetails.fullAddress !== 'string') {
+      console.error('Address is missing or invalid:', addressDetails.fullAddress);
+      alert('Please provide a valid address.');
+      return;
+    }
+  
+    if (!phoneNumber || typeof phoneNumber !== 'string') {
+      console.error('Phone number is missing or invalid:', phoneNumber);
+      alert('Please provide a valid phone number.');
+      return;
+    }
+  
+    if (!selectedPaymentOption || typeof selectedPaymentOption !== 'string') {
+      console.error('Payment option is missing or invalid:', selectedPaymentOption);
+      alert('Please select a valid payment option.');
+      return;
+    }
+  
+    // Ensure all required fields in deliveryAddress are present
+    const deliveryAddress = {
+      fullName: fullName,
+      province: addressDetails.province || '',
+      barangay: addressDetails.barangay || '',
+      city: addressDetails.city || '',
+      address: addressDetails.fullAddress,
+      phoneNumber: phoneNumber,
+    };
+  
+    // Log the deliveryAddress for debugging
+    console.log('Delivery Address:', JSON.stringify(deliveryAddress, null, 2));
+  
+    // Prepare the order payload
     const order = {
       userId: user?.userId,
-      sellerId: sellerId, // update card model to have a sellerId ty
+      sellerId: sellerId,
       shippingFee: shippingFee,
       totalPrice: totalPayment,
       status: "In Process",
-      deliveryAddress: {
-        fullName,
-        province: addressDetails.province,
-        barangay: addressDetails.barangay,
-        city,
-        address: addressDetails.fullAddress,
-        phoneNumber
-      },
+      deliveryAddress: deliveryAddress,
       paymentOption: selectedPaymentOption,
       paymentRefNo: '1234567890',
       items: items.map(item => ({
         productId: item.productId,
-        quantity: item.quantity
-      }))
+        quantity: item.quantity,
+      })),
     };
-
-    // Extract order details from items
-    const orderDetails = items.map(item => ({
-      orderId: order.orderId,
-      productId: item.productId,
-      quantity: item.quantity
-    }));
-
-    // navigate('/confirmation', { state: { order: order}});
-    // console.log('handlePlaceOrder', items);
-
-    // add to firebase to order db
-
+  
+    // Log the order payload for debugging
+    console.log('Order Payload:', JSON.stringify(order, null, 2));
+  
     // Conditionally add the note property if it's not an empty string
     if (note.trim() !== '') {
       order.note = note;
     }
-
-    console.log('Order:', order);
-
-    // First, create the order
+  
+    // Send the order to the server
     axios.post('http://localhost:3000/api/orders/place-order', order)
       .then((response) => {
         console.log('Order placed:', response.data);
-        
+  
         // Extract the orderId from the response if needed
         const orderId = String(response.data.orderId);
         console.log("OrderID: ", orderId);
-
-        // add navigation to redirect to confirmation page
-        navigate('/confirmation', { state: { order: order, orderId: orderId }});
-
+  
+        // Navigate to the confirmation page
+        navigate('/confirmation', { state: { order: order, orderId: orderId } });
       })
       .catch((error) => {
-        console.error('Error placing order or order details:', error);
+        console.error('Error placing order:', error);
+  
+        // Display a user-friendly error message
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          console.error('Server responded with:', error.response.data);
+          alert(`Error: ${error.response.data.error || 'Failed to place order.'}`);
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.error('No response received:', error.request);
+          alert('No response from the server. Please try again.');
+        } else {
+          // Something happened in setting up the request
+          console.error('Request setup error:', error.message);
+          alert('An error occurred while setting up the request.');
+        }
       });
   };
  
@@ -514,7 +562,39 @@ const handleCancelEdit = () => {
                   Edit Location
                 </h2>
                 <form onSubmit={handleSubmitAddress} className="space-y-4">
-                <div className="flex space-x-4 mb-2 mt-5">
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label htmlFor="fullName" className="w-full text-sm font-medium text-gray-600 text-left">
+                      Full Name
+                    </label>
+                  </div>
+                  <div className="flex flex-col my-2">
+                    <input
+                      type="text"
+                      id="fullName"
+                      name="fullName"
+                      value={fullName}
+                      onChange={handleFullNameChange}
+                      required
+                      className="input input-bordered bg-gray-200 text-gray-800"
+                    />
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
+                    <label htmlFor="phoneNumber" className="w-full text-sm font-medium text-gray-600 text-left">
+                      Phone Number
+                    </label>
+                  </div>
+                  <div className="flex flex-col my-2">
+                    <input
+                      type="text"
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      value={phoneNumber}
+                      onChange={handlePhoneNumberChange}
+                      required
+                      className="input input-bordered bg-gray-200 text-gray-800"
+                    />
+                  </div>
+                  <div className="flex space-x-4 mb-2 mt-5">
                     <label
                       htmlFor="newLocation"
                       className="w-full text-sm font-medium text-gray-600 text-left"
@@ -649,14 +729,12 @@ const handleCancelEdit = () => {
                       Cancel
                     </button>
                     <button
-                      type="Submit"
+                      type="submit" // Keep this as "submit"
                       className="btn btn-sm bg-green-900 rounded text-white transition duration-300 ease-in-out hover:bg-blue-500 border-none px-5"
-                      onClick={handleSubmitAddress}
                     >
                       Save
                     </button>
                   </div>
-                  
                 </form>
               </div>
             ) : (
