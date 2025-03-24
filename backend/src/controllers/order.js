@@ -87,6 +87,7 @@ router.post("/place-order", async (req, res) => {
       action: "place_order",
       resource: `orders/${orderId}`,
       status: "success",
+      userId: value.userId,
     };
 
     logger.info(logData); // Log to your logging system
@@ -146,13 +147,11 @@ router.post("/create-order", async (req, res) => {
     const newOrderRef = db.collection("orders").doc();
     await newOrderRef.set(value);
     const orderId = newOrderRef.id;
-    res
-      .status(201)
-      .json({
-        message: "Order created successfully",
-        order: value,
-        orderId: orderId,
-      });
+    res.status(201).json({
+      message: "Order created successfully",
+      order: value,
+      orderId: orderId,
+    });
     console.log("Order Id from order route: ", orderId);
   } catch (error) {
     console.error("Error creating order:", error);
