@@ -863,7 +863,7 @@ const Checkout = () => {
 
           <div className="bg-white w-full h-[46px] mt-1 flex items-center justify-between p-4">
             <div className="font-inter text-[15px] text-[#737373]">
-              Order Total ({cartItems.length} Items):
+              Order Total ({items.length} Items):
             </div>
             <div className="font-inter text-[15px] text-[#E11919] mr-12">
               ₱{formatNumber(productTotal.toFixed(2))}
