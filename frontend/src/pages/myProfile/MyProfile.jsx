@@ -162,6 +162,14 @@ const MyProfile = () => {
     }
   };
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      navigate("/login");
+    }
+    //setIsLoading(false);
+  }, [navigate]);
+
   const handleEditToggle = () => {
     setEditing(!editing);
   };
@@ -227,14 +235,6 @@ const MyProfile = () => {
 
     // here you can interact with the imperative maps API
   }, [map]);
-
-  useEffect(() => {
-    if (userLog != null) {
-      console.log(user);
-    } else {
-      navigate("/login");
-    }
-  }, [userLog]);
 
   useEffect(() => {
     if (userFetch != null) {

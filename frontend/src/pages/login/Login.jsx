@@ -24,6 +24,14 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      navigate("/myProfile");
+    }
+    //setIsLoading(false);
+  }, [navigate]);
+
+  useEffect(() => {
     // Subscribe to authentication state changes
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {

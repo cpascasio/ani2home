@@ -33,12 +33,13 @@ const Seller = () => {
   const [userData, setUserData] = useState("");
 
   useEffect(() => {
-    if (!user) {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
       navigate("/login");
-    } else if (user.isStore === false) {
+    } else if (storedUser.isStore === false) {
       navigate("/myProfile");
     }
-  }, [user, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     console.log(userFetch);

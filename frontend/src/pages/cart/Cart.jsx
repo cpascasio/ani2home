@@ -46,10 +46,12 @@ const Cart = () => {
   const [cartNew, setCartNew] = useState([]);
 
   useEffect(() => {
-    if (!user) {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
       navigate("/login");
     }
-  }, [user, navigate]);
+    //setIsLoading(false);
+  }, [navigate]);
 
   //const { cart } = useContext(CartContext);
   // const navigate = useNavigate();
