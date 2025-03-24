@@ -522,6 +522,24 @@ const Checkout = () => {
         navigate("/confirmation", {
           state: { order: order, orderId: orderId },
         });
+
+        // if response is successful, clear the cart
+        // Client-side request using Axios
+          axios.put('http://localhost:3000/api/cart/remove-seller-items', {
+            userId: user?.userId,
+            sellerId: sellerId
+          }, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => {
+            console.log(response.data);
+          })
+          .catch(error => {
+            console.error('Error removing seller items:', error);
+            // Add your error handling logic here
+          });
       })
       .catch((error) => {
         console.error("Error placing order:", error);
