@@ -43,6 +43,125 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
+// Route to remove all items from a specific seller in the cart
+router.put("/remove-seller-items/", async (req, res) => {
+  const { userId, sellerId } = req.body;
+
+  // Log the incoming request
+  console.log(`Removing seller ${sellerId} items from user ${userId}'s cart`);
+
+  try {
+    // Get the user's cart document
+    const cartDocRef = db.collection("cart").doc(userId);
+    const cartDoc = await cartDocRef.get();
+
+    if (!cartDoc.exists) {
+      // Log and return if cart doesn't exist
+      const errorMsg = "Cart not found for user";
+      console.log(errorMsg);
+
+      const logData = {
+        timestamp: new Intl.DateTimeFormat("en-PH", {
+          timeZone: "Asia/Manila",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        }).format(new Date()),
+        userId,
+        action: "remove_seller_items",
+        resource: `cart/${userId}`,
+        status: "failed",
+        error: errorMsg,
+        requestBody: req.body,
+      };
+
+      await logToFirestore(logData);
+      logger.error(logData);
+
+      return res.status(404).json({ message: errorMsg });
+    }
+
+    // Get current cart data
+    const cartData = cartDoc.data().cart || [];
+    console.log("Current cart data:", cartData);
+
+    // Filter out the seller's items
+    const updatedCart = cartData.filter((item) => item.sellerId !== sellerId);
+    console.log("Updated cart data:", updatedCart);
+
+    // Update the cart document
+    await cartDocRef.update({ cart: updatedCart });
+
+    // Log success
+    const successMsg = `Successfully removed seller ${sellerId} items from cart`;
+    console.log(successMsg);
+
+    const logData = {
+      timestamp: new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(new Date()),
+      userId,
+      action: "remove_seller_items",
+      resource: `cart/${userId}`,
+      status: "success",
+      details: {
+        sellerId,
+        itemsRemoved: cartData.length - updatedCart.length,
+        updatedCart,
+      },
+    };
+
+    await logToFirestore(logData);
+    logger.info(logData);
+
+    res.json({
+      message: successMsg,
+      updatedCart,
+    });
+  } catch (error) {
+    // Log error
+    console.error("Error removing seller items from cart:", error);
+
+    const logData = {
+      timestamp: new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(new Date()),
+      userId,
+      action: "remove_seller_items",
+      resource: `cart/${userId}`,
+      status: "failed",
+      error: error.message,
+      requestBody: req.body,
+    };
+
+    await logToFirestore(logData);
+    logger.error(logData);
+
+    res.status(500).json({
+      message: "Error removing seller items from cart",
+      error: error.message,
+    });
+  }
+});
+
 // route to give product detail
 router.get("/:userId/:sellerId", async (req, res) => {
   try {
