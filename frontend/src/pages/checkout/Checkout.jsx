@@ -142,22 +142,40 @@ const Checkout = () => {
       });
   }, [buyerAddress, sellerAddress, addressDetails]);
 
+  // useEffect(() => {
+  //   let total = 0;
+
+  //   if (items.length > 0) {
+  //     for (let i = 0; i < items.length; i++) {
+  //       console.log("Price: ", items[i].product.price); // debug
+  //       console.log("Quantity : ", items[i].quantity); // debug
+  //       total += items[i].product.price * items[i].quantity;
+  //     }
+  //   }
+
+  //   setProductTotal(total);
+  //   setGrossTotal(total + shippingFee);
+  //   setHandlingFee(0.06 * total);
+  //   setTotalPayment(total + shippingFee + 0.06 * total);
+  // }, [shippingFee]);
+
   useEffect(() => {
-    let total = 0;
+  let total = 0;
 
-    if (items.length > 0) {
-      for (let i = 0; i < items.length; i++) {
-        console.log("Price: ", items[i].product.price); // debug
-        console.log("Quantity : ", items[i].quantity); // debug
-        total += items[i].product.price * items[i].quantity;
-      }
+  if (items && items.length > 0) {
+    for (let i = 0; i < items.length; i++) {
+      const price = Number(items[i].product?.price || 0);
+      const qty = Number(items[i].quantity || 0);
+      total += price * qty;
     }
+  }
 
-    setProductTotal(total);
-    setGrossTotal(total + shippingFee);
-    setHandlingFee(0.06 * total);
-    setTotalPayment(total + shippingFee + 0.06 * total);
-  }, [shippingFee]);
+  setProductTotal(total);
+  setGrossTotal(total + shippingFee);
+  setHandlingFee(0.06 * total);
+  setTotalPayment(total + shippingFee + 0.06 * total);
+}, [items, shippingFee]);
+
 
   const handleEditToggle = () => {
     setEditing(!editing);
