@@ -1472,7 +1472,10 @@ const MyProfile = () => {
                           <button
                             type="button"
                             className="btn btn-sm bg-blue-500 rounded text-white hover:bg-red-600 border-none w-auto h-auto"
-                            onClick={() => dispatch({ type: "LOGOUT" })}
+                            onClick={() => {
+                              dispatch({ type: "LOGOUT" });
+                              navigate("/login");
+                            }}
                           >
                             Log Out
                           </button>
