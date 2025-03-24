@@ -37,11 +37,17 @@ const generateStars = (rating, isProductCard = false) => {
 };
 
 const Cart = () => {
-  const { user } = useUser();
+  const { user, dispatch } = useUser();
 
   const { data: cartFetch } = useFetch(`/api/cart/${user?.userId}`);
 
   const [cartNew, setCartNew] = useState([]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    }
+  }, [user, navigate]);
 
   //const { cart } = useContext(CartContext);
   // const navigate = useNavigate();
