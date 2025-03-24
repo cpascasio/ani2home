@@ -39,6 +39,8 @@ const generateStars = (rating, isProductCard = false) => {
 const Cart = () => {
   const { user, dispatch } = useUser();
 
+  const navigate = useNavigate();
+
   const { data: cartFetch } = useFetch(`/api/cart/${user?.userId}`);
 
   const [cartNew, setCartNew] = useState([]);
@@ -54,7 +56,6 @@ const Cart = () => {
 
   // add console log for user
   //console.log('Current user:', user);
-  const navigate = useNavigate();
 
   const handleViewShop = (sellerId) => {
     navigate("/profile/" + sellerId); // Navigate to shop profile
