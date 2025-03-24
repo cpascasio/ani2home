@@ -6,6 +6,7 @@ import Menu from "../../components/seller/Menu";
 import SellerBanner from "../../components/seller/SellerBanner";
 import OrdersTable from "../../components/seller/OrdersTable";
 import Overview from "../../components/seller/Overview";
+import { useNavigate } from "react-router-dom";
 
 const Seller = () => {
   const [selectedMenu, setSelectedMenu] = useState("overview");
@@ -23,11 +24,21 @@ const Seller = () => {
     }
   };
 
-  const { user } = useUser();
+  const navigate = useNavigate();
+
+  const { user, dispatch } = useUser();
 
   const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
 
   const [userData, setUserData] = useState("");
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    } else if (user.isStore === false) {
+      navigate("/myProfile");
+    }
+  }, [user, navigate]);
 
   useEffect(() => {
     console.log(userFetch);

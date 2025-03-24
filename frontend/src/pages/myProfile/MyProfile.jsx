@@ -578,14 +578,16 @@ const MyProfile = () => {
                         My Orders
                       </a>
                     </li>
-                    <li>
-                      <a
-                        href="/seller"
-                        className="block text-[16px] text-gray-200 hover:text-blue-300"
-                      >
-                        My Shop
-                      </a>
-                    </li>
+                    {user?.isStore && (
+                      <li>
+                        <a
+                          href="/seller"
+                          className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4"
+                        >
+                          My Shop
+                        </a>
+                      </li>
+                    )}
                   </ul>
                 </div>
               )}
@@ -1293,14 +1295,62 @@ const MyProfile = () => {
                     {/* ------------- Delete Shop ------------ */}
                   </li>
                   <li>
-                    <button
-                      className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
-                      onClick={() =>
-                        document.getElementById("modal_DeleteShop").showModal()
-                      }
-                    >
-                      Delete Shop
-                    </button>
+                    {user?.isStore ? (
+                      <button
+                        className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
+                        onClick={() =>
+                          document
+                            .getElementById("modal_DeleteShop")
+                            .showModal()
+                        }
+                      >
+                        Delete Shop
+                      </button>
+                    ) : (
+                      <button
+                        className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
+                        onClick={async () => {
+                          try {
+                            // Call the set-store endpoint
+                            const response = await axios.put(
+                              `http://localhost:3000/api/users/${user?.userId}/set-store`,
+                              {}, // Empty body since we're just updating a field
+                              {
+                                headers: {
+                                  Authorization: `Bearer ${user?.token}`, // Include auth token
+                                },
+                              }
+                            );
+
+                            if (response.data.state === "success") {
+                              // Update local user context if needed
+                              dispatch({
+                                type: "UPDATE_USER",
+                                payload: { isStore: true },
+                              });
+
+                              // Navigate to seller page
+                              navigate("/seller");
+                            } else {
+                              console.error(
+                                "Failed to update store status:",
+                                response.data.message
+                              );
+                              alert(
+                                "Failed to create store. Please try again."
+                              );
+                            }
+                          } catch (error) {
+                            console.error("Error creating store:", error);
+                            alert(
+                              "An error occurred while creating your store."
+                            );
+                          }
+                        }}
+                      >
+                        Create Store
+                      </button>
+                    )}
                     <dialog id="modal_DeleteShop" className="modal">
                       <div className="modal-box w-8/12 max-w-md p-6 bg-white shadow-lg rounded-md">
                         <button

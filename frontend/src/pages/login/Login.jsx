@@ -25,34 +25,54 @@ const Login = () => {
 
   useEffect(() => {
     // Subscribe to authentication state changes
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        setAuthenticated(true);
-        console.log("🚀 ~ auth.onAuthStateChanged ~ user:", user);
-
-        const userId = user.uid;
-        const userName = user.providerData[0]?.displayName?.replace(/\s+/g, "");
-
-        user.getIdTokenResult().then((tokenResult) => {
-          console.log(tokenResult);
-          localStorage.setItem(
-            "user",
-            JSON.stringify({
-              username: userName,
-              userId: userId,
-              token: tokenResult.token,
-            })
+        try {
+          setAuthenticated(true);
+          console.log("🚀 ~ auth.onAuthStateChanged ~ user:", user);
+          const tokenResult = await user.getIdTokenResult();
+          const userId = user.uid;
+          const userName = user.providerData[0]?.displayName?.replace(
+            /\s+/g,
+            ""
           );
-          dispatch({
-            type: "LOGIN",
-            payload: {
-              username: userName,
-              userId: userId,
-              token: tokenResult.token,
-            },
-          });
-          console.log("ONAUTHSTATECHANED RUNS");
-        });
+
+          // Step 2: Call endpoint to check if user has a store
+          const storeResponse = await axios.get(
+            `http://localhost:3000/api/users/${userId}/isStore`,
+            {
+              headers: {
+                Authorization: `Bearer ${tokenResult.token}`,
+              },
+            }
+          );
+
+          // Step 3: Combine all data
+          const enrichedUser = {
+            // Firebase basics
+            username: userName,
+            userId: userId,
+            token: tokenResult.token,
+
+            // Store status from endpoint
+            isStore: storeResponse.data.data, // Will be `true` or `false`
+          };
+
+          // Step 4: Save to localStorage and context
+          localStorage.setItem("user", JSON.stringify(enrichedUser));
+          dispatch({ type: "LOGIN", payload: enrichedUser });
+        } catch (error) {
+          console.error("Failed to fetch store status:", error);
+          // Fallback: Save without isStore if endpoint fails
+          const basicUser = {
+            username: userName,
+            userId: userId,
+            token: tokenResult.token,
+            isStore: false, // Default value
+          };
+          localStorage.setItem("user", JSON.stringify(basicUser));
+          dispatch({ type: "LOGIN", payload: basicUser });
+        }
       } else {
         setAuthenticated(false);
         //localStorage.removeItem('user');

@@ -259,6 +259,45 @@ router.get("/:uid/isStore", async (req, res) => {
   }
 });
 
+// PUT route to set isStore to true for a user
+router.put("/:uid/set-store", async (req, res) => {
+  const { uid } = req.params;
+
+  try {
+    const userRef = db.collection("users").doc(uid);
+    const doc = await userRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({
+        message: "User not found",
+        state: "error",
+      });
+    }
+
+    // Update the isStore field to true
+    await userRef.update({
+      isStore: true,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Get the updated document
+    const updatedDoc = await userRef.get();
+    const userData = updatedDoc.data();
+
+    res.status(200).json({
+      message: "User store status updated successfully",
+      state: "success",
+      data: userData.isStore,
+    });
+  } catch (error) {
+    console.error("Error updating store status:", error);
+    res.status(500).json({
+      message: "Error updating store status",
+      state: "error",
+    });
+  }
+});
+
 // PUT route to update a user by UID
 router.put("/edit-user/:uid", async (req, res) => {
   const { uid } = req.params;

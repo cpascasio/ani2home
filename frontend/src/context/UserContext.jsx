@@ -33,6 +33,19 @@ const userReducer = (state, action) => {
       auth.signOut();
       localStorage.clear();
       return { user: null };
+    case "UPDATE_USER":
+      // Merge the new properties with existing user data
+      const updatedUser = {
+        ...state.user,
+        ...action.payload,
+      };
+
+      // Update localStorage to persist the changes
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      return {
+        user: updatedUser,
+      };
     // other actions
     default:
       return state;
