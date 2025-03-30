@@ -160,9 +160,6 @@ const InventoryTable = () => {
     }
   };
 
-  const vegetable = ["Broccoli", "Aubergine", "Carrot", "Chili", "Lemon"];
-  const fruit = ["Apple", "Banana", "Orange", "Strawberry", "Grapes"];
-
   return (
     <div className="p-4 md:p-5 bg-white rounded-lg shadow-lg mt-5 md:mt-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5">
@@ -255,15 +252,16 @@ const InventoryTable = () => {
       {showModal && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
           <div className="bg-white p-4 md:p-5 rounded-lg shadow-lg w-11/12 md:w-1/3 relative">
-            <span
+            <button
               className="absolute top-2 right-2 text-2xl cursor-pointer"
               onClick={() => {
                 setShowModal(false);
                 setFormData(initialFormData);
               }}
+              aria-label="Close modal"
             >
               &times;
-            </span>
+            </button>
             <h2 className="text-xl mb-5">Add New Item</h2>
             <form onSubmit={handleSubmit}>
               {/* Form fields for add product */}
@@ -306,15 +304,23 @@ const InventoryTable = () => {
       {showEditModal && selectedProduct && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
           <div className="bg-white p-4 md:p-5 rounded-lg shadow-lg w-11/12 md:w-1/3 relative">
-            <span
-              className="absolute top-2 right-2 text-2xl cursor-pointer"
-              onClick={() => {
-                setShowEditModal(false);
-                setFormData(initialFormData);
-              }}
-            >
-              &times;
-            </span>
+            <button
+                    className="absolute top-2 right-2 text-2xl cursor-pointer"
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setFormData(initialFormData);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        setShowEditModal(false);
+                        setFormData(initialFormData);
+                      }
+                    }}
+                    aria-label="Close edit modal"
+                    style={{ background: 'transparent', border: 'none', padding: 0 }}
+                  >
+                    &times;
+            </button>
             <h2 className="text-xl mb-5">Edit Item</h2>
             <form onSubmit={handleEditSubmit}>
               {/* Form fields for edit product */}
