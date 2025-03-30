@@ -23,13 +23,13 @@ const Footer = () => {
       </div>
       <div className="flex flex-col items-center lg:items-start text-center lg:text-left mb-8 lg:mb-0 px-4 lg:px-6">
         <b className="text-lg font-semibold">Follow Us</b>
-        <a href="#" className="text-sm">
+        <a href="https://www.facebook.com" className="text-sm">
           Facebook
         </a>
-        <a href="#" className="text-sm">
+        <a href="https://www.x.com" className="text-sm">
           Twitter
         </a>
-        <a href="#" className="text-sm">
+        <a href="https://www.linkedin.com" className="text-sm">
           LinkedIn
         </a>
       </div>
