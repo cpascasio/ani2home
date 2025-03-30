@@ -14,8 +14,6 @@ router.post("/getQuotation", async (req, res) => {
   console.log("Headers:", req.headers);
   console.log("Body:", req.body);
 
-  const value = req.body;
-
   const stop1 = {
     coordinates: req.body.co1,
     address: req.body.address1,
@@ -56,8 +54,6 @@ router.post("/placeOrder", async (req, res) => {
   console.log("Webhook received!");
   console.log("Headers:", req.headers);
   console.log("Body:", req.body);
-
-  const value = req.body;
 
   const quotationPayload = SDKClient.QuotationPayloadBuilder.quotationPayload()
     .withLanguage("en_PH") // Specifies the language for responses
