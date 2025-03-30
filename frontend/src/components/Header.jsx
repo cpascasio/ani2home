@@ -207,9 +207,8 @@ const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
   return (
     <div className="relative text-white">
       {FoldContent ? (
-        <div
-          role="button"
-          tabIndex={0}
+        <button
+          type="button"
           onClick={() => setOpen((prev) => !prev)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -236,7 +235,7 @@ const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
           >
             <FiChevronDown />
           </motion.div>
-        </div>
+        </button>
       ) : (
         <a
           onClick={(e) => {
