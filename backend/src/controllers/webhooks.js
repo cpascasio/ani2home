@@ -12,10 +12,6 @@ router.post("/lalamove", (req, res) => {
   console.log("Headers:", req.headers);
   console.log("Body:", req.body);
 
-  // Process the webhook data
-  const eventType = req.body.event_type;
-  // Add your custom logic here based on the event type or payload
-
   // Respond to the service that sent the webhook
   res.status(200).json({ message: "Webhook received successfully!" });
 });
