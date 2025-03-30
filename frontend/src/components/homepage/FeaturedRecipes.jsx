@@ -154,9 +154,7 @@ const FeaturedRecipes = () => {
 const NextArrow = (props) => {
   const { onClick } = props;
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <button
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -180,9 +178,10 @@ const NextArrow = (props) => {
           d="M9 5l7 7-7 7"
         ></path>
       </svg>
-    </div>
+    </button>
   );
 };
+
 
 NextArrow.propTypes = {
   onClick: PropTypes.func.isRequired,
@@ -191,9 +190,7 @@ NextArrow.propTypes = {
 const PrevArrow = (props) => {
   const { onClick } = props;
   return (
-    <div
-      role="button"
-      tabIndex={0}
+    <button
       onClick={onClick}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -218,7 +215,7 @@ const PrevArrow = (props) => {
           d="M15 19l-7-7 7-7"
         ></path>
       </svg>
-    </div>
+    </button>
   );
 };
 
