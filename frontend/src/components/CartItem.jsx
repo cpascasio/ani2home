@@ -1,8 +1,5 @@
-import { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
-// import useEffect
-import { useEffect } from "react";
-// import useFetch
+import { useState, useContext, useEffect } from "react";
+import PropTypes from "prop-types";
 import useFetch from "../../hooks/useFetch";
 
 import StarFilled from "../assets/StarFilled.png"; // path to the star images
@@ -60,22 +57,6 @@ const CartItem = ({ product }) => {
   // Calculate total price
   const totalPrice = products?.price * product.quantity;
 
-  // const handleRemoveFromCart = async () => {
-  //     try {
-  //       // Create Axios DELETE request
-  //       await axios.delete(`http://localhost:3000/api/cart/remove-from-cart`, {
-  //         data: {
-  //           userId: user?.userId,
-  //           productId: product?.id
-  //         }
-  //       });
-  //       console.log('user id: ', userId);
-  //       console.log('Product removed from cart');
-  //     } catch (error) {
-  //       console.error('Error removing from cart:', error);
-  //     }
-  //   };
-
   const handleRemoveFromCart = async () => {
     try {
       const payload = {
@@ -129,7 +110,7 @@ const CartItem = ({ product }) => {
             Unit Price
           </div>
           <div className="text-[15px] font-inter text-[#E11919] mt-1">
-            ₱{products.price}
+            {"₱"}{products.price}
           </div>
         </div>
         <div className="flex flex-col items-center lg:items-center lg:mr-8 mb-4 lg:mb-0 mr-10">
@@ -162,7 +143,7 @@ const CartItem = ({ product }) => {
             Total Price
           </div>
           <div className="text-[15px] font-inter text-[#E11919] mt-1 text-center lg:text-left">
-            ₱{totalPrice.toFixed(2)}
+            {"₱"}{totalPrice.toFixed(2)}
           </div>
         </div>
       </div>
@@ -200,6 +181,15 @@ const CartItem = ({ product }) => {
       )}
     </div>
   );
+};
+
+CartItem.propTypes = {
+  product: PropTypes.shape({
+    productId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      .isRequired,
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    quantity: PropTypes.number,
+  }).isRequired,
 };
 
 export default CartItem;

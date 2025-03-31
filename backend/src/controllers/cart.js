@@ -5,8 +5,6 @@ const { logger, logToFirestore } = require("../config/firebase-config");
 
 const cartSchema = require("../models/cartModels");
 
-//const productRoutes = require('express').Router();
-
 // Firestore database reference
 const db = admin.firestore();
 

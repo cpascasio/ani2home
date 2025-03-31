@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 const Star = ({ filled, onClick }) => (
   <svg
@@ -11,5 +12,10 @@ const Star = ({ filled, onClick }) => (
     <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.62L12 2 9.19 8.62 2 9.24l5.46 4.73L5.82 21z" />
   </svg>
 );
+
+Star.propTypes = {
+  filled: PropTypes.bool.isRequired,
+  onClick: PropTypes.func, // optional; add .isRequired if needed
+};
 
 export default Star;

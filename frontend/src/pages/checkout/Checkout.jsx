@@ -429,7 +429,7 @@ const Checkout = () => {
 
   // Function to format numbers with commas
   const formatNumber = (number) => {
-    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return number.toString().replace(/\B(?=(\d{3}){1,7}(?!\d))/g, ",");
   };
 
   const handleCancel = () => {

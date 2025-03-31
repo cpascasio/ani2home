@@ -1,7 +1,8 @@
 import React from "react";
 import Slider from "react-slick";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBowlFood } from "@fortawesome/free-solid-svg-icons"; // Use appropriate icons
+import { faBowlFood } from "@fortawesome/free-solid-svg-icons"; 
+import PropTypes from "prop-types";
 
 import strawberrySpinachSalad from "../../assets/recipe1.jpg";
 import bananaPancakes from "../../assets/recipe2.jpg";
@@ -153,9 +154,15 @@ const FeaturedRecipes = () => {
 const NextArrow = (props) => {
   const { onClick } = props;
   return (
-    <div
-      className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-20"
+    <button
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          onClick();
+        }
+      }}
+      className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-20"
+      aria-label="Next arrow"
     >
       <svg
         className="w-8 h-8"
@@ -171,17 +178,28 @@ const NextArrow = (props) => {
           d="M9 5l7 7-7 7"
         ></path>
       </svg>
-    </div>
+    </button>
   );
+};
+
+
+NextArrow.propTypes = {
+  onClick: PropTypes.func.isRequired,
 };
 
 const PrevArrow = (props) => {
   const { onClick } = props;
   return (
-    <div
-      className="absolute top-1/2 left-0 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-20"
+    <button
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          onClick();
+        }
+      }}
+      className="absolute top-1/2 left-0 transform -translate-y-1/2 cursor-pointer bg-blue-900 p-3 rounded-full text-white shadow-lg z-20"
       style={{ left: "-80px" }}
+      aria-label="Previous arrow"
     >
       <svg
         className="w-8 h-8"
@@ -197,8 +215,12 @@ const PrevArrow = (props) => {
           d="M15 19l-7-7 7-7"
         ></path>
       </svg>
-    </div>
+    </button>
   );
+};
+
+PrevArrow.propTypes = {
+  onClick: PropTypes.func.isRequired,
 };
 
 export default FeaturedRecipes;

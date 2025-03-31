@@ -5,7 +5,6 @@ const placeOrderSchema = require("../models/placeOrderModels");
 const orderDetailsSchema = require("../models/orderDetailsModels");
 const orderSchema = require("../models/orderModels");
 const { logger, logToFirestore } = require("../config/firebase-config");
-//const productRoutes = require('express').Router();
 
 // Firestore database reference
 const db = admin.firestore();

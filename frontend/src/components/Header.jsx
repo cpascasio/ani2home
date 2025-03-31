@@ -5,7 +5,6 @@ import {
   FiX,
   FiChevronDown,
   FiShoppingCart,
-  FiSearch,
 } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
 import {
@@ -17,12 +16,13 @@ import {
 import useMeasure from "react-use-measure";
 import logoImage from "../assets/logo.png";
 import logoTitle from "../assets/logotitle.png";
+import PropTypes from "prop-types";
 
 const Header = () => {
   return (
-    <>
+
       <FlyoutNav />
-    </>
+
   );
 };
 
@@ -87,6 +87,11 @@ const NavLink = ({ children, href }) => (
     {children}
   </a>
 );
+
+NavLink.propTypes = {
+  children: PropTypes.node.isRequired,
+  href: PropTypes.string.isRequired,
+};
 
 const SearchBar = () => (
   <div className="relative">
@@ -202,9 +207,15 @@ const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
   return (
     <div className="relative text-white">
       {FoldContent ? (
-        <div
-          className="flex w-full cursor-pointer items-center justify-between border-b border-neutral-300 py-6 text-start text-2xl font-semibold"
+        <button
+          type="button"
           onClick={() => setOpen((prev) => !prev)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              setOpen((prev) => !prev);
+            }
+          }}
+          className="flex w-full cursor-pointer items-center justify-between border-b border-neutral-300 py-6 text-start text-2xl font-semibold"
         >
           <a
             onClick={(e) => {
@@ -224,7 +235,7 @@ const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
           >
             <FiChevronDown />
           </motion.div>
-        </div>
+        </button>
       ) : (
         <a
           onClick={(e) => {
@@ -255,6 +266,13 @@ const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
       )}
     </div>
   );
+};
+
+MobileMenuLink.propTypes = {
+  children: PropTypes.node.isRequired,
+  href: PropTypes.string.isRequired,
+  FoldContent: PropTypes.elementType, 
+  setMenuOpen: PropTypes.func.isRequired,
 };
 
 const LINKS = [
