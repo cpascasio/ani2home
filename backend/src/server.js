@@ -12,6 +12,7 @@ const lalamoveRoutes = require("./controllers/lalamove"); // Import the product 
 require("dotenv").config();
 
 const app = express();
+app.disable("x-powered-by");
 
 app.use(cors()); // Use CORS module
 
