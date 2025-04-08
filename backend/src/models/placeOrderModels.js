@@ -13,6 +13,8 @@ const placeOrderSchema = Joi.object({
     city: Joi.string().optional(),
     address: Joi.string().optional(),
     phoneNumber: Joi.string().optional(),
+    lng: Joi.number().optional(),
+    lat: Joi.number().optional(),
   }).required(),
   note: Joi.string().optional(),
   paymentOption: Joi.string().required(),
