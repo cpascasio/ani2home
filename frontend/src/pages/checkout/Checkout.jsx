@@ -13,6 +13,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import useDynamicFetch from "../../../hooks/useDynamicFetch.js";
 import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
+import { encode } from "base-64";
 
 const Checkout = () => {
   const { user } = useUser();
@@ -478,6 +479,8 @@ const Checkout = () => {
       city: addressDetails.city || "",
       address: addressDetails.fullAddress,
       phoneNumber: phoneNumber,
+      lng: addressDetails.lng,
+      lat: addressDetails.lat,
     };
 
     // Log the deliveryAddress for debugging
@@ -492,7 +495,7 @@ const Checkout = () => {
       status: "Pending",
       deliveryAddress: deliveryAddress,
       paymentOption: selectedPaymentOption,
-      paymentRefNo: "",
+      paymentRefNo: "123",
       items: items.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -516,9 +519,7 @@ const Checkout = () => {
         // Extract the orderId from the response if needed
         const orderId = String(response.data.orderId);
         console.log("OrderID: ", orderId);
-        const base64Auth = Buffer.from(
-          `${import.meta.env.VITE_PAYMENT_SECRET}:`
-        ).toString("base64");
+        const base64Auth = encode(`${import.meta.env.VITE_PAYMENT_SECRET}:`);
 
         const payload = {
           reference_id: orderId,
@@ -529,7 +530,7 @@ const Checkout = () => {
           channel_properties: {
             success_redirect_url: `http://localhost:5173/confirmation/${orderId}`,
             failure_redirect_url: "http://localhost:5173/cart",
-          }
+          },
         };
 
         // Make the POST request to Xendit API

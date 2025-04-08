@@ -17,6 +17,7 @@
     "@tailwindcss/line-clamp": "^0.4.4",
     "@vis.gl/react-google-maps": "^1.1.0",
     "axios": "^1.7.2",
+    "base-64": "^1.0.0",
     "date-fns": "^3.6.0",
     "firebase": "^10.12.3",
     "framer-motion": "^11.3.21",

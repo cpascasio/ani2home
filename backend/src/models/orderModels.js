@@ -1,6 +1,5 @@
 const Joi = require("joi");
 
-
 const orderSchema = Joi.object({
   userId: Joi.string().optional(),
   sellerId: Joi.string().optional(),
@@ -14,6 +13,8 @@ const orderSchema = Joi.object({
     city: Joi.string().optional(),
     address: Joi.string().optional(),
     phoneNumber: Joi.string().optional(),
+    lng: Joi.number().optional(),
+    lat: Joi.number().optional(),
   }).optional(),
   note: Joi.string().optional(),
   courier: Joi.string().optional(),
