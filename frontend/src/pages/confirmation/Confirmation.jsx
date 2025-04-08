@@ -4,11 +4,14 @@ import useFetch from "../../../hooks/useFetch.js";
 import { useUser } from "../../context/UserContext.jsx";
 import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const Confirmation = () => {
   const { user } = useUser();
   const [orders, setOrders] = useState([]);
-  const { data: orderFetch } = useFetch(`/api/orders/${user?.userId}`);
+  const { orderId } = useParams(); // Extract orderId from the URL
+  //const { data: orderFetch } = useFetch(`/api/orders/${user?.userId}`);
+  const { data: orderFetch } = useFetch(`/api/orders/order/${orderId}`);
   const [userData, setUserData] = useState({});
   const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
   const navigate = useNavigate();
@@ -60,9 +63,15 @@ const Confirmation = () => {
               <hr className="my-4 border-gray-300" />{" "}
               {/* Lighter horizontal line */}
               <div className="ml-5 font-inter text-[15px] text-black text-left">
+                Your receipt number is:{" "}
+                <span className="font-bold text-[#0000FF]">
+                  {orders?.paymentRefNo}
+                </span>
+              </div>
+              <div className="ml-5 font-inter text-[15px] text-black text-left">
                 Your order number is:{" "}
                 <span className="font-bold text-[#0000FF]">
-                  {orders[0]?.orderId}
+                  {orders?.orderId}
                 </span>
               </div>
               <div className="ml-5 font-inter text-[15px] text-black text-left font-bold mt-4">
@@ -71,17 +80,17 @@ const Confirmation = () => {
               <div className="ml-5 mt-2 font-inter text-[15px] text-black text-left">
                 <div className="flex">
                   <span className="font-bold w-[150px]">Name:</span>{" "}
-                  <span>{orders[0]?.deliveryAddress?.fullName}</span>
+                  <span>{orders?.deliveryAddress?.fullName}</span>
                 </div>
                 <div className="flex mt-2">
                   <span className="font-bold w-[150px]">Contact Number:</span>{" "}
-                  <span>(+63) 91{orders[0]?.deliveryAddress?.phoneNumber}</span>
+                  <span>(+63) {orders?.deliveryAddress?.phoneNumber}</span>
                 </div>
                 <div className="flex mt-2">
                   <span className="font-bold w-[150px]">Address:</span>
                   <div className="flex-1">
-                    {orders[0]?.deliveryAddress?.barangay},{" "}
-                    {orders[0]?.deliveryAddress?.address}
+                    {orders?.deliveryAddress?.barangay},{" "}
+                    {orders?.deliveryAddress?.address}
                   </div>
                 </div>
               </div>

@@ -42,6 +42,7 @@ router.post("/xendit", async (req, res) => {
       // Update the order document with the paymentRefNo
       await orderDocRef.update({
         paymentRefNo: id, // Set the paymentRefNo attribute with the 'id' from the webhook
+        status: "Paid",
       });
 
       console.log(

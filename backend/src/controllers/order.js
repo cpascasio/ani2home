@@ -175,4 +175,29 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
+// Endpoint to get order by document ID
+router.get("/order/:orderId", async (req, res) => {
+  const { orderId } = req.params; // Get the orderId from the request parameters
+
+  try {
+    // Fetch the order document by orderId from the Firestore orders collection
+    const orderDocRef = db.collection("orders").doc(orderId);
+    const orderDoc = await orderDocRef.get();
+
+    if (!orderDoc.exists) {
+      // If the document doesn't exist, return a 404
+      return res
+        .status(404)
+        .json({ message: `Order with ID ${orderId} not found` });
+    }
+
+    // If document exists, send back the order data along with its documentId
+    const orderData = { orderId: orderDoc.id, ...orderDoc.data() };
+    res.status(200).json(orderData); // Respond with the order details
+  } catch (error) {
+    console.error("Error getting order by ID:", error);
+    res.status(500).send("Error getting order by ID");
+  }
+});
+
 module.exports = router;

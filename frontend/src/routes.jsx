@@ -31,7 +31,7 @@ const routes = [
   { path: "/myShop", element: <MyShop />, name: "MyShop" },
   { path: "/cart", element: <Cart />, name: "Cart" },
   { path: "/checkout/:sellerId", element: <Checkout />, name: "Checkout" },
-  { path: "/confirmation", element: <Confirmation />, name: "Confirmation" },
+  { path: "/confirmation/:orderId", element: <Confirmation />, name: "Confirmation" },
   { path: "/item/:productId", element: <ItemPage />, name: "ItemPage" },
   { path: "/enable-mfa", element: <EnableMFA />, name: "EnableMFA" },
 ];
