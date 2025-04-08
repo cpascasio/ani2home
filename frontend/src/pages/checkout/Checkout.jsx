@@ -160,22 +160,21 @@ const Checkout = () => {
   // }, [shippingFee]);
 
   useEffect(() => {
-  let total = 0;
+    let total = 0;
 
-  if (items && items.length > 0) {
-    for (let i = 0; i < items.length; i++) {
-      const price = Number(items[i].product?.price || 0);
-      const qty = Number(items[i].quantity || 0);
-      total += price * qty;
+    if (items && items.length > 0) {
+      for (let i = 0; i < items.length; i++) {
+        const price = Number(items[i].product?.price || 0);
+        const qty = Number(items[i].quantity || 0);
+        total += price * qty;
+      }
     }
-  }
 
-  setProductTotal(total);
-  setGrossTotal(total + shippingFee);
-  setHandlingFee(0.06 * total);
-  setTotalPayment(total + shippingFee + 0.06 * total);
-}, [items, shippingFee]);
-
+    setProductTotal(total);
+    setGrossTotal(total + shippingFee);
+    setHandlingFee(0.06 * total);
+    setTotalPayment(total + shippingFee + 0.06 * total);
+  }, [items, shippingFee]);
 
   const handleEditToggle = () => {
     setEditing(!editing);
@@ -240,7 +239,7 @@ const Checkout = () => {
   };
 
   const [selectedPaymentOption, setSelectedPaymentOption] = useState("");
-  const paymentOptions = ["Cash on Delivery", "GCash"];
+  const paymentOptions = ["GCash"];
   // Ensure totalPrice and shippingFee are numbers
   //let totalPrice = 0;
 
@@ -490,10 +489,10 @@ const Checkout = () => {
       sellerId: sellerId,
       shippingFee: shippingFee,
       totalPrice: totalPayment,
-      status: "In Process",
+      status: "Pending",
       deliveryAddress: deliveryAddress,
       paymentOption: selectedPaymentOption,
-      paymentRefNo: "1234567890",
+      paymentRefNo: "",
       items: items.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -510,34 +509,86 @@ const Checkout = () => {
 
     // Send the order to the server
     axios
-      .post("http://localhost:3000/api/orders/place-order", order)
+      .post("https://ani2home.onrender.com/api/orders/place-order", order)
       .then((response) => {
         console.log("Order placed:", response.data);
 
         // Extract the orderId from the response if needed
         const orderId = String(response.data.orderId);
         console.log("OrderID: ", orderId);
+        const base64Auth = Buffer.from(
+          `${import.meta.env.VITE_PAYMENT_SECRET}:`
+        ).toString("base64");
+
+        const payload = {
+          reference_id: orderId,
+          currency: "PHP",
+          amount: response.data.order.totalPrice,
+          checkout_method: "ONE_TIME_PAYMENT",
+          channel_code: "PH_GCASH",
+          channel_properties: {
+            success_redirect_url: `http://localhost:5173/confirmation/${orderId}`,
+            failure_redirect_url: "http://localhost:5173/cart",
+          }
+        };
+
+        // Make the POST request to Xendit API
+        axios
+          .post("https://api.xendit.co/ewallets/charges", payload, {
+            headers: {
+              Authorization: `Basic ${base64Auth}`, // Basic Auth
+              "Content-Type": "application/json", // Content-Type as JSON
+            },
+          })
+          .then((response) => {
+            console.log("Xendit Response:", response.data);
+
+            // Check if the response contains the actions object and desktop_web_checkout_url
+            if (
+              response.data.actions &&
+              response.data.actions.desktop_web_checkout_url
+            ) {
+              const checkoutUrl =
+                response.data.actions.desktop_web_checkout_url;
+
+              // Redirect the user to the checkout URL to complete the payment
+              window.location.href = checkoutUrl;
+            } else {
+              console.error("Checkout URL not found in Xendit response.");
+            }
+          })
+          .catch((error) => {
+            console.error(
+              "Error making request to Xendit:",
+              error.response?.data || error.message
+            );
+          });
 
         // Navigate to the confirmation page
-        navigate("/confirmation", {
-          state: { order: order, orderId: orderId },
-        });
+        //navigate("/confirmation", {
+        //state: { order: order, orderId: orderId },
+        //});
 
         // if response is successful, clear the cart
         // Client-side request using Axios
-          axios.put('http://localhost:3000/api/cart/remove-seller-items', {
-            userId: user?.userId,
-            sellerId: sellerId
-          }, {
-            headers: {
-              'Content-Type': 'application/json'
+        axios
+          .put(
+            "http://localhost:3000/api/cart/remove-seller-items",
+            {
+              userId: user?.userId,
+              sellerId: sellerId,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
             }
-          })
-          .then(response => {
+          )
+          .then((response) => {
             console.log(response.data);
           })
-          .catch(error => {
-            console.error('Error removing seller items:', error);
+          .catch((error) => {
+            console.error("Error removing seller items:", error);
             // Add your error handling logic here
           });
       })
