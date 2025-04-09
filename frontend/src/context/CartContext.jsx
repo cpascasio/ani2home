@@ -1,5 +1,6 @@
 // CartContext.jsx
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useMemo } from "react";
+import PropTypes from "prop-types";
 
 export const CartContext = createContext();
 
@@ -10,9 +11,14 @@ export const CartProvider = ({ children }) => {
     setCart((prevCart) => [...prevCart, product]);
   };
 
-  return (
-    <CartContext.Provider value={{ cart, addToCart }}>
-      {children}
-    </CartContext.Provider>
-  );
+  // Memoize the context value so that it only changes when cart changes.
+  const value = useMemo(() => ({ cart, addToCart }), [cart]);
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
+
+CartProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+export default CartProvider;
