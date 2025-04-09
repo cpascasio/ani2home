@@ -32,12 +32,24 @@ const Login = () => {
   }, [navigate]);
 
   useEffect(() => {
-    // Subscribe to authentication state changes
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         try {
-          setAuthenticated(true);
-          console.log("🚀 ~ auth.onAuthStateChanged ~ user:", user);
+          // Check if MFA is enabled for the user
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (!userDoc.exists()) {
+            throw new Error("User document not found");
+          }
+          const userData = userDoc.data();
+          const mfaEnabled = userData.mfaEnabled;
+
+          // Check if MFA is enabled and not verified in this session
+          if (mfaEnabled && sessionStorage.getItem("mfaVerified") !== "true") {
+            setShowMfaModal(true);
+            return;
+          }
+
+          // Proceed with login steps
           const tokenResult = await user.getIdTokenResult();
           const userId = user.uid;
           const userName = user.providerData[0]?.displayName?.replace(
@@ -45,80 +57,40 @@ const Login = () => {
             ""
           );
 
-          // Step 2: Call endpoint to check if user has a store
+          // Check store status
           const storeResponse = await axios.get(
             `http://localhost:3000/api/users/${userId}/isStore`,
-            {
-              headers: {
-                Authorization: `Bearer ${tokenResult.token}`,
-              },
-            }
+            { headers: { Authorization: `Bearer ${tokenResult.token}` } }
           );
 
-          // Step 3: Combine all data
           const enrichedUser = {
-            // Firebase basics
             username: userName,
             userId: userId,
             token: tokenResult.token,
-
-            // Store status from endpoint
-            isStore: storeResponse.data.data, // Will be `true` or `false`
+            isStore: storeResponse.data.data,
           };
 
-          // Step 4: Save to localStorage and context
           localStorage.setItem("user", JSON.stringify(enrichedUser));
           dispatch({ type: "LOGIN", payload: enrichedUser });
+          navigate("/myProfile");
         } catch (error) {
-          console.error("Failed to fetch store status:", error);
-          // Fallback: Save without isStore if endpoint fails
-          const basicUser = {
-            username: userName,
-            userId: userId,
-            token: tokenResult.token,
-            isStore: false, // Default value
-          };
-          localStorage.setItem("user", JSON.stringify(basicUser));
-          dispatch({ type: "LOGIN", payload: basicUser });
+          console.error("Authentication error:", error);
+          alert(`Authentication error: ${error.message}`);
         }
       } else {
         setAuthenticated(false);
-        //localStorage.removeItem('user');
+        localStorage.removeItem("user");
+        sessionStorage.removeItem("mfaVerified"); // Clear MFA status on logout
         dispatch({ type: "LOGOUT" });
       }
     });
 
-    // Clean up subscription on unmount
     return () => unsubscribe();
-  }, [dispatch]);
+  }, [dispatch, navigate]);
 
   const handleLogin = async () => {
     try {
-      // Step 1: Sign in with email and password
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-      console.log("User signed in:", user);
-
-      // Step 2: Check if MFA is enabled for the user
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists()) {
-        throw new Error("User document not found");
-      }
-
-      const userData = userDoc.data();
-      if (userData.mfaEnabled) {
-        // Step 3: Show MFA modal
-        setShowMfaModal(true);
-        return;
-      }
-
-      // Step 4: Complete the login
-      setAuthenticated(true);
-      navigate("/myProfile");
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
       console.error("Login failed:", error.message);
       alert(`Login failed: ${error.message}`);
@@ -128,11 +100,9 @@ const Login = () => {
   const handleMfaSubmit = async () => {
     try {
       const user = auth.currentUser;
-      if (!user) {
-        throw new Error("User not signed in");
-      }
+      if (!user) throw new Error("User not signed in");
 
-      // Step 4: Verify the MFA token during login
+      // Verify MFA token with backend
       const verifyResponse = await axios.post(
         `http://localhost:3000/api/users/verify-mfa-login/${user.uid}`,
         { token: mfaToken }
@@ -142,44 +112,30 @@ const Login = () => {
         throw new Error("Invalid MFA token");
       }
 
-      // Step 5: Complete the login
-      setAuthenticated(true);
+      // Mark MFA as verified in this session
+      sessionStorage.setItem("mfaVerified", "true");
       setShowMfaModal(false);
 
-      // Retrieve the Firebase token for backend API calls
+      // Proceed to complete login
       const tokenResult = await user.getIdTokenResult();
-      console.log("🚀 ~ handleMfaSubmit ~ tokenResult:", tokenResult);
-
-      const userId = user?.uid;
-      const email = user.providerData[0]?.email;
+      const userId = user.uid;
       const userName = user.providerData[0]?.displayName?.replace(/\s+/g, "");
-      const phoneNumber = user.providerData[0]?.phoneNumber;
-      const userProfilePic = user.providerData[0]?.photoURL;
-      const name = user.displayName;
 
-      // Only create the user in the backend if they are a new user
-      if (user.metadata.creationTime === user.metadata.lastSignInTime) {
-        const payload = {};
+      // Check store status and update user context
+      const storeResponse = await axios.get(
+        `http://localhost:3000/api/users/${userId}/isStore`,
+        { headers: { Authorization: `Bearer ${tokenResult.token}` } }
+      );
 
-        if (userId) payload.userId = userId;
-        if (email) payload.email = email;
-        if (userName) payload.userName = userName;
-        if (phoneNumber) payload.phoneNumber = phoneNumber;
-        if (userProfilePic) payload.userProfilePic = userProfilePic;
-        if (name.trim()) payload.name = name;
+      const enrichedUser = {
+        username: userName,
+        userId: userId,
+        token: tokenResult.token,
+        isStore: storeResponse.data.data,
+      };
 
-        await axios.post(
-          "http://localhost:3000/api/users/create-user",
-          payload,
-          {
-            headers: {
-              Authorization: `Bearer ${tokenResult.token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      }
-
+      localStorage.setItem("user", JSON.stringify(enrichedUser));
+      dispatch({ type: "LOGIN", payload: enrichedUser });
       navigate("/myProfile");
     } catch (error) {
       console.error("MFA verification failed:", error.message);
@@ -189,68 +145,7 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      const result = await signInWithPopup(auth, provider);
-      console.log("🚀 ~ handleGoogleLogin ~ result:", result);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      console.log("🚀 ~ handleGoogleLogin ~ credential:", credential);
-      const user = result.user;
-
-      console.log(user);
-
-      // Retrieve the Firebase token for backend API calls
-      const tokenResult = await user.getIdTokenResult();
-      console.log("🚀 ~ handleGoogleLogin ~ tokenResult:", tokenResult);
-
-      const userId = user?.uid;
-      const email = user.providerData[0]?.email;
-      const userName = user.providerData[0]?.displayName?.replace(/\s+/g, "");
-      const phoneNumber = user.providerData[0]?.phoneNumber;
-      const userProfilePic = user.providerData[0]?.photoURL;
-      const name =
-        result?._tokenResponse.firstName +
-        " " +
-        result?._tokenResponse.lastName;
-
-      // Only create the user in the backend if they are a new user
-      if (result?._tokenResponse.isNewUser) {
-        const payload = {};
-
-        if (userId) payload.userId = userId;
-        if (email) payload.email = email;
-        if (userName) payload.userName = userName;
-        if (phoneNumber) payload.phoneNumber = phoneNumber;
-        if (userProfilePic) payload.userProfilePic = userProfilePic;
-        if (name.trim()) payload.name = name;
-
-        await axios.post(
-          "http://localhost:3000/api/users/create-user",
-          payload,
-          {
-            headers: {
-              Authorization: `Bearer ${tokenResult.token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      }
-
-      // Step 1: Check if MFA is enabled for the user
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists()) {
-        throw new Error("User document not found");
-      }
-
-      const userData = userDoc.data();
-      if (userData.mfaEnabled) {
-        // Step 2: Show MFA modal
-        setShowMfaModal(true);
-        return;
-      }
-
-      // Step 3: Complete the login if MFA is not enabled
-      setAuthenticated(true);
-
-      navigate("/myProfile");
+      await signInWithPopup(auth, provider);
     } catch (error) {
       console.error("Google login failed:", error.message);
       alert(`Google login failed: ${error.message}`);
