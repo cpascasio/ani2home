@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
-import useFetch from "../../../hooks/useFetch";
-import { useUser } from "../../context/UserContext";
 
 const SellerBanner = ({ user }) => {
-  const [userData, setUserData] = useState(user);
-  const [isCollapseOpen, setIsCollapseOpen] = useState(false);
-  // const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
+  const [userData] = useState(user);
 
   useEffect(() => {
     console.log("SELLERBANNER");
@@ -158,6 +154,25 @@ const SellerBanner = ({ user }) => {
       </div>
     </div>
   );
+};
+
+SellerBanner.propTypes = {
+  user: PropTypes.shape({
+    userId: PropTypes.string,
+    userProfilePic: PropTypes.string,
+    name: PropTypes.string,
+    address: PropTypes.shape({
+      fullAddress: PropTypes.string,
+    }),
+    bio: PropTypes.string,
+    followers: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    rating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    products: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }),
+};
+
+SellerBanner.defaultProps = {
+  user: {},
 };
 
 export default SellerBanner;
