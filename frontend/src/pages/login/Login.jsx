@@ -44,35 +44,12 @@ const Login = () => {
           const mfaEnabled = userData.mfaEnabled;
 
           // Check if MFA is enabled and not verified in this session
-          if (mfaEnabled && sessionStorage.getItem("mfaVerified") !== "true") {
+          if (mfaEnabled && localStorage.getItem("mfaVerified") !== "true") {
             setShowMfaModal(true);
             return;
           }
 
-          // Proceed with login steps
-          const tokenResult = await user.getIdTokenResult();
-          const userId = user.uid;
-          const userName = user.providerData[0]?.displayName?.replace(
-            /\s+/g,
-            ""
-          );
-
-          // Check store status
-          const storeResponse = await axios.get(
-            `http://localhost:3000/api/users/${userId}/isStore`,
-            { headers: { Authorization: `Bearer ${tokenResult.token}` } }
-          );
-
-          const enrichedUser = {
-            username: userName,
-            userId: userId,
-            token: tokenResult.token,
-            isStore: storeResponse.data.data,
-          };
-
-          localStorage.setItem("user", JSON.stringify(enrichedUser));
-          dispatch({ type: "LOGIN", payload: enrichedUser });
-          navigate("/myProfile");
+          await completeLogin(user);
         } catch (error) {
           console.error("Authentication error:", error);
           alert(`Authentication error: ${error.message}`);
@@ -80,13 +57,44 @@ const Login = () => {
       } else {
         setAuthenticated(false);
         localStorage.removeItem("user");
-        sessionStorage.removeItem("mfaVerified"); // Clear MFA status on logout
+        localStorage.removeItem("mfaVerified"); // Clear MFA status on logout
         dispatch({ type: "LOGOUT" });
       }
     });
 
     return () => unsubscribe();
   }, [dispatch, navigate]);
+
+  const completeLogin = async (user) => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) throw new Error("User document not found");
+
+      const userData = userDoc.data();
+      const tokenResult = await user.getIdTokenResult();
+      const userId = user.uid;
+      const userName = user.providerData[0]?.displayName?.replace(/\s+/g, "");
+
+      const storeResponse = await axios.get(
+        `http://localhost:3000/api/users/${userId}/isStore`,
+        { headers: { Authorization: `Bearer ${tokenResult.token}` } }
+      );
+
+      const enrichedUser = {
+        username: userName,
+        userId,
+        token: tokenResult.token,
+        isStore: storeResponse.data.data,
+      };
+
+      localStorage.setItem("user", JSON.stringify(enrichedUser));
+      dispatch({ type: "LOGIN", payload: enrichedUser });
+      navigate("/myProfile");
+    } catch (error) {
+      console.error("Login continuation error:", error);
+      alert(`Login continuation error: ${error.message}`);
+    }
+  };
 
   const handleLogin = async () => {
     try {
@@ -112,31 +120,10 @@ const Login = () => {
         throw new Error("Invalid MFA token");
       }
 
-      // Mark MFA as verified in this session
-      sessionStorage.setItem("mfaVerified", "true");
+      // MFA passed
+      localStorage.setItem("mfaVerified", "true");
       setShowMfaModal(false);
-
-      // Proceed to complete login
-      const tokenResult = await user.getIdTokenResult();
-      const userId = user.uid;
-      const userName = user.providerData[0]?.displayName?.replace(/\s+/g, "");
-
-      // Check store status and update user context
-      const storeResponse = await axios.get(
-        `http://localhost:3000/api/users/${userId}/isStore`,
-        { headers: { Authorization: `Bearer ${tokenResult.token}` } }
-      );
-
-      const enrichedUser = {
-        username: userName,
-        userId: userId,
-        token: tokenResult.token,
-        isStore: storeResponse.data.data,
-      };
-
-      localStorage.setItem("user", JSON.stringify(enrichedUser));
-      dispatch({ type: "LOGIN", payload: enrichedUser });
-      navigate("/myProfile");
+      await completeLogin(auth.currentUser); // trigger redirect here
     } catch (error) {
       console.error("MFA verification failed:", error.message);
       alert(`MFA verification failed: ${error.message}`);
