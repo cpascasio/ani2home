@@ -1474,7 +1474,7 @@ const MyProfile = () => {
                             className="btn btn-sm bg-blue-500 rounded text-white hover:bg-red-600 border-none w-auto h-auto"
                             onClick={() => {
                               dispatch({ type: "LOGOUT" });
-                              navigate("/login");
+                              navigate("/");
                             }}
                           >
                             Log Out
