@@ -78,14 +78,26 @@ def test_invalid_login():
     login("wrong_user", "wrong_email@gmail.com", "wrongpassword")
 
     # Check for error message
+    # try:
+    #     error_message = WebDriverWait(driver, 10).until(
+    #         EC.visibility_of_element_located((By.XPATH, "//p[contains(text(), 'Invalid username or password')]"))
+    #     )
+    #     print("✅ Error message displayed:", error_message.text)
+    #     print("❌ Login failed as expected")
+    # except Exception:
+    #     print("❌ Expected error message not found")
+        
+    # from selenium.webdriver.common.alert import Alert
+
     try:
-        error_message = WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.XPATH, "//p[contains(text(), 'Invalid username or password')]"))
-        )
-        print("✅ Error message displayed:", error_message.text)
-        print("❌ Login failed as expected")
-    except Exception:
-        print("❌ Expected error message not found")
+        WebDriverWait(driver, 5).until(EC.alert_is_present())  # Wait for alert
+        alert = alert(driver)
+        assert "auth/invalid-credential" in alert.text
+        print("✅ Correct error alert detected")
+        alert.accept()  # Close the alert
+    except:
+        print("❌ No alert detected or incorrect error message")
+
 
 # def test_google_login():
 #     """Test case for Google login"""
