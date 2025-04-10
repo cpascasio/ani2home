@@ -162,13 +162,13 @@ const MyProfile = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const storedUser = localStorage.getItem("user");
-  //   if (!storedUser) {
-  //     navigate("/login");
-  //   }
-  //   //setIsLoading(false);
-  // }, [navigate]);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      navigate("/login");
+    }
+    //setIsLoading(false);
+  }, [navigate]);
 
   const handleEditToggle = () => {
     setEditing(!editing);

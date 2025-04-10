@@ -41,6 +41,7 @@ const generateStars = (rating, isProductCard = false) => {
 
 const ItemPage = () => {
   const { user } = useUser(); // Get user data
+  const storedUser = localStorage.getItem("user");
   const { productId } = useParams(); // Get product ID from URL
   const { data: productFetch } = useFetch(`/api/products/product/${productId}`); // Fetch product data
 
@@ -188,29 +189,32 @@ const ItemPage = () => {
                     <span className="text-black">Price: </span>
                     {`₱${price.toFixed(2)}`}
                   </div>
-                  <div className="flex items-center space-x-2 lg:mr-6">
-                    <div className="text-left text-[15px] text-[#737373] mr-2">
-                      Quantity
+
+                  {storedUser && (
+                    <div className="flex items-center space-x-2 lg:mr-6">
+                      <div className="text-left text-[15px] text-[#737373] mr-2">
+                        Quantity
+                      </div>
+                      <button
+                        onClick={handleDecrease}
+                        className="w-[30px] h-[30px] flex items-center justify-center text-[20px] font-inter text-[#737373] bg-gray-200 border border-gray-300 hover:bg-gray-300 transition-colors duration-300"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="text"
+                        value={quantity}
+                        readOnly
+                        className="w-[40px] h-[30px] bg-white text-center border border-gray-300 mx-1"
+                      />
+                      <button
+                        onClick={handleIncrease}
+                        className="w-[30px] h-[30px] flex items-center justify-center text-[20px] font-inter text-[#737373] bg-gray-200 border border-gray-300 hover:bg-gray-300 transition-colors duration-300"
+                      >
+                        +
+                      </button>
                     </div>
-                    <button
-                      onClick={handleDecrease}
-                      className="w-[30px] h-[30px] flex items-center justify-center text-[20px] font-inter text-[#737373] bg-gray-200 border border-gray-300 hover:bg-gray-300 transition-colors duration-300"
-                    >
-                      -
-                    </button>
-                    <input
-                      type="text"
-                      value={quantity}
-                      readOnly
-                      className="w-[40px] h-[30px] bg-white text-center border border-gray-300 mx-1"
-                    />
-                    <button
-                      onClick={handleIncrease}
-                      className="w-[30px] h-[30px] flex items-center justify-center text-[20px] font-inter text-[#737373] bg-gray-200 border border-gray-300 hover:bg-gray-300 transition-colors duration-300"
-                    >
-                      +
-                    </button>
-                  </div>
+                  )}
                 </div>
                 <div className="flex items-center justify-between mt-4">
                   <div className="flex items-center">
@@ -219,12 +223,15 @@ const ItemPage = () => {
                       {rating.toFixed(1)}
                     </span>
                   </div>
-                  <button
-                    className="bg-green-900 text-white py-2 px-4 md:px-20 text-sm rounded-md hover:bg-blue-500 hover:text-white transition-colors duration-300"
-                    onClick={handleAddToCart}
-                  >
-                    Add To Cart
-                  </button>
+
+                  {storedUser && (
+                    <button
+                      className="bg-green-900 text-white py-2 px-4 md:px-20 text-sm rounded-md hover:bg-blue-500 hover:text-white transition-colors duration-300"
+                      onClick={handleAddToCart}
+                    >
+                      Add To Cart
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

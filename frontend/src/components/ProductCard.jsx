@@ -30,6 +30,7 @@ function generateStars(rating) {
 const ProductCard = (product) => {
   const { user } = useUser();
   const navigate = useNavigate();
+  const storedUser = localStorage.getItem("user");
 
   const handleAddToCart = async () => {
     // Include user ID in the product data
@@ -56,49 +57,52 @@ const ProductCard = (product) => {
 
   const yellowStars = generateStars(product.rating);
 
-return (
-  <div className="bg-white flex flex-col border border-gray-300 rounded-lg overflow-hidden shadow-md w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto">
-    {/* Image section with proper button element */}
-    <button
-      className="w-full h-[178px] object-cover cursor-pointer focus:outline-none"
-      onClick={handleImageClick}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          handleImageClick();
-        }
-      }}
-      aria-label={`View details of ${product.productName}`}
-    >
-      <img
-        src={product.pictures[0]}
-        alt={product.productName}
-        className="w-full h-[178px] object-cover"
-      />
-    </button>
+  return (
+    <div className="bg-white flex flex-col border border-gray-300 rounded-lg overflow-hidden shadow-md w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto">
+      {/* Image section with proper button element */}
+      <button
+        className="w-full h-[178px] object-cover cursor-pointer focus:outline-none"
+        onClick={handleImageClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            handleImageClick();
+          }
+        }}
+        aria-label={`View details of ${product.productName}`}
+      >
+        <img
+          src={product.pictures[0]}
+          alt={product.productName}
+          className="w-full h-[178px] object-cover"
+        />
+      </button>
 
-    {/* Product description section */}
-    <div className="flex flex-col flex-grow p-3">
-      <h2 className="text-left text-sm font-bold text-gray-900 truncate">
-        {product.productName}
-      </h2>
-      <p className="text-left text-xs text-gray-600 mt-1 line-clamp-2">
-        {product.productDescription}
-      </p>
-      <div className="stars-wrapper flex mt-1">{yellowStars}</div>
-      <p className="text-left text-xs text-red-500 mt-1">
-        Rating: {product.rating}
-      </p>
+      {/* Product description section */}
+      <div className="flex flex-col flex-grow p-3">
+        <h2 className="text-left text-sm font-bold text-gray-900 truncate">
+          {product.productName}
+        </h2>
+        <p className="text-left text-xs text-gray-600 mt-1 line-clamp-2">
+          {product.productDescription}
+        </p>
+        <div className="stars-wrapper flex mt-1">{yellowStars}</div>
+        <p className="text-left text-xs text-red-500 mt-1">
+          Rating: {product.rating}
+        </p>
+      </div>
+
+      {/* Add to cart button */}
+
+      {storedUser && (
+        <button
+          className="bg-green-900 text-white py-1 px-2 text-xs rounded-md hover:bg-blue-500 hover:text-white transition-colors duration-300 mx-4 mb-4 sm:py-2 sm:px-4 sm:text-sm"
+          onClick={handleAddToCart}
+        >
+          Add To Cart
+        </button>
+      )}
     </div>
-
-    {/* Add to cart button */}
-    <button
-      className="bg-green-900 text-white py-1 px-2 text-xs rounded-md hover:bg-blue-500 hover:text-white transition-colors duration-300 mx-4 mb-4 sm:py-2 sm:px-4 sm:text-sm"
-      onClick={handleAddToCart}
-    >
-      Add To Cart
-    </button>
-  </div>
-);
+  );
 };
 
 export default ProductCard;

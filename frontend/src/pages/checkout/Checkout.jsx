@@ -119,6 +119,14 @@ const Checkout = () => {
     }
   }, [userData]);
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      navigate("/login");
+    }
+    //setIsLoading(false);
+  }, [navigate]);
+
   // useEffect when buyerAddress and
 
   useEffect(() => {
