@@ -32,14 +32,14 @@ const Seller = () => {
 
   const [userData, setUserData] = useState("");
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
-      navigate("/login");
-    } else if (storedUser.isStore === false) {
-      navigate("/myProfile");
-    }
-  }, [navigate]);
+  // useEffect(() => {
+  //   const storedUser = localStorage.getItem("user");
+  //   if (!storedUser) {
+  //     navigate("/login");
+  //   } else if (storedUser.isStore === false) {
+  //     navigate("/myProfile");
+  //   }
+  // }, [navigate]);
 
   useEffect(() => {
     console.log(userFetch);

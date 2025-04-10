@@ -23,13 +23,13 @@ const Login = () => {
   const [showMfaModal, setShowMfaModal] = useState(false); // State to control MFA modal
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      navigate("/myProfile");
-    }
-    //setIsLoading(false);
-  }, [navigate]);
+  // useEffect(() => {
+  //   const storedUser = localStorage.getItem("user");
+  //   if (storedUser) {
+  //     navigate("/myProfile");
+  //   }
+  //   //setIsLoading(false);
+  // }, [navigate]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {

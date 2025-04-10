@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 
 const SellerBanner = ({ user }) => {
   const [userData] = useState(user);
