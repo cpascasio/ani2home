@@ -615,14 +615,16 @@ const MyProfile = () => {
                     My Orders
                   </a>
                 </li>
-                <li>
-                  <a
-                    href="/seller"
-                    className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4"
-                  >
-                    My Shop
-                  </a>
-                </li>
+                {user?.isStore && (
+                  <li>
+                    <a
+                      href="/seller"
+                      className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4"
+                    >
+                      My Shop
+                    </a>
+                  </li>
+                )}
                 <li>
                   <button
                     className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
