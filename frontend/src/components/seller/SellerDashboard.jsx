@@ -1,7 +1,4 @@
 const SellerDashboard = () => {
-  // get the params for the storeID
-  const { storeID } = useParams();
-
   // check if
 
   return (

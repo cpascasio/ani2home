@@ -1,6 +1,5 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import CartItem from "../../components/CartItem";
-import { CartContext } from "../../context/CartContext";
 import useFetch from "../../../hooks/useFetch";
 import { useUser } from "../../context/UserContext.jsx";
 import { useNavigate } from "react-router-dom";
@@ -37,7 +36,7 @@ const generateStars = (rating, isProductCard = false) => {
 };
 
 const Cart = () => {
-  const { user, dispatch } = useUser();
+  const { user } = useUser();
 
   const navigate = useNavigate();
 
@@ -52,12 +51,6 @@ const Cart = () => {
     }
     //setIsLoading(false);
   }, [navigate]);
-
-  //const { cart } = useContext(CartContext);
-  // const navigate = useNavigate();
-
-  // add console log for user
-  //console.log('Current user:', user);
 
   const handleViewShop = (sellerId) => {
     navigate("/profile/" + sellerId); // Navigate to shop profile
@@ -74,22 +67,6 @@ const Cart = () => {
     console.log("Cart Page: ", cartNew);
   }, [cartNew]);
 
-  // useEffect(() => {
-  //   if (cartFetch) {
-  //     setCartNew(cartFetch);
-  //   }
-  // }
-  // , [cartFetch]);
-
-  // useEffect(() => {
-  //   console.log(cartNew)
-  // }
-  // , [cartNew]);
-
-  // const handleCheckout = () => {
-  //     checkout(product);
-  //     navigate('/checkout');
-  //   };
   const handleCheckout = (sellerId) => {
     if (cartNew?.length === 0) {
       alert("Your cart is empty");
@@ -117,7 +94,6 @@ const Cart = () => {
           ) : (
             cartNew?.map((item) => (
               <div key={item.sellerId}>
-                {/* {item?.sellerId} */}
                 {/* White Rectangle with Profile Pic and Shop Info */}
                 <div className="my-6 bg-white border border-gray-300 rounded-lg shadow-md p-4 flex md:flex-row items-start md:items-center justify-between">
                   <div className="flex items-start md:items-center flex-1">
@@ -158,8 +134,7 @@ const Cart = () => {
                             src={StorefrontIcon}
                             alt="Storefront"
                             className="w-4 h-4 inline-block mr-1 mb-0.5"
-                          />
-                          View Shop
+                          />View Shop
                         </button>
                         {/* Button for mobile view */}
                         <button

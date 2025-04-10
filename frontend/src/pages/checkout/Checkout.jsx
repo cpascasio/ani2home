@@ -2,7 +2,7 @@ import LocationIcon from "../../assets/location.png"; // Path to the location ic
 import LogisticsIcon from "../../assets/logistics.png"; // Path to the logistics image
 import Billing from "../../assets/billing.png";
 import { useState, useContext, useEffect, useCallback, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { CartContext } from "../../context/CartContext.jsx";
 // import useFetch
 import useFetch from "../../../hooks/useFetch";
@@ -10,7 +10,6 @@ import useFetch from "../../../hooks/useFetch";
 import { useUser } from "../../context/UserContext.jsx";
 // import axios
 import axios from "axios";
-import { useParams } from "react-router-dom";
 import useDynamicFetch from "../../../hooks/useDynamicFetch.js";
 import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { encode } from "base-64";
@@ -48,13 +47,9 @@ const Checkout = () => {
   }, [items]);
 
   const navigate = useNavigate();
-  const { cart } = useContext(CartContext);
-  const location = useLocation();
-  const { cartItems = [] } = location.state || {};
 
-  const userLog = localStorage.getItem("user");
   const [userData, setUserData] = useState({});
-  const [refetch, setRefetch] = useState(false);
+  const [refetch] = useState(false);
   const { data: userFetch } = useDynamicFetch(
     `/api/users/${user?.userId}`,
     refetch
@@ -62,12 +57,12 @@ const Checkout = () => {
 
   const [editing, setEditing] = useState(false);
   const [fullName, setFullName] = useState("asd");
-  const [countryCode, setCountryCode] = useState("+63");
+  const [setCountryCode] = useState("+63");
   const [phoneNumber, setPhoneNumber] = useState("987654321");
   const [address, setAddress] = useState("123 Main St, City, Country");
-  const [province, setProvince] = useState("Cavite");
-  const [barangay, setBarangay] = useState("Molino III");
-  const [city, setCity] = useState("Bacoor");
+  const [setProvince] = useState("Cavite");
+  const [setBarangay] = useState("Molino III");
+  const [setCity] = useState("Bacoor");
   const [note, setNote] = useState(""); // State for the note
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [productTotal, setProductTotal] = useState(0);
@@ -75,9 +70,6 @@ const Checkout = () => {
   const [totalPayment, setTotalPayment] = useState(0);
   const [handlingFee, setHandlingFee] = useState(0);
   const [grossTotal, setGrossTotal] = useState(50);
-  const [originalFullName, setOriginalFullName] = useState(fullName);
-  const [originalPhoneNumber, setOriginalPhoneNumber] = useState(phoneNumber);
-  const [originalAddress, setOriginalAddress] = useState(address);
 
   const map = useMap();
 
@@ -93,7 +85,6 @@ const Checkout = () => {
     lng: 120.9879423,
   });
 
-  const autocompleteContainerRef = useRef(null);
 
   const placesLib = useMapsLibrary("places");
 
@@ -143,39 +134,24 @@ const Checkout = () => {
       });
   }, [buyerAddress, sellerAddress, addressDetails]);
 
-  // useEffect(() => {
-  //   let total = 0;
-
-  //   if (items.length > 0) {
-  //     for (let i = 0; i < items.length; i++) {
-  //       console.log("Price: ", items[i].product.price); // debug
-  //       console.log("Quantity : ", items[i].quantity); // debug
-  //       total += items[i].product.price * items[i].quantity;
-  //     }
-  //   }
-
-  //   setProductTotal(total);
-  //   setGrossTotal(total + shippingFee);
-  //   setHandlingFee(0.06 * total);
-  //   setTotalPayment(total + shippingFee + 0.06 * total);
-  // }, [shippingFee]);
 
   useEffect(() => {
     let total = 0;
 
-    if (items && items.length > 0) {
-      for (let i = 0; i < items.length; i++) {
-        const price = Number(items[i].product?.price || 0);
-        const qty = Number(items[i].quantity || 0);
-        total += price * qty;
-      }
-    }
+if (items && items.length > 0) {
+  for (const item of items) {
+    const price = Number(item.product?.price || 0);
+    const qty = Number(item.quantity || 0);
+    total += price * qty;
+  }
+}
 
-    setProductTotal(total);
-    setGrossTotal(total + shippingFee);
-    setHandlingFee(0.06 * total);
-    setTotalPayment(total + shippingFee + 0.06 * total);
-  }, [items, shippingFee]);
+
+  setProductTotal(total);
+  setGrossTotal(total + shippingFee);
+  setHandlingFee(0.06 * total);
+  setTotalPayment(total + shippingFee + 0.06 * total);
+}, [items, shippingFee]);
 
   const handleEditToggle = () => {
     setEditing(!editing);
@@ -189,30 +165,6 @@ const Checkout = () => {
     setPhoneNumber(e.target.value);
   };
 
-  const handleAddressChange = (e) => {
-    setAddress(e.target.value);
-  };
-
-  const handleProvinceChange = (e) => {
-    setProvince(e.target.value);
-  };
-
-  const handleBarangayChange = (e) => {
-    setBarangay(e.target.value);
-  };
-
-  const handleCityChange = (e) => {
-    setCity(e.target.value);
-  };
-
-  const handleCountryChange = (e) => {
-    setCountry(e.target.value);
-  };
-
-  const handlePostalCodeChange = (e) => {
-    setPostalCode(e.target.value);
-  };
-
   const handleCancelEdit = () => {
     console.log("Cancel button clicked");
     setEditing(false);
@@ -222,7 +174,6 @@ const Checkout = () => {
     setProvince(userData?.address?.province);
     setBarangay(userData?.address?.barangay);
     setCity(userData?.address?.city);
-    //setCountry(userData?.address?.country);
     setPostalCode(userData?.address?.postalCode);
     setCountryCode(
       userData.phoneNumber ? userData.phoneNumber.slice(0, 3) : ""
@@ -361,20 +312,9 @@ const Checkout = () => {
     }
   };
 
-  const handleClick = useCallback((ev) => {
-    if (!ev) return;
-    console.log("marker clicked:", ev.detail.latLng);
-    const lat = ev.detail.latLng.lat;
-    const lng = ev.detail.latLng.lng;
-    setMarkerPosition({ lat, lng });
-    ev.map.panTo(ev.detail.latLng);
-  }, []);
-
   useEffect(() => {
     if (!placesLib || !map) return;
 
-    const svc = new placesLib.PlacesService(map);
-    // ...
   }, [placesLib, map]);
 
   useEffect(() => {
@@ -423,9 +363,7 @@ const Checkout = () => {
     alert("Address updated successfully!");
   };
 
-  // const totalPrice = cartItems.reduce((acc, items) => acc + (items.product.price * items.quantity), 0);
 
-  //console.log("Total Price : ", totalPrice );
 
   // Function to format numbers with commas
   const formatNumber = (number) => {
