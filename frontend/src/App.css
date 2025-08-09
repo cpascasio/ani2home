@@ -1,14 +1,12 @@
 #root {
-  /* max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem; */
   text-align: center;
   min-height: 100vh; /* Ensures root takes full viewport height */
   display: flex;
   flex-direction: column;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
 }
@@ -22,7 +20,6 @@ html, body {
 .content {
   flex: 1;
 }
-
 
 .logo {
   height: 6em;
@@ -66,9 +63,8 @@ html, body {
   position: relative;
   display: flex;
   align-items: center;
-  flex: 1; 
+  flex: 1;
 }
-
 
 form:focus {
   border: none !important;
@@ -92,7 +88,7 @@ form:focus {
 }
 
 #footerLogo {
-  background: url('../src/assets/Ani2Home-Logo.png');
+  background: url("../src/assets/Ani2Home-Logo.png");
   background-size: cover;
 }
 

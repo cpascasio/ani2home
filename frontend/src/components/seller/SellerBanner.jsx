@@ -1,11 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import useFetch from '../../../hooks/useFetch';
-import { useUser } from '../../context/UserContext';
+import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 
 const SellerBanner = ({ user }) => {
-  const [userData, setUserData] = useState(user);
-  const [isCollapseOpen, setIsCollapseOpen] = useState(false);
-  // const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
+  const [userData] = useState(user);
 
   useEffect(() => {
     console.log("SELLERBANNER");
@@ -17,7 +14,7 @@ const SellerBanner = ({ user }) => {
   }, [userData]);
 
   return (
-    <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-[#072c1c] to-[#83c763] pt-[6%]"> 
+    <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-[#072c1c] to-[#83c763] pt-[6%]">
       {/* Mobile View: Profile and Follow Button */}
       <div className="flex flex-row md:hidden w-full p-6 pt-[8vh]">
         <div className="flex justify-center items-center w-1/3">
@@ -30,8 +27,12 @@ const SellerBanner = ({ user }) => {
           </div>
         </div>
         <div className="flex flex-col justify-center text-white w-2/3 pl-4">
-          <h1 className="text-2xl font-bold font-inter mb-2">{userData?.name || 'Pogi Farms'}</h1>
-          <div className="italic mb-2 font-inter text-sm">{userData?.address?.fullAddress || 'Dasmarinas, Cavite'}</div>
+          <h1 className="text-2xl font-bold font-inter mb-2">
+            {userData?.name || "Pogi Farms"}
+          </h1>
+          <div className="italic mb-2 font-inter text-sm">
+            {userData?.address?.fullAddress || "Dasmarinas, Cavite"}
+          </div>
           <button className="rounded border border-[#D9D9D9] text-white p-2 px-5 mx-[20%] mt-2 font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
             Follow+
           </button>
@@ -41,7 +42,8 @@ const SellerBanner = ({ user }) => {
       {/* Mobile View: Bio Section */}
       <div className="md:hidden flex flex-col p-6 py-0 text-white">
         <div className="text-justify font-inter text-sm">
-          {userData?.bio || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'}
+          {userData?.bio ||
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
         </div>
       </div>
 
@@ -50,30 +52,42 @@ const SellerBanner = ({ user }) => {
         <div className="flex flex-col items-center text-white">
           <div className="flex items-center">
             <div className="mr-1">
-              <img src="../src/assets/FollowersIcon.png" alt="Followers" className="w-5 h-5" />
+              <img
+                src="../src/assets/FollowersIcon.png"
+                alt="Followers"
+                className="w-5 h-5"
+              />
             </div>
             <div className="text-center font-inter text-xs">
-              <strong>Followers:</strong> {userData?.followers || '1,203'}
+              <strong>Followers:</strong> {userData?.followers || "1,203"}
             </div>
           </div>
         </div>
         <div className="flex flex-col items-center text-white">
           <div className="flex items-center">
             <div className="mr-1">
-              <img src="../src/assets/RatingsIcon.png" alt="Ratings" className="w-5 h-5" />
+              <img
+                src="../src/assets/RatingsIcon.png"
+                alt="Ratings"
+                className="w-5 h-5"
+              />
             </div>
             <div className="text-center font-inter text-xs">
-              <strong>Rating:</strong> {userData?.rating || '4.4'} (1,304)
+              <strong>Rating:</strong> {userData?.rating || "4.4"} (1,304)
             </div>
           </div>
         </div>
         <div className="flex flex-col items-center text-white">
           <div className="flex items-center">
             <div className="mr-1">
-              <img src="../src/assets/ProductsIcon.png" alt="Products" className="w-5 h-5" />
+              <img
+                src="../src/assets/ProductsIcon.png"
+                alt="Products"
+                className="w-5 h-5"
+              />
             </div>
             <div className="text-center font-inter text-xs">
-              <strong>Products:</strong> {userData?.products || '67'}
+              <strong>Products:</strong> {userData?.products || "67"}
             </div>
           </div>
         </div>
@@ -96,17 +110,18 @@ const SellerBanner = ({ user }) => {
         <div className="flex flex-col w-1/2 pr-8">
           <div className="flex items-center mb-4">
             <h1 className="text-2xl font-bold font-inter mr-4 text-left text-white">
-              {userData?.name || 'Pogi Farms'}
+              {userData?.name || "Pogi Farms"}
             </h1>
             <button className="font-bold rounded border-2 border-white text-white p-2 px-5 font-inter hover:bg-white hover:text-green-900 transition-colors duration-300">
               Follow+
             </button>
           </div>
           <div className="italic mb-4 font-inter text-left text-white">
-            {userData?.address?.fullAddress || 'Dasmarinas, Cavite'}
+            {userData?.address?.fullAddress || "Dasmarinas, Cavite"}
           </div>
           <div className="mb-6 text-left font-inter text-justify text-white">
-            {userData?.bio || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'}
+            {userData?.bio ||
+              "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
           </div>
         </div>
 
@@ -117,7 +132,7 @@ const SellerBanner = ({ user }) => {
               <img src="../src/assets/FollowersIcon.png" alt="Followers" />
             </div>
             <div className="text-left font-inter w-auto">
-              <strong>Followers:</strong> {userData?.followers || '1,203'}
+              <strong>Followers:</strong> {userData?.followers || "1,203"}
             </div>
           </div>
           <div className="flex items-center mb-4 w-auto">
@@ -125,7 +140,7 @@ const SellerBanner = ({ user }) => {
               <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
             </div>
             <div className="text-left font-inter w-auto">
-              <strong>Rating:</strong> {userData?.rating || '4.4'} (1,304)
+              <strong>Rating:</strong> {userData?.rating || "4.4"} (1,304)
             </div>
           </div>
           <div className="flex items-center w-auto">
@@ -133,13 +148,32 @@ const SellerBanner = ({ user }) => {
               <img src="../src/assets/ProductsIcon.png" alt="Products" />
             </div>
             <div className="text-left font-inter w-full">
-              <strong>Products:</strong> {userData?.products || '67'}
+              <strong>Products:</strong> {userData?.products || "67"}
             </div>
           </div>
         </div>
       </div>
     </div>
   );
+};
+
+SellerBanner.propTypes = {
+  user: PropTypes.shape({
+    userId: PropTypes.string,
+    userProfilePic: PropTypes.string,
+    name: PropTypes.string,
+    address: PropTypes.shape({
+      fullAddress: PropTypes.string,
+    }),
+    bio: PropTypes.string,
+    followers: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    rating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    products: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }),
+};
+
+SellerBanner.defaultProps = {
+  user: {},
 };
 
 export default SellerBanner;

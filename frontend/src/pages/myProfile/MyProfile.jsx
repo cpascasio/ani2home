@@ -6,7 +6,7 @@ import axios from "axios";
 import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { Autocomplete } from "@react-google-maps/api";
 import LocationIcon from "../../assets/location.png"; // Path to the location icon
-import useDynamicFetch from '../../../hooks/useDynamicFetch.js';
+import useDynamicFetch from "../../../hooks/useDynamicFetch.js";
 
 const MyProfile = () => {
   const userLog = localStorage.getItem("user");
@@ -16,7 +16,10 @@ const MyProfile = () => {
 
   const [refetch, setRefetch] = useState(false);
 
-  const { data: userFetch } = useDynamicFetch(`/api/users/${user?.userId}`, refetch);
+  const { data: userFetch } = useDynamicFetch(
+    `/api/users/${user?.userId}`,
+    refetch
+  );
   const [userData, setUserData] = useState({});
   const [editMode, setEditMode] = useState(false);
   const navigate = useNavigate();
@@ -66,7 +69,6 @@ const MyProfile = () => {
       lat: userData?.address?.lat,
     });
   }, [userData]);
-
 
   const handleMapClick = async (event) => {
     const latitude = event.detail.latLng.lat;
@@ -160,6 +162,14 @@ const MyProfile = () => {
     }
   };
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      navigate("/login");
+    }
+    //setIsLoading(false);
+  }, [navigate]);
+
   const handleEditToggle = () => {
     setEditing(!editing);
   };
@@ -225,14 +235,6 @@ const MyProfile = () => {
 
     // here you can interact with the imperative maps API
   }, [map]);
-
-  useEffect(() => {
-    if (userLog != null) {
-      console.log(user);
-    } else {
-      navigate("/login");
-    }
-  }, [userLog]);
 
   useEffect(() => {
     if (userFetch != null) {
@@ -310,7 +312,7 @@ const MyProfile = () => {
         }
       );
       console.log("Success:", response.data);
-      setRefetch(prev => !prev);
+      setRefetch((prev) => !prev);
       handleCancelEdit();
       // Handle success (e.g., show a success message or redirect)
     } catch (error) {
@@ -330,7 +332,7 @@ const MyProfile = () => {
   };
 
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Prevent the default form submission behavior
+    event.preventDefault();
 
     // Collect form data
     const formData = new FormData(event.target);
@@ -338,10 +340,9 @@ const MyProfile = () => {
     // Create an object to hold form values
     const data = {};
 
-
-  if(userProfilePic !== null){
-    data.userProfilePic = userProfilePic;
-  }
+    if (userProfilePic !== null) {
+      data.userProfilePic = userProfilePic;
+    }
 
     // Check if fields have been changed
     if (formData.get("newName") !== userData?.name) {
@@ -361,27 +362,25 @@ const MyProfile = () => {
     }
 
     // Get the token from localStorage or any other source
-    const token = user?.token; // Replace with your actual token retrieval method
+    const token = user?.token;
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/users/edit-user/${user?.userId}`, // Include userId in the URL
+        `http://localhost:3000/api/users/edit-user/${user?.userId}`,
         data,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+            Authorization: `Bearer ${token}`,
           },
         }
       );
       console.log("Success:", response.data);
-      setRefetch(prev => !prev);
+      setRefetch((prev) => !prev);
       setUserProfilePic(null);
-      document.getElementById("modal_editProfile").close()
-      // Handle success (e.g., show a success message or redirect)
+      document.getElementById("modal_editProfile").close();
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      // Handle error (e.g., show an error message)
     }
   };
 
@@ -579,14 +578,16 @@ const MyProfile = () => {
                         My Orders
                       </a>
                     </li>
-                    <li>
-                      <a
-                        href="/seller"
-                        className="block text-[16px] text-gray-200 hover:text-blue-300"
-                      >
-                        My Shop
-                      </a>
-                    </li>
+                    {user?.isStore && (
+                      <li>
+                        <a
+                          href="/seller"
+                          className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4"
+                        >
+                          My Shop
+                        </a>
+                      </li>
+                    )}
                   </ul>
                 </div>
               )}
@@ -614,13 +615,23 @@ const MyProfile = () => {
                     My Orders
                   </a>
                 </li>
+                {user?.isStore && (
+                  <li>
+                    <a
+                      href="/seller"
+                      className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4"
+                    >
+                      My Shop
+                    </a>
+                  </li>
+                )}
                 <li>
-                  <a
-                    href="/seller"
-                    className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out lg:ml-4"
+                  <button
+                    className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
+                    onClick={() => navigate("/enable-mfa", { state: { user } })}
                   >
-                    My Shop
-                  </a>
+                    Enable Multi-Factor Authentication (MFA)
+                  </button>
                 </li>
               </ul>
             </div>
@@ -646,7 +657,7 @@ const MyProfile = () => {
                   Delivery Address
                 </div>
               </div>
-              <Map
+              {/* <Map
                 mapId="profileMap"
                 defaultZoom={13}
                 defaultCenter={{ lat: 14.3879953, lng: 120.9879423 }}
@@ -671,7 +682,7 @@ const MyProfile = () => {
                 style={{ width: "100%", height: "400px" }}
               >
                 <Marker position={markerPosition} />
-              </Map>
+              </Map> */}
               {editing ? (
                 <div className="bg-white p-5 mb-5">
                   <h2 className="text-lg text-left font-bold text-gray-600">
@@ -1219,7 +1230,11 @@ const MyProfile = () => {
                           Are you sure you want to delete your account? This
                           action cannot be undone.
                         </p>
-                        <form method="dialog" className="space-y-4" onSubmit={handleDelAcc}>
+                        <form
+                          method="dialog"
+                          className="space-y-4"
+                          onSubmit={handleDelAcc}
+                        >
                           <div className="flex flex-col">
                             <input
                               type="text"
@@ -1282,14 +1297,62 @@ const MyProfile = () => {
                     {/* ------------- Delete Shop ------------ */}
                   </li>
                   <li>
-                    <button
-                      className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
-                      onClick={() =>
-                        document.getElementById("modal_DeleteShop").showModal()
-                      }
-                    >
-                      Delete Shop
-                    </button>
+                    {user?.isStore ? (
+                      <button
+                        className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
+                        onClick={() =>
+                          document
+                            .getElementById("modal_DeleteShop")
+                            .showModal()
+                        }
+                      >
+                        Delete Shop
+                      </button>
+                    ) : (
+                      <button
+                        className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
+                        onClick={async () => {
+                          try {
+                            // Call the set-store endpoint
+                            const response = await axios.put(
+                              `http://localhost:3000/api/users/${user?.userId}/set-store`,
+                              {}, // Empty body since we're just updating a field
+                              {
+                                headers: {
+                                  Authorization: `Bearer ${user?.token}`, // Include auth token
+                                },
+                              }
+                            );
+
+                            if (response.data.state === "success") {
+                              // Update local user context if needed
+                              dispatch({
+                                type: "UPDATE_USER",
+                                payload: { isStore: true },
+                              });
+
+                              // Navigate to seller page
+                              navigate("/seller");
+                            } else {
+                              console.error(
+                                "Failed to update store status:",
+                                response.data.message
+                              );
+                              alert(
+                                "Failed to create store. Please try again."
+                              );
+                            }
+                          } catch (error) {
+                            console.error("Error creating store:", error);
+                            alert(
+                              "An error occurred while creating your store."
+                            );
+                          }
+                        }}
+                      >
+                        Create Store
+                      </button>
+                    )}
                     <dialog id="modal_DeleteShop" className="modal">
                       <div className="modal-box w-8/12 max-w-md p-6 bg-white shadow-lg rounded-md">
                         <button
@@ -1331,7 +1394,8 @@ const MyProfile = () => {
                                   document.getElementById("confirmationShop");
                                 const deleteBtnShop =
                                   document.getElementById("deleteBtnShop");
-                                  deleteBtnShop.disabled = input.value !== "CONFIRM";
+                                deleteBtnShop.disabled =
+                                  input.value !== "CONFIRM";
                               }}
                             />
                             <label
@@ -1410,7 +1474,10 @@ const MyProfile = () => {
                           <button
                             type="button"
                             className="btn btn-sm bg-blue-500 rounded text-white hover:bg-red-600 border-none w-auto h-auto"
-                            onClick={() => dispatch({ type: "LOGOUT" })}
+                            onClick={() => {
+                              dispatch({ type: "LOGOUT" });
+                              navigate("/");
+                            }}
                           >
                             Log Out
                           </button>

@@ -1,12 +1,12 @@
-import { UserContext } from "../src/context/UserContext"
-import { useContext } from "react"
+import { UserContext } from "../src/context/UserContext";
+import { useContext } from "react";
 
 export const useUserContext = () => {
-  const context = useContext(UserContext)
+  const context = useContext(UserContext);
 
-  if(!context) {
-    throw Error('Context must be inside provider')
+  if (!context) {
+    throw Error("Context must be inside provider");
   }
 
-  return context
-}
+  return context;
+};

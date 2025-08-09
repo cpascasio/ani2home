@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import "./Menu.css";
+import PropTypes from "prop-types";
 
 const Menu = ({ onSelectMenu }) => {
-  const [isCollapseOpen, setIsCollapseOpen] = useState(false);
   const [isShopCollapseOpen, setIsShopCollapseOpen] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState("overview");
 
@@ -16,7 +16,6 @@ const Menu = ({ onSelectMenu }) => {
       <div className="flex flex-col w-full max-w-screen-xl mx-auto p-4 bg-gray-200">
         {/* Sidebar Section */}
         <div className="sidebar w-full lg:w-1/5 p-4 flex flex-col space-y-4">
-          
           {/* Mobile Collapse for My Shop */}
           <div className="block lg:hidden w-full">
             <button
@@ -44,16 +43,25 @@ const Menu = ({ onSelectMenu }) => {
               <div className="bg-[#67B045] text-white p-4 w-auto max-w-md mx-auto">
                 <ul className="space-y-4 text-left lg:pr-11">
                   <li
-                    onClick={() => handleMenuClick("overview")}
-                    className={`block text-[16px] ${
-                      selectedMenu === "overview"
-                        ? "text-green-900 font-bold"
-                        : "text-gray-200"
-                    } hover:text-green-700`}
-                  >
-                    Overview
-                  </li>
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => handleMenuClick("overview")}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          handleMenuClick("overview");
+                        }
+                      }}
+                      className={`block text-[16px] ${
+                        selectedMenu === "overview"
+                          ? "text-green-900 font-bold"
+                          : "text-gray-200"
+                      } hover:text-green-700`}
+                    >
+                      Overview
+                    </li>
                   <li
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleMenuClick("inventory")}
                     className={`block text-[16px] ${
                       selectedMenu === "inventory"
@@ -64,6 +72,8 @@ const Menu = ({ onSelectMenu }) => {
                     Product Inventory
                   </li>
                   <li
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleMenuClick("orders")}
                     className={`block text-[16px] ${
                       selectedMenu === "orders"
@@ -120,6 +130,10 @@ const Menu = ({ onSelectMenu }) => {
       </div>
     </div>
   );
+};
+
+Menu.propTypes = {
+  onSelectMenu: PropTypes.func.isRequired, 
 };
 
 export default Menu;

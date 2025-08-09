@@ -6,29 +6,40 @@ import Menu from "../../components/seller/Menu";
 import SellerBanner from "../../components/seller/SellerBanner";
 import OrdersTable from "../../components/seller/OrdersTable";
 import Overview from "../../components/seller/Overview";
+import { useNavigate } from "react-router-dom";
 
 const Seller = () => {
-  const [selectedMenu, setSelectedMenu] = useState('overview');
+  const [selectedMenu, setSelectedMenu] = useState("overview");
 
   const renderContent = () => {
     switch (selectedMenu) {
-      case 'overview':
+      case "overview":
         return <Overview />;
-      case 'inventory':
+      case "inventory":
         return <InventoryTable />;
-      case 'orders':
+      case "orders":
         return <OrdersTable />;
       default:
         return null;
     }
   };
 
-  const { user } = useUser();
+  const navigate = useNavigate();
+
+  const { user, dispatch } = useUser();
 
   const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
 
   const [userData, setUserData] = useState("");
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      navigate("/login");
+    } else if (storedUser.isStore === false) {
+      navigate("/myProfile");
+    }
+  }, [navigate]);
 
   useEffect(() => {
     console.log(userFetch);
@@ -38,7 +49,7 @@ const Seller = () => {
 
   useEffect(() => {
     console.log(userData);
-  } , [userData]);
+  }, [userData]);
 
   useEffect(() => {
     console.log(user);
@@ -55,9 +66,7 @@ const Seller = () => {
           {renderContent()}
         </div>
       </div>
-      <footer className="bg-gray-200 py-4">
-        {/* Footer content */}
-      </footer>
+      <footer className="bg-gray-200 py-4">{/* Footer content */}</footer>
     </div>
   );
 };
