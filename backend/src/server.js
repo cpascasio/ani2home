@@ -8,6 +8,7 @@ const orderRoutes = require("./controllers/order"); // Import the order routes
 const orderDetailsRoutes = require("./controllers/orderDetails"); // Import the order routes
 const webhooksRoutes = require("./controllers/webhooks"); // Import the product routes
 const lalamoveRoutes = require("./controllers/lalamove"); // Import the product routes
+const firestoreDesignRoutes = require("./controllers/extractFirestoreDesign"); // Import the Firestore design routes
 
 require("dotenv").config();
 
@@ -48,6 +49,8 @@ apiRouter.use("/orders", orderRoutes);
 
 // product route
 apiRouter.use("/order-details", orderDetailsRoutes);
+
+apiRouter.use("/firestore", firestoreDesignRoutes);
 
 // Middleware to parse JSON bodies
 app.use(express.json());
