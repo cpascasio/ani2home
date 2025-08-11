@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../../config/firebase-config"; // Adjust the import path as necessary
+import { auth } from "../../config/firebase-config";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../config/firebase-config";
 
@@ -14,15 +14,80 @@ const Register = () => {
   const [username, setUsername] = useState("");
   const [error, setError] = useState("");
 
+  // New states for password features
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState({
+    score: 0,
+    feedback: [],
+  });
+
   useEffect(() => {
     console.log(
       "AUTHENTICATED? " + window.localStorage.getItem("authenticated")
     );
   }, []);
 
+  // Password strength checker (Requirements 2.1.5, 2.1.6)
+  const checkPasswordStrength = (pwd) => {
+    const feedback = [];
+    let score = 0;
+
+    // Length check (Requirement 2.1.6)
+    if (pwd.length >= 12) {
+      score += 20;
+    } else {
+      feedback.push("At least 12 characters");
+    }
+
+    // Complexity checks (Requirement 2.1.5)
+    if (/[A-Z]/.test(pwd)) {
+      score += 20;
+    } else {
+      feedback.push("One uppercase letter");
+    }
+
+    if (/[a-z]/.test(pwd)) {
+      score += 20;
+    } else {
+      feedback.push("One lowercase letter");
+    }
+
+    if (/\d/.test(pwd)) {
+      score += 20;
+    } else {
+      feedback.push("One number");
+    }
+
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) {
+      score += 20;
+    } else {
+      feedback.push("One special character");
+    }
+
+    setPasswordStrength({ score, feedback });
+    return score === 100;
+  };
+
+  const handlePasswordChange = (e) => {
+    const pwd = e.target.value;
+    setPassword(pwd);
+    if (pwd) {
+      checkPasswordStrength(pwd);
+    } else {
+      setPasswordStrength({ score: 0, feedback: [] });
+    }
+  };
+
   const handleEmailSignUp = async (email, password) => {
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+
+    // Check password strength
+    if (passwordStrength.score < 100) {
+      setError("Password does not meet all security requirements");
       return;
     }
 
@@ -34,20 +99,24 @@ const Register = () => {
       );
       console.log("User created in Firebase Auth:", userCredential.user);
 
-      // Update the user's profile with the displayName
       await updateProfile(userCredential.user, {
         displayName: username,
       });
 
-      // Prepare user data for the backend
       const userId = userCredential.user.uid;
       const userData = {
-        userId, // Include the userId in the request body
+        userId,
         name: username,
         userName: username,
+        // Add security fields with defaults
+        failedLoginAttempts: 0,
+        accountLockedUntil: null,
+        lastPasswordChange: new Date().toISOString(),
+        mfaEnabled: false,
+        passwordHistory: [],
+        loginHistory: [],
       };
 
-      // Call the /create-user POST route
       const response = await fetch(
         "http://localhost:3000/api/users/create-user",
         {
@@ -59,7 +128,6 @@ const Register = () => {
         }
       );
 
-      // Check if the request was successful
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
@@ -67,13 +135,11 @@ const Register = () => {
         );
       }
 
-      // Update authenticated state and store token
       setAuthenticated(true);
       window.localStorage.setItem("authenticated", "true");
       const tokenResult = await userCredential.user.getIdTokenResult();
       console.log("Firebase ID token:", tokenResult.token);
 
-      // Clear input fields after successful registration
       setEmail("");
       setPassword("");
       setConfirmPassword("");
@@ -81,13 +147,22 @@ const Register = () => {
       setError("");
     } catch (error) {
       console.error("Error during sign-up:", error.message);
-      setError(error.message); // Set error message for the user
+      setError(error.message);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     handleEmailSignUp(email, password);
+  };
+
+  // Get color for password strength indicator
+  const getStrengthColor = () => {
+    const score = passwordStrength.score;
+    if (score < 40) return "#ef4444"; // red
+    if (score < 60) return "#f97316"; // orange
+    if (score < 80) return "#eab308"; // yellow
+    return "#209D48"; // green (your brand color)
   };
 
   return (
@@ -116,27 +191,69 @@ const Register = () => {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full p-3 rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent"
               required
+              autoComplete="email"
             />
           </div>
           <div className="mb-4">
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={handlePasswordChange}
+                className="w-full p-3 pr-12 rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent"
+                required
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 text-sm"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+            {/* Password strength indicator */}
+            {password && (
+              <div className="mt-2">
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full transition-all duration-300"
+                    style={{
+                      width: `${passwordStrength.score}%`,
+                      backgroundColor: getStrengthColor(),
+                    }}
+                  />
+                </div>
+                {passwordStrength.feedback.length > 0 && (
+                  <ul className="mt-2 text-xs text-gray-600">
+                    {passwordStrength.feedback.map((item, index) => (
+                      <li key={index}>• {item}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
           </div>
           <div className="mb-4">
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full p-3 rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent"
-              required
-            />
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full p-3 pr-12 rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent"
+                required
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 text-sm"
+              >
+                {showConfirmPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
           <button
             type="submit"
