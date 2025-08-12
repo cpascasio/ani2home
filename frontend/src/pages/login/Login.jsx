@@ -23,10 +23,10 @@ const Login = () => {
   const [showMfaModal, setShowMfaModal] = useState(false);
   const navigate = useNavigate();
 
-  // New states for security features
-  const [showPassword, setShowPassword] = useState(false); // Requirement 2.1.7
-  const [loginError, setLoginError] = useState(""); // For generic error messages
-  const [lastLoginInfo, setLastLoginInfo] = useState(null); // Requirement 2.1.12
+  // Security feature states
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [lastLoginInfo, setLastLoginInfo] = useState(null);
   const [accountLocked, setAccountLocked] = useState(false);
   const [lockoutMessage, setLockoutMessage] = useState("");
 
@@ -43,22 +43,25 @@ const Login = () => {
         try {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (!userDoc.exists()) {
-            throw new Error("User document not found");
+            // For Google users, create the user document if it doesn't exist
+            if (user.providerData[0]?.providerId === "google.com") {
+              await createUserDocumentForGoogleUser(user);
+            } else {
+              throw new Error("User document not found");
+            }
           }
-          const userData = userDoc.data();
-          const mfaEnabled = userData.mfaEnabled;
 
-          // Display last login info (Requirement 2.1.12)
-          if (userData.lastSuccessfulLogin) {
+          const userData = userDoc.exists() ? userDoc.data() : null;
+          const mfaEnabled = userData?.mfaEnabled || false;
+
+          // Display last login info
+          if (userData?.lastSuccessfulLogin) {
             const lastLogin = new Date(
               userData.lastSuccessfulLogin
             ).toLocaleString();
             const failedAttempts =
               userData.failedLoginAttemptsSinceLastSuccess || 0;
-            setLastLoginInfo({
-              lastLogin,
-              failedAttempts,
-            });
+            setLastLoginInfo({ lastLogin, failedAttempts });
           }
 
           if (mfaEnabled && localStorage.getItem("mfaVerified") !== "true") {
@@ -69,7 +72,6 @@ const Login = () => {
           await completeLogin(user);
         } catch (error) {
           console.error("Authentication error:", error);
-          // Generic error message (Requirement 2.1.4)
           setLoginError("Invalid username and/or password");
         }
       } else {
@@ -83,6 +85,49 @@ const Login = () => {
     return () => unsubscribe();
   }, [dispatch, navigate]);
 
+  // Helper function to create user document for Google users
+  const createUserDocumentForGoogleUser = async (user) => {
+    try {
+      const token = await user.getIdToken();
+      const userData = {
+        uid: user.uid,
+        email: user.email,
+        name: user.displayName || "",
+        userName:
+          user.displayName?.replace(/\s+/g, "") || user.email.split("@")[0],
+        userProfilePic: user.photoURL || "",
+        phoneNumber: user.phoneNumber || "",
+        // Security fields
+        failedLoginAttempts: 0,
+        accountLockedUntil: null,
+        lastPasswordChange: new Date().toISOString(),
+        mfaEnabled: false,
+        passwordHistory: [],
+        loginHistory: [],
+        isVerified: true, // Google accounts are pre-verified
+        bio: "",
+        isStore: false,
+        followers: [],
+      };
+
+      const response = await axios.post(
+        "http://localhost:3000/api/users/create-user",
+        userData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Google user document created:", response.data);
+    } catch (error) {
+      console.error("Error creating Google user document:", error);
+      throw error;
+    }
+  };
+
   const completeLogin = async (user) => {
     try {
       const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -91,7 +136,19 @@ const Login = () => {
       const userData = userDoc.data();
       const tokenResult = await user.getIdTokenResult();
       const userId = user.uid;
-      const userName = user.providerData[0]?.displayName?.replace(/\s+/g, "");
+
+      // Get username from different sources based on auth method
+      let userName;
+      if (user.providerData[0]?.providerId === "google.com") {
+        userName =
+          userData.userName ||
+          user.displayName?.replace(/\s+/g, "") ||
+          user.email.split("@")[0];
+      } else {
+        userName =
+          user.providerData[0]?.displayName?.replace(/\s+/g, "") ||
+          userData.userName;
+      }
 
       // Log successful login to backend
       try {
@@ -101,6 +158,12 @@ const Login = () => {
             userId,
             ipAddress: window.location.hostname,
             userAgent: navigator.userAgent,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${tokenResult.token}`,
+              "Content-Type": "application/json",
+            },
           }
         );
       } catch (logError) {
@@ -115,6 +178,7 @@ const Login = () => {
       const enrichedUser = {
         username: userName,
         userId,
+        email: user.email,
         token: tokenResult.token,
         isStore: storeResponse.data.data,
       };
@@ -141,10 +205,10 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      setLoginError(""); // Clear previous errors
+      setLoginError("");
       setAccountLocked(false);
 
-      // First check for account lockout via backend
+      // Check for account lockout
       try {
         const lockoutCheck = await axios.post(
           "http://localhost:3000/api/auth/check-lockout",
@@ -186,7 +250,6 @@ const Login = () => {
         console.error("Failed to log failed attempt:", logError);
       }
 
-      // Generic error message (Requirement 2.1.4)
       setLoginError("Invalid username and/or password");
     }
   };
@@ -198,7 +261,13 @@ const Login = () => {
 
       const verifyResponse = await axios.post(
         `http://localhost:3000/api/users/verify-mfa-login/${user.uid}`,
-        { token: mfaToken }
+        { token: mfaToken },
+        {
+          headers: {
+            Authorization: `Bearer ${await user.getIdToken()}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       if (verifyResponse.data.state !== "success") {
@@ -216,9 +285,32 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      setLoginError("");
+      console.log("Starting Google login...");
+
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      console.log("Google login successful, user:", user.uid);
+      // The onAuthStateChanged listener will handle the rest
     } catch (error) {
-      console.error("Google login failed:", error.message);
+      console.error("Google login failed:", error);
+
+      // Log failed Google login attempt
+      if (error.code !== "auth/popup-cancelled-by-user") {
+        try {
+          await axios.post("http://localhost:3000/api/auth/log-failed-login", {
+            email: error.email || "unknown",
+            error: error.message,
+            loginMethod: "google",
+            ipAddress: window.location.hostname,
+            userAgent: navigator.userAgent,
+          });
+        } catch (logError) {
+          console.error("Failed to log Google login failure:", logError);
+        }
+      }
+
       setLoginError("Google login failed. Please try again.");
     }
   };
@@ -304,6 +396,7 @@ const Login = () => {
         <button
           onClick={handleGoogleLogin}
           className="w-full p-3 bg-[#209D48] text-white rounded-lg hover:bg-[#67B045] flex items-center justify-center"
+          disabled={accountLocked}
         >
           <img src={GoogleIcon} alt="Google" className="w-5 h-5 mr-2" />
           Log in with Google
@@ -317,7 +410,7 @@ const Login = () => {
           </p>
         </div>
 
-        {/* MFA Modal - No changes to your existing modal */}
+        {/* MFA Modal */}
         {showMfaModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white rounded-lg p-6 w-full max-w-md">
