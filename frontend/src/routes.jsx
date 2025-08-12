@@ -15,22 +15,41 @@ import Confirmation from "./pages/confirmation/Confirmation";
 import ItemPage from "./pages/itemPage/ItemPage";
 import EnableMFA from "./pages/enableMfa/EnableMFA";
 
+import AuthzGate from "./security/AuthzGate";
+import { POLICIES } from "./security/routePolicy";
+
+const wrap = (path, element, name) => {
+  const policy = POLICIES[path];
+  if (!policy) return { path, element, name };
+
+  return {
+    path,
+    name,
+    element: (
+      <AuthzGate require={policy} redirectTo="/login">
+        {element}
+      </AuthzGate>
+    ),
+  };
+};
+
 const routes = [
-  {
-    /* CTRL + CLICK the elements to go to the file */
-  },
-  { path: "/", element: <HomePage />, name: "Homepage" },
+  wrap("/", <HomePage />, "Homepage"),
   { path: "/login", element: <Login />, name: "Login" },
   { path: "/register", element: <Register />, name: "Register" },
-  { path: "/aboutus", element: <AboutUs />, name: "AboutUs" },
-  { path: "/products", element: <Products />, name: "Products" },
-  { path: "/seller", element: <Seller />, name: "Seller" },
+  wrap("/aboutus", <AboutUs />, "AboutUs"),
+  wrap("/products", <Products />, "Products"),
+  wrap("/seller", <Seller />, "Seller"),
   { path: "/profile/:sellerId", element: <ShopProfile />, name: "ShopProfile" },
-  { path: "/myProfile", element: <MyProfile />, name: "MyProfile" },
-  { path: "/myOrders", element: <MyOrders />, name: "MyOrders" },
-  { path: "/myShop", element: <MyShop />, name: "MyShop" },
-  { path: "/cart", element: <Cart />, name: "Cart" },
-  { path: "/checkout/:sellerId", element: <Checkout />, name: "Checkout" },
+  wrap("/myProfile", <MyProfile />, "MyProfile"),
+  wrap("/myOrders", <MyOrders />, "MyOrders"),
+  wrap("/myShop", <MyShop />, "MyShop"),
+  wrap("/cart", <Cart />, "Cart"),
+  { path: "/checkout/:sellerId", element: (
+      <AuthzGate require={POLICIES["/checkout/:sellerId"]} redirectTo="/login">
+        <Checkout />
+      </AuthzGate>
+    ), name: "Checkout" },
   { path: "/confirmation/:orderId", element: <Confirmation />, name: "Confirmation" },
   { path: "/item/:productId", element: <ItemPage />, name: "ItemPage" },
   { path: "/enable-mfa", element: <EnableMFA />, name: "EnableMFA" },
