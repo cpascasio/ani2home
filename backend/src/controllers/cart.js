@@ -2,30 +2,16 @@ const express = require("express");
 const admin = require("firebase-admin");
 const router = express.Router();
 const { logger, logToFirestore } = require("../config/firebase-config");
-const Joi = require("joi");
 
-const cartSchema = require("../models/cartModels");
+// Import validation schemas from cartModels.js
+const {
+  addToCartValidation,
+  removeFromCartValidation,
+  removeSellerItemsValidation,
+} = require("../models/cartModels");
 
 // Firestore database reference
 const db = admin.firestore();
-
-// Enhanced validation schemas for security
-const addToCartSchema = Joi.object({
-  userId: Joi.string().required().min(1).max(128),
-  sellerId: Joi.string().required().min(1).max(128),
-  productId: Joi.string().required().min(1).max(128),
-  quantity: Joi.number().integer().min(1).max(999).required(),
-});
-
-const removeFromCartSchema = Joi.object({
-  userId: Joi.string().required().min(1).max(128),
-  productId: Joi.string().required().min(1).max(128),
-});
-
-const removeSellerItemsSchema = Joi.object({
-  userId: Joi.string().required().min(1).max(128),
-  sellerId: Joi.string().required().min(1).max(128),
-});
 
 // Helper function to create standardized log data
 const createLogData = (
@@ -154,8 +140,8 @@ router.get("/:userId", async (req, res) => {
 // PUT /api/cart/remove-seller-items - Remove all items from a specific seller
 router.put("/remove-seller-items/", async (req, res) => {
   try {
-    // Input validation
-    const { error, value } = removeSellerItemsSchema.validate(req.body);
+    // Input validation using cartModels.js schema
+    const { error, value } = removeSellerItemsValidation.validate(req.body);
     if (error) {
       const logData = createLogData(
         req.user?.uid || "unknown",
@@ -469,11 +455,11 @@ router.get("/checkout/:userId/:sellerId", async (req, res) => {
   }
 });
 
-// POST /api/cart/add-to-cart - Add item to cart
+// POST /api/cart/add-to-cart - Add item to cart (using cartModels.js validation)
 router.post("/add-to-cart", async (req, res) => {
   try {
-    // Input validation
-    const { error, value } = addToCartSchema.validate(req.body);
+    // Input validation using cartModels.js schema
+    const { error, value } = addToCartValidation.validate(req.body);
     if (error) {
       const logData = createLogData(
         req.user?.uid || "unknown",
@@ -494,7 +480,8 @@ router.post("/add-to-cart", async (req, res) => {
       });
     }
 
-    const { userId, sellerId, productId, quantity } = value;
+    const { userId, productId, quantity } = value;
+    // sellerId will be retrieved from product data
 
     console.log("Request body:", req.body);
 
@@ -507,7 +494,7 @@ router.post("/add-to-cart", async (req, res) => {
         "unauthorized_cart_modification",
         `cart/${userId}`,
         "failed",
-        { requestedUserId: userId, sellerId, productId, quantity },
+        { requestedUserId: userId, productId, quantity },
         errorMsg
       );
 
@@ -520,7 +507,7 @@ router.post("/add-to-cart", async (req, res) => {
       });
     }
 
-    // Verify product exists and is active
+    // Verify product exists and get seller ID from product data
     const productDoc = await db.collection("products").doc(productId).get();
     if (!productDoc.exists) {
       const errorMsg = "Product not found";
@@ -530,7 +517,7 @@ router.post("/add-to-cart", async (req, res) => {
         "add_to_cart",
         `cart/${userId}`,
         "failed",
-        { productId, sellerId },
+        { productId },
         errorMsg
       );
 
@@ -544,17 +531,17 @@ router.post("/add-to-cart", async (req, res) => {
     }
 
     const productData = productDoc.data();
+    const sellerId = productData.storeId; // Get sellerId from product data
 
-    // Check if product belongs to the specified seller
-    if (productData.sellerId !== sellerId) {
-      const errorMsg = "Product does not belong to the specified seller";
+    if (!sellerId) {
+      const errorMsg = "Product has no associated seller";
 
       const logData = createLogData(
         userId,
         "add_to_cart",
         `cart/${userId}`,
         "failed",
-        { productId, sellerId, actualSellerId: productData.sellerId },
+        { productId },
         errorMsg
       );
 
@@ -693,8 +680,8 @@ router.post("/add-to-cart", async (req, res) => {
 // DELETE /api/cart/remove-from-cart - Remove item from cart
 router.delete("/remove-from-cart", async (req, res) => {
   try {
-    // Input validation
-    const { error, value } = removeFromCartSchema.validate(req.body);
+    // Input validation using cartModels.js schema
+    const { error, value } = removeFromCartValidation.validate(req.body);
     if (error) {
       const logData = createLogData(
         req.user?.uid || "unknown",

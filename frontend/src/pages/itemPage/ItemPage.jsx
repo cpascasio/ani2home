@@ -104,20 +104,42 @@ const ItemPage = () => {
   });
 
   const handleAddToCart = async () => {
-    // Include user ID in the product data
-
     try {
-      // Create Axios POST request
-      await axios.post("http://localhost:3000/api/cart/add-to-cart", {
-        userId: user?.userId,
-        sellerId: product?.storeId,
-        productId: product?.id,
-        quantity: quantity,
-      });
+      // Get the stored user data which contains the token
+      const userData = JSON.parse(storedUser);
+      const token = userData?.token;
+
+      if (!token) {
+        console.error("No authentication token found");
+        navigate("/login");
+        return;
+      }
+
+      // Create Axios POST request - NO sellerId needed!
+      await axios.post(
+        "http://localhost:3000/api/cart/add-to-cart",
+        {
+          userId: user?.userId,
+          productId: product?.id, // Only send productId
+          quantity: quantity,
+          // sellerId removed - backend will get it from product data
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       navigate("/cart");
     } catch (error) {
-      console.error("hello Error adding to cart:", error);
+      console.error("Error adding to cart:", error);
+
+      // If authentication fails, redirect to login
+      if (error.response?.status === 401) {
+        navigate("/login");
+      }
     }
   };
 

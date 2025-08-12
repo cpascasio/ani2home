@@ -3,6 +3,7 @@
 // but requires authentication for POST, PUT, DELETE
 
 const { authenticateUser } = require("./auth");
+const { requireFirebaseAuth } = require("./firebaseAuth");
 
 const selectiveAuth = (req, res, next) => {
   // Allow all GET requests without authentication
@@ -10,7 +11,12 @@ const selectiveAuth = (req, res, next) => {
     return next();
   }
 
-  // Require authentication for POST, PUT, DELETE, PATCH
+  // Special case: create-user endpoint only needs Firebase auth (not full user doc)
+  if (req.method === "POST" && req.path === "/create-user") {
+    return requireFirebaseAuth(req, res, next);
+  }
+
+  // Require full authentication (user must exist in database) for other POST, PUT, DELETE, PATCH
   return authenticateUser(req, res, next);
 };
 

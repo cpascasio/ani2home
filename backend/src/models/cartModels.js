@@ -68,15 +68,6 @@ const addToCartValidation = Joi.object({
       "string.pattern.base": "User ID contains invalid characters",
       "any.required": "User ID is required",
     }),
-  sellerId: Joi.string()
-    .required()
-    .min(1)
-    .max(128)
-    .pattern(/^[a-zA-Z0-9_-]+$/)
-    .messages({
-      "string.pattern.base": "Seller ID contains invalid characters",
-      "any.required": "Seller ID is required",
-    }),
   productId: Joi.string()
     .required()
     .min(1)
