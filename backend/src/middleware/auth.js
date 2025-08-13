@@ -1,64 +1,94 @@
 // backend/middleware/auth.js
 // This is the ONLY auth middleware file you need
 
-const admin = require("firebase-admin");
+const { admin } = require("../config/firebase-config");
 
 const authenticateUser = async (req, res, next) => {
   try {
-    const authHeader = req.header("Authorization");
+    console.log("🔍 [AUTH] Starting authentication for:", req.method, req.url);
+
+    const authHeader = req.headers.authorization;
+    console.log("🔍 [AUTH] Auth header present:", !!authHeader);
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      throw new Error("No token provided");
-    }
-
-    const token = authHeader.replace("Bearer ", "");
-
-    // Verify Firebase ID token
-    const decodedToken = await admin.auth().verifyIdToken(token);
-
-    // Check if user exists and is active in Firestore
-    const userDoc = await admin
-      .firestore()
-      .collection("users")
-      .doc(decodedToken.uid)
-      .get();
-
-    if (!userDoc.exists) {
-      throw new Error("User not found");
-    }
-
-    const userData = userDoc.data();
-
-    // Check if account is disabled or locked
-    if (userData.isDisabled) {
-      throw new Error("Account is disabled");
-    }
-
-    // Check if account is currently locked
-    if (
-      userData.accountLockedUntil &&
-      new Date(userData.accountLockedUntil) > new Date()
-    ) {
-      return res.status(423).json({
-        message: "Account is temporarily locked",
+      console.log("❌ [AUTH] No valid authorization header");
+      return res.status(401).json({
+        message: "Authentication token required",
         state: "error",
+        code: "MISSING_TOKEN",
       });
     }
 
-    // Attach user info to request
-    req.user = {
-      uid: decodedToken.uid,
-      email: decodedToken.email || userData.email,
-      isStore: userData.isStore || false,
-    };
+    const token = authHeader.split(" ")[1];
+    console.log(
+      "🔍 [AUTH] Token extracted (first 50 chars):",
+      token.substring(0, 50) + "..."
+    );
+    console.log("🔍 [AUTH] Token length:", token.length);
 
-    next();
+    try {
+      console.log("🔍 [AUTH] Attempting Firebase token verification...");
+
+      // Verify the Firebase ID token
+      const decodedToken = await admin.auth().verifyIdToken(token, true); // checkRevoked = true
+
+      console.log("✅ [AUTH] Token verified successfully!");
+      console.log("🔍 [AUTH] Decoded token user ID:", decodedToken.uid);
+      console.log("🔍 [AUTH] Decoded token email:", decodedToken.email);
+      console.log(
+        "🔍 [AUTH] Token issued at:",
+        new Date(decodedToken.iat * 1000).toISOString()
+      );
+      console.log(
+        "🔍 [AUTH] Token expires at:",
+        new Date(decodedToken.exp * 1000).toISOString()
+      );
+
+      // Add user info to request
+      req.user = decodedToken;
+      req.userId = decodedToken.uid;
+
+      console.log(
+        "✅ [AUTH] Authentication successful, proceeding to next middleware"
+      );
+      next();
+    } catch (tokenError) {
+      console.error("❌ [AUTH] Token verification failed!");
+      console.error("❌ [AUTH] Error code:", tokenError.code);
+      console.error("❌ [AUTH] Error message:", tokenError.message);
+      console.error("❌ [AUTH] Full error:", tokenError);
+
+      // Provide specific error codes for frontend handling
+      let errorCode = "INVALID_TOKEN";
+      let message = "Invalid authentication token";
+
+      if (tokenError.code === "auth/id-token-expired") {
+        errorCode = "TOKEN_EXPIRED";
+        message = "Authentication token has expired";
+        console.log("🕐 [AUTH] Token expired");
+      } else if (tokenError.code === "auth/id-token-revoked") {
+        errorCode = "TOKEN_REVOKED";
+        message = "Authentication token has been revoked";
+        console.log("🚫 [AUTH] Token revoked");
+      } else if (tokenError.code === "auth/project-not-found") {
+        console.log("🏗️ [AUTH] Firebase project not found - check config");
+      } else if (tokenError.code === "auth/invalid-id-token") {
+        console.log("🔍 [AUTH] Invalid token format");
+      }
+
+      return res.status(401).json({
+        message,
+        state: "error",
+        code: errorCode,
+      });
+    }
   } catch (error) {
-    console.error("Authentication error:", error.message);
-    // Fail securely (Requirement 2.1.2)
-    res.status(401).json({
-      message: "Please authenticate",
+    console.error("❌ [AUTH] Authentication middleware error:", error);
+    console.error("❌ [AUTH] Error stack:", error.stack);
+    return res.status(500).json({
+      message: "Authentication service error",
       state: "error",
+      code: "AUTH_SERVICE_ERROR",
     });
   }
 };
