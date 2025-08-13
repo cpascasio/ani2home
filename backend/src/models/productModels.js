@@ -1,42 +1,62 @@
+// models/productModels.js
 const Joi = require("joi");
 
-const now = new Date().toISOString();
+const idPattern = /^[a-zA-Z0-9_-]+$/;
 
-const productSchema = Joi.object({
-  // productId: Joi.string().guid({ version: 'uuidv4' }).required(),
-  storeId: Joi.string().optional(),
-  productName: Joi.string().optional(),
-  productDescription: Joi.string().optional(),
-  dateAdded: Joi.date().iso().optional(),
-  rating: Joi.number().min(0).max(5).precision(1).optional(),
-  isKilo: Joi.boolean().optional(),
-  totalSales: Joi.number().optional(),
-  stock: Joi.number().optional(),
-  price: Joi.number().precision(2).optional(),
-  pictures: Joi.array().items(Joi.string()).max(5).optional(),
-  type: Joi.string().optional(),
-  category: Joi.string().valid("Vegetable", "Fruit").optional(),
-});
+/**
+ * Create: strict schema (reject unknown fields).
+ * Required fields reflect your current UI (adjust if needed).
+ * - No sanitizing: .unknown(false) + validate(..., { stripUnknown:false })
+ */
+const productCreateValidation = Joi.object({
+  storeId: Joi.string().min(1).max(128).pattern(idPattern).required().messages({
+    "string.pattern.base": "storeId contains invalid characters",
+    "any.required": "storeId is required",
+  }),
+  productName: Joi.string().trim().min(1).max(120).required(),
+  productDescription: Joi.string().trim().max(2000).allow(""),
+  category: Joi.string().valid("Vegetable", "Fruit").required(),
+  // whether priced per kilo or per piece
+  isKilo: Joi.boolean().required(),
+  price: Joi.number().precision(2).min(0).max(999999.99).required(),
+  stock: Joi.number().integer().min(0).max(1000000).required(),
+  type: Joi.string().trim().max(120).allow(""), // optional subtype (e.g., variety)
+  // accept HTTPS URLs; if you send data URIs, change to .pattern(/^data:image\//)
+  pictures: Joi.array().items(Joi.string().uri().max(2048)).max(5),
+})
+  .unknown(false);
 
-module.exports = productSchema;
+/**
+ * Update: allow partial, still reject unknowns.
+ */
+const productUpdateValidation = Joi.object({
+  productName: Joi.string().trim().min(1).max(120),
+  productDescription: Joi.string().trim().max(2000).allow(""),
+  category: Joi.string().valid("Vegetable", "Fruit"),
+  isKilo: Joi.boolean(),
+  price: Joi.number().precision(2).min(0).max(999999.99),
+  stock: Joi.number().integer().min(0).max(1000000),
+  type: Joi.string().trim().max(120).allow(""),
+  pictures: Joi.array().items(Joi.string().uri().max(2048)).max(5),
+})
+  .min(1)
+  .unknown(false);
 
-// dateAdded
-// rating
-// totalSales
+/**
+ * Params validation
+ */
+const productIdParamValidation = Joi.string()
+  .required()
+  .min(1)
+  .max(128)
+  .pattern(idPattern)
+  .messages({
+    "string.pattern.base": "productId contains invalid characters",
+    "any.required": "productId is required",
+  });
 
-// modal specifications
-
-// Name
-// Description
-// category (vegetable, fruit)
-// create a dropdown that follows these conditions:
-// if(vegetable) dropdown should have a list of vegetables
-// if(fruit) dropdown should have a list of fruits
-
-// if dropdown has selected empty, create a custom other input field.
-
-// kilo or pieces
-// price per kilo or per piece
-// Stock
-
-// add picture that displays the pictures already added to be
+module.exports = {
+  productCreateValidation,
+  productUpdateValidation,
+  productIdParamValidation,
+};
