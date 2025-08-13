@@ -1,3 +1,4 @@
+// frontend/src/components/ProtectedRoute.jsx
 import React, { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useSecureAuth } from "../hooks/useSecureAuth";
@@ -7,6 +8,7 @@ const ProtectedRoute = ({
   requireAuth = false,
   requireNoAuth = false,
   requireStore = false,
+  requireAdmin = false, // 🆕 NEW: Admin requirement
   redirectTo = "/login",
   publicAccess = false,
 }) => {
@@ -15,10 +17,12 @@ const ProtectedRoute = ({
     loading,
     localUser,
     validateStoreAccess,
+    validateAdminAccess, // 🆕 NEW: Admin validation function
     isAuthenticated,
   } = useSecureAuth();
 
   const [storeValidated, setStoreValidated] = useState(null);
+  const [adminValidated, setAdminValidated] = useState(null); // 🆕 NEW: Admin validation state
   const [validating, setValidating] = useState(false);
   const location = useLocation();
 
@@ -27,10 +31,12 @@ const ProtectedRoute = ({
     path: location.pathname,
     requireAuth,
     requireStore,
+    requireAdmin, // 🆕 NEW
     isAuthenticated,
     firebaseUser: !!firebaseUser,
     localUser: localUser,
     storeValidated,
+    adminValidated, // 🆕 NEW
     validating,
     loading,
   });
@@ -67,6 +73,38 @@ const ProtectedRoute = ({
     validating,
   ]);
 
+  // 🆕 NEW: For admin routes, validate with backend
+  useEffect(() => {
+    if (
+      requireAdmin &&
+      isAuthenticated &&
+      adminValidated === null &&
+      !validating
+    ) {
+      console.log("Starting admin validation...");
+      setValidating(true);
+
+      validateAdminAccess()
+        .then((hasAccess) => {
+          console.log("Admin validation result:", hasAccess);
+          setAdminValidated(hasAccess);
+        })
+        .catch((error) => {
+          console.error("Admin validation error:", error);
+          setAdminValidated(false);
+        })
+        .finally(() => {
+          setValidating(false);
+        });
+    }
+  }, [
+    requireAdmin,
+    isAuthenticated,
+    adminValidated,
+    validateAdminAccess,
+    validating,
+  ]);
+
   if (loading || validating) {
     console.log("Showing loading state:", { loading, validating });
     return (
@@ -99,6 +137,36 @@ const ProtectedRoute = ({
     if (!isAuthenticated) {
       console.log("User not authenticated, redirecting to login");
       return <Navigate to={redirectTo} state={{ from: location }} replace />;
+    }
+
+    // 🆕 NEW: For admin access, check backend validation
+    if (requireAdmin) {
+      if (adminValidated === false) {
+        console.log("Admin access denied, redirecting to unauthorized");
+        return (
+          <Navigate
+            to="/unauthorized"
+            state={{
+              from: location,
+              reason:
+                "Admin access denied. Your account does not have administrative privileges.",
+            }}
+            replace
+          />
+        );
+      }
+
+      if (adminValidated === null) {
+        console.log("Admin validation still pending...");
+        return (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div>
+              <p className="mt-4 text-gray-600">Validating admin access...</p>
+            </div>
+          </div>
+        );
+      }
     }
 
     // For store access, check backend validation

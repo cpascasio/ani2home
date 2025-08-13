@@ -1,5 +1,16 @@
 const Joi = require("joi");
-const SecurityLogger = require("../utils/SecurityLogger");
+const SecurityLogger = require("../../utils/SecurityLogger");
+
+// Generic error messages (imported from errorHandler)
+const GENERIC_ERRORS = {
+  400: "Bad Request - The request could not be processed",
+  401: "Unauthorized - Authentication required",
+  403: "Forbidden - Access denied",
+  404: "Not Found - The requested resource was not found",
+  429: "Too Many Requests - Rate limit exceeded",
+  500: "Internal Server Error - An unexpected error occurred",
+  503: "Service Unavailable - Server temporarily unavailable",
+};
 
 // Enhanced validation middleware that logs failures
 const validateWithLogging = (schema, target = "body") => {

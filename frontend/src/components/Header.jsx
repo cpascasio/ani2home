@@ -5,6 +5,7 @@ import {
   FiX,
   FiChevronDown,
   FiShoppingCart,
+  FiSettings, // 🆕 Add settings icon for admin
 } from "react-icons/fi";
 import { FaUserCircle } from "react-icons/fa";
 import {
@@ -17,13 +18,10 @@ import useMeasure from "react-use-measure";
 import logoImage from "../assets/logo.png";
 import logoTitle from "../assets/logotitle.png";
 import PropTypes from "prop-types";
+import { usePermissions } from "../context/UserContext"; // 🆕 Add this import
 
 const Header = () => {
-  return (
-
-      <FlyoutNav />
-
-  );
+  return <FlyoutNav />;
 };
 
 const FlyoutNav = () => {
@@ -49,6 +47,7 @@ const FlyoutNav = () => {
           </div>
           <div className="flex items-center gap-6">
             <CartIcon />
+            <AdminDashboardIcon /> {/* 🆕 Add admin dashboard icon */}
             <ProfileIcon />
           </div>
         </div>
@@ -126,6 +125,39 @@ const CartIcon = () => {
   );
 };
 
+// 🆕 NEW: Admin Dashboard Icon Component
+const AdminDashboardIcon = () => {
+  const [color, setColor] = React.useState("#209D48");
+  const { isAdmin, isAuthenticated } = usePermissions();
+
+  // Only show if user is authenticated and is admin
+  if (!isAuthenticated || !isAdmin) {
+    return null;
+  }
+
+  return (
+    <a
+      href="/admin/dashboard"
+      className="relative flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200"
+      onMouseEnter={() => setColor("#67b045")}
+      onMouseLeave={() => setColor("#209D48")}
+      style={{
+        backgroundColor: "rgba(32, 157, 72, 0.1)",
+        border: `1px solid ${color}`,
+      }}
+      title="Admin Dashboard"
+    >
+      <FiSettings size={20} style={{ color }} />
+      <span
+        className="text-sm font-semibold hidden xl:inline"
+        style={{ color }}
+      >
+        Admin
+      </span>
+    </a>
+  );
+};
+
 const ProfileIcon = () => {
   const [color, setColor] = React.useState("#209D48");
 
@@ -143,6 +175,7 @@ const ProfileIcon = () => {
 
 const MobileMenu = () => {
   const [open, setOpen] = useState(false);
+  const { isAdmin, isAuthenticated } = usePermissions(); // 🆕 Add this
 
   return (
     <div className="block lg:hidden relative z-50">
@@ -166,6 +199,23 @@ const MobileMenu = () => {
               <Logo />
               <div className="flex items-center gap-4">
                 <CartIcon />
+                {/* 🆕 Show admin button in mobile menu if admin */}
+                {isAuthenticated && isAdmin && (
+                  <a
+                    href="/admin/dashboard"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg"
+                    style={{
+                      backgroundColor: "rgba(32, 157, 72, 0.2)",
+                      border: "1px solid #209D48",
+                    }}
+                    onClick={() => setOpen(false)}
+                  >
+                    <FiSettings size={20} style={{ color: "#209D48" }} />
+                    <span className="text-sm font-semibold text-[#209D48]">
+                      Admin
+                    </span>
+                  </a>
+                )}
                 <ProfileIcon />
                 <button
                   onClick={() => setOpen(false)}
@@ -181,6 +231,12 @@ const MobileMenu = () => {
                 <SearchBar />
               </div>
               <div className="flex flex-col">
+                {/* 🆕 Add admin dashboard to mobile links if admin */}
+                {isAuthenticated && isAdmin && (
+                  <MobileMenuLink href="/admin/dashboard" setMenuOpen={setOpen}>
+                    🛡️ Admin Dashboard
+                  </MobileMenuLink>
+                )}
                 {LINKS.map((l) => (
                   <MobileMenuLink
                     key={l.text}
@@ -271,7 +327,7 @@ const MobileMenuLink = ({ children, href, FoldContent, setMenuOpen }) => {
 MobileMenuLink.propTypes = {
   children: PropTypes.node.isRequired,
   href: PropTypes.string.isRequired,
-  FoldContent: PropTypes.elementType, 
+  FoldContent: PropTypes.elementType,
   setMenuOpen: PropTypes.func.isRequired,
 };
 

@@ -5,6 +5,7 @@ const express = require("express");
 const router = express.Router();
 const admin = require("firebase-admin");
 const db = admin.firestore();
+const SecurityLogger = require("../../utils/SecurityLogger");
 
 // ============================================
 // HELPER FUNCTIONS
@@ -97,25 +98,269 @@ function validatePassword(password) {
 // ROUTES
 // ============================================
 
-// Check lockout status
+// Check lockout status (keep existing)
 router.post("/check-lockout", async (req, res) => {
   const { email } = req.body;
+  const ipAddress = req.ip;
+  const userAgent = req.get("User-Agent");
 
   if (!email) {
+    // 🆕 Log validation failure
+    await SecurityLogger.logValidationFailure({
+      ipAddress,
+      userAgent,
+      endpoint: req.originalUrl,
+      method: req.method,
+      fieldName: "email",
+      rule: "required",
+      error: "Email is required",
+      sanitizedValue: "[MISSING]",
+    });
+
     return res.status(400).json({
-      message: "Email is required",
-      state: "error",
+      error: true,
+      message: "Invalid input data provided",
+      timestamp: new Date().toISOString(),
     });
   }
 
   try {
     const lockoutStatus = await checkAccountLockout(email);
+
+    // 🆕 Log lockout check
+    await SecurityLogger.logSecurityEvent("LOCKOUT_CHECK", {
+      ipAddress,
+      userAgent,
+      description: `Account lockout check for email`,
+      metadata: {
+        email: email.substring(0, 3) + "***", // Partially masked email
+        isLocked: lockoutStatus.isLocked,
+      },
+    });
+
     res.status(200).json(lockoutStatus);
   } catch (error) {
+    // 🆕 Log system error
+    await SecurityLogger.logSecurityEvent("LOCKOUT_CHECK_ERROR", {
+      ipAddress,
+      userAgent,
+      severity: "high",
+      description: "Error checking account lockout status",
+      metadata: { error: error.message },
+    });
+
     console.error("Lockout check error:", error);
     res.status(500).json({
-      message: "Error checking account status",
-      state: "error",
+      error: true,
+      message: "Internal Server Error - An unexpected error occurred",
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+// 🆕 NEW: Firebase Login Logging Endpoint
+router.post("/log-firebase-login", async (req, res) => {
+  const { success, email, userId, loginMethod, errorMessage, errorCode } =
+    req.body;
+  const ipAddress = req.ip;
+  const userAgent = req.get("User-Agent");
+
+  try {
+    if (success) {
+      // Log successful Firebase login
+      await SecurityLogger.logAuthAttempt("FIREBASE_LOGIN_SUCCESS", {
+        userId,
+        email,
+        ipAddress,
+        userAgent,
+        success: true,
+        metadata: {
+          loginMethod: loginMethod || "email_password",
+          source: "firebase_auth",
+        },
+      });
+
+      // Update user document with successful login
+      if (userId) {
+        const userRef = db.collection("users").doc(userId);
+        const userDoc = await userRef.get();
+
+        if (userDoc.exists) {
+          const loginHistoryEntry = {
+            timestamp: admin.firestore.Timestamp.now(),
+            success: true,
+            ipAddress: ipAddress || "unknown",
+            userAgent: userAgent || "unknown",
+            loginMethod: loginMethod || "email_password",
+          };
+
+          await userRef.update({
+            failedLoginAttempts: 0,
+            accountLockedUntil: null,
+            lastSuccessfulLogin: admin.firestore.Timestamp.now(),
+            lastLoginAttempt: admin.firestore.Timestamp.now(),
+            loginHistory:
+              admin.firestore.FieldValue.arrayUnion(loginHistoryEntry),
+          });
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Login logged successfully",
+        timestamp: new Date().toISOString(),
+      });
+    } else {
+      // Log failed Firebase login
+      await SecurityLogger.logAuthAttempt("FIREBASE_LOGIN_FAILED", {
+        email,
+        ipAddress,
+        userAgent,
+        success: false,
+        failureReason: errorMessage || "Authentication failed",
+        metadata: {
+          errorCode: errorCode || "unknown",
+          loginMethod: loginMethod || "email_password",
+          source: "firebase_auth",
+        },
+      });
+
+      // Handle failed login attempts and lockout
+      if (email) {
+        const usersSnapshot = await db
+          .collection("users")
+          .where("email", "==", email)
+          .limit(1)
+          .get();
+
+        if (!usersSnapshot.empty) {
+          const userDoc = usersSnapshot.docs[0];
+          const userData = userDoc.data();
+          const failedAttempts = (userData.failedLoginAttempts || 0) + 1;
+
+          const updateData = {
+            failedLoginAttempts: failedAttempts,
+            lastFailedLogin: admin.firestore.Timestamp.now(),
+            lastLoginAttempt: admin.firestore.Timestamp.now(),
+          };
+
+          // Lock account if max attempts reached
+          const MAX_ATTEMPTS = 5;
+          const LOCKOUT_DURATION = 30 * 60 * 1000; // 30 minutes
+
+          if (failedAttempts >= MAX_ATTEMPTS) {
+            updateData.accountLockedUntil = new Date(
+              Date.now() + LOCKOUT_DURATION
+            );
+
+            // Log account lockout
+            await SecurityLogger.logSecurityEvent("ACCOUNT_LOCKED", {
+              userId: userDoc.id,
+              ipAddress,
+              userAgent,
+              severity: "high",
+              description:
+                "Account locked due to multiple failed login attempts",
+              metadata: {
+                failedAttempts,
+                lockoutDuration: LOCKOUT_DURATION,
+              },
+            });
+          }
+
+          // Add to login history
+          const loginHistoryEntry = {
+            timestamp: admin.firestore.Timestamp.now(),
+            success: false,
+            ipAddress: ipAddress || "unknown",
+            userAgent: userAgent || "unknown",
+            loginMethod: loginMethod || "email_password",
+            errorCode: errorCode || "unknown",
+          };
+
+          await userDoc.ref.update({
+            ...updateData,
+            loginHistory:
+              admin.firestore.FieldValue.arrayUnion(loginHistoryEntry),
+          });
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Failed login logged",
+        timestamp: new Date().toISOString(),
+      });
+    }
+  } catch (error) {
+    await SecurityLogger.logSecurityEvent("LOGIN_LOGGING_ERROR", {
+      ipAddress,
+      userAgent,
+      severity: "high",
+      description: "Error logging Firebase login attempt",
+      metadata: { error: error.message },
+    });
+
+    console.error("Error logging Firebase login:", error);
+    res.status(500).json({
+      error: true,
+      message: "Internal Server Error - An unexpected error occurred",
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+// 🆕 NEW: MFA Verification Logging
+router.post("/log-mfa-attempt", async (req, res) => {
+  const { success, userId, errorMessage } = req.body;
+  const ipAddress = req.ip;
+  const userAgent = req.get("User-Agent");
+
+  try {
+    if (success) {
+      await SecurityLogger.logAuthAttempt("MFA_VERIFICATION_SUCCESS", {
+        userId,
+        ipAddress,
+        userAgent,
+        success: true,
+        metadata: {
+          authStep: "mfa_verification",
+          source: "frontend",
+        },
+      });
+    } else {
+      await SecurityLogger.logAuthAttempt("MFA_VERIFICATION_FAILED", {
+        userId,
+        ipAddress,
+        userAgent,
+        success: false,
+        failureReason: errorMessage || "Invalid MFA token",
+        metadata: {
+          authStep: "mfa_verification",
+          source: "frontend",
+        },
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "MFA attempt logged",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    await SecurityLogger.logSecurityEvent("MFA_LOGGING_ERROR", {
+      userId,
+      ipAddress,
+      userAgent,
+      severity: "medium",
+      description: "Error logging MFA verification attempt",
+      metadata: { error: error.message },
+    });
+
+    res.status(500).json({
+      error: true,
+      message: "Internal Server Error - An unexpected error occurred",
+      timestamp: new Date().toISOString(),
     });
   }
 });

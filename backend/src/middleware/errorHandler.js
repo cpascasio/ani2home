@@ -1,4 +1,4 @@
-const SecurityLogger = require("../utils/SecurityLogger");
+const SecurityLogger = require("../../utils/SecurityLogger");
 
 // Generic error messages (Requirement 2.4.2)
 const GENERIC_ERRORS = {

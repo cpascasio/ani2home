@@ -12,6 +12,7 @@ import MyOrders from "./pages/myOrders/MyOrders";
 import MyShop from "./pages/myShop/MyShop";
 import Cart from "./pages/cart/Cart";
 import Checkout from "./pages/checkout/Checkout";
+import AdminDashboard from "./pages/adminDashboard/AdminDashboard"; // 🆕 NEW: Admin Dashboard
 import Confirmation from "./pages/confirmation/Confirmation";
 import ItemPage from "./pages/itemPage/ItemPage";
 import EnableMFA from "./pages/enableMfa/EnableMFA";
@@ -160,6 +161,17 @@ const routes = [
       </ProtectedRoute>
     ),
     name: "MyShop",
+  },
+
+  // 🆕 ===== ADMIN ONLY ROUTES (Logged in + isAdmin = true) =====
+  {
+    path: "/admin/dashboard",
+    element: (
+      <ProtectedRoute requireAuth={true} requireAdmin={true}>
+        <AdminDashboard />
+      </ProtectedRoute>
+    ),
+    name: "AdminDashboard",
   },
 
   // ===== ERROR PAGES =====
