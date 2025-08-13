@@ -381,4 +381,89 @@ router.post("/change-password", async (req, res) => {
   }
 });
 
+// Validate user permissions (called by frontend before sensitive actions)
+router.get("/validate-permissions", async (req, res) => {
+  try {
+    const authHeader = req.header("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ valid: false, message: "No token provided" });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+
+    // Verify Firebase token
+    const decodedToken = await admin.auth().verifyIdToken(token);
+
+    // Get FRESH user data from Firestore (source of truth)
+    const userDoc = await admin
+      .firestore()
+      .collection("users")
+      .doc(decodedToken.uid)
+      .get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ valid: false, message: "User not found" });
+    }
+
+    const userData = userDoc.data();
+
+    // Return current permissions from database
+    res.json({
+      valid: true,
+      permissions: {
+        isStore: userData.isStore || false,
+        isAdmin: userData.isAdmin || false,
+        isVerified: userData.isVerified || false,
+        isDisabled: userData.isDisabled || false,
+      },
+      user: {
+        uid: decodedToken.uid,
+        email: userData.email,
+        name: userData.name,
+      },
+    });
+  } catch (error) {
+    console.error("Permission validation error:", error);
+    res.status(401).json({ valid: false, message: "Invalid token" });
+  }
+});
+
+// Specific endpoint for store access validation
+router.get("/validate-store-access", async (req, res) => {
+  try {
+    const authHeader = req.header("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ hasAccess: false });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const decodedToken = await admin.auth().verifyIdToken(token);
+
+    const userDoc = await admin
+      .firestore()
+      .collection("users")
+      .doc(decodedToken.uid)
+      .get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ hasAccess: false });
+    }
+
+    const userData = userDoc.data();
+
+    // Check all conditions for store access
+    const hasAccess =
+      userData.isStore === true &&
+      !userData.isDisabled &&
+      userData.isVerified === true;
+
+    res.json({ hasAccess, isStore: userData.isStore });
+  } catch (error) {
+    console.error("Store access validation error:", error);
+    res.status(401).json({ hasAccess: false });
+  }
+});
+
 module.exports = router;

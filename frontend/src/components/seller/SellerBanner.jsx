@@ -1,17 +1,27 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import { useUser } from "../../context/UserContext";
+import { useSecureAuth } from "../../hooks/useSecureAuth";
 
-const SellerBanner = ({ user }) => {
-  const [userData] = useState(user);
+const SellerBanner = ({ user: propUser }) => {
+  const { user: contextUser } = useUser();
+  const { localUser } = useSecureAuth();
+
+  // Use the best available user data source
+  const userData = propUser || contextUser || localUser;
 
   useEffect(() => {
     console.log("SELLERBANNER");
-    console.log(user);
-  }, []);
+    console.log("Prop user:", propUser);
+    console.log("Context user:", contextUser);
+    console.log("Local user:", localUser);
+    console.log("Selected userData:", userData);
+  }, [propUser, contextUser, localUser, userData]);
 
-  useEffect(() => {
-    console.log(userData);
-  }, [userData]);
+  // Helper function to get display value with fallback
+  const getDisplayValue = (value, fallback) => {
+    return value && value !== "" ? value : fallback;
+  };
 
   return (
     <div className="flex flex-col md:flex-row w-full h-auto bg-gradient-to-r from-[#072c1c] to-[#83c763] pt-[6%]">
@@ -20,7 +30,10 @@ const SellerBanner = ({ user }) => {
         <div className="flex justify-center items-center w-1/3">
           <div className="bg-white rounded-full">
             <img
-              src={userData?.userProfilePic || "../src/assets/FarmShop1.jpg"}
+              src={getDisplayValue(
+                userData?.userProfilePic,
+                "../src/assets/FarmShop1.jpg"
+              )}
               alt="Shop Logo"
               className="w-[30vw] h-[30vw] max-w-[162px] max-h-[162px] rounded-full object-cover"
             />
@@ -28,10 +41,16 @@ const SellerBanner = ({ user }) => {
         </div>
         <div className="flex flex-col justify-center text-white w-2/3 pl-4">
           <h1 className="text-2xl font-bold font-inter mb-2">
-            {userData?.name || "Pogi Farms"}
+            {getDisplayValue(
+              userData?.name || userData?.userName,
+              "Farm Store"
+            )}
           </h1>
           <div className="italic mb-2 font-inter text-sm">
-            {userData?.address?.fullAddress || "Dasmarinas, Cavite"}
+            {getDisplayValue(
+              userData?.address?.fullAddress,
+              "Location not specified"
+            )}
           </div>
           <button className="rounded border border-[#D9D9D9] text-white p-2 px-5 mx-[20%] mt-2 font-inter font-bold transition duration-300 ease-in-out hover:bg-blue-500 hover:text-white hover:border-blue-500">
             Follow+
@@ -42,8 +61,10 @@ const SellerBanner = ({ user }) => {
       {/* Mobile View: Bio Section */}
       <div className="md:hidden flex flex-col p-6 py-0 text-white">
         <div className="text-justify font-inter text-sm">
-          {userData?.bio ||
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
+          {getDisplayValue(
+            userData?.bio,
+            "Welcome to our farm store! We provide fresh, quality products directly from our farm to your table."
+          )}
         </div>
       </div>
 
@@ -59,7 +80,11 @@ const SellerBanner = ({ user }) => {
               />
             </div>
             <div className="text-center font-inter text-xs">
-              <strong>Followers:</strong> {userData?.followers || "1,203"}
+              <strong>Followers:</strong>{" "}
+              {getDisplayValue(
+                userData?.followers?.length || userData?.followers,
+                "0"
+              )}
             </div>
           </div>
         </div>
@@ -73,7 +98,8 @@ const SellerBanner = ({ user }) => {
               />
             </div>
             <div className="text-center font-inter text-xs">
-              <strong>Rating:</strong> {userData?.rating || "4.4"} (1,304)
+              <strong>Rating:</strong>{" "}
+              {getDisplayValue(userData?.rating, "New")}
             </div>
           </div>
         </div>
@@ -87,7 +113,11 @@ const SellerBanner = ({ user }) => {
               />
             </div>
             <div className="text-center font-inter text-xs">
-              <strong>Products:</strong> {userData?.products || "67"}
+              <strong>Products:</strong>{" "}
+              {getDisplayValue(
+                userData?.products?.length || userData?.products,
+                "0"
+              )}
             </div>
           </div>
         </div>
@@ -99,7 +129,10 @@ const SellerBanner = ({ user }) => {
         <div className="flex flex-col items-center w-1/4 pr-4">
           <div className="flex justify-center items-center mb-4">
             <img
-              src={userData?.userProfilePic || "../src/assets/FarmShop1.jpg"}
+              src={getDisplayValue(
+                userData?.userProfilePic,
+                "../src/assets/FarmShop1.jpg"
+              )}
               alt="Shop Logo"
               className="w-[10vw] h-[10vw] max-w-[162px] max-h-[162px] rounded-full object-cover"
             />
@@ -110,18 +143,26 @@ const SellerBanner = ({ user }) => {
         <div className="flex flex-col w-1/2 pr-8">
           <div className="flex items-center mb-4">
             <h1 className="text-2xl font-bold font-inter mr-4 text-left text-white">
-              {userData?.name || "Pogi Farms"}
+              {getDisplayValue(
+                userData?.name || userData?.userName,
+                "Farm Store"
+              )}
             </h1>
             <button className="font-bold rounded border-2 border-white text-white p-2 px-5 font-inter hover:bg-white hover:text-green-900 transition-colors duration-300">
               Follow+
             </button>
           </div>
           <div className="italic mb-4 font-inter text-left text-white">
-            {userData?.address?.fullAddress || "Dasmarinas, Cavite"}
+            {getDisplayValue(
+              userData?.address?.fullAddress,
+              "Location not specified"
+            )}
           </div>
           <div className="mb-6 text-left font-inter text-justify text-white">
-            {userData?.bio ||
-              "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
+            {getDisplayValue(
+              userData?.bio,
+              "Welcome to our farm store! We provide fresh, quality products directly from our farm to your table."
+            )}
           </div>
         </div>
 
@@ -132,7 +173,11 @@ const SellerBanner = ({ user }) => {
               <img src="../src/assets/FollowersIcon.png" alt="Followers" />
             </div>
             <div className="text-left font-inter w-auto">
-              <strong>Followers:</strong> {userData?.followers || "1,203"}
+              <strong>Followers:</strong>{" "}
+              {getDisplayValue(
+                userData?.followers?.length || userData?.followers,
+                "0"
+              )}
             </div>
           </div>
           <div className="flex items-center mb-4 w-auto">
@@ -140,7 +185,9 @@ const SellerBanner = ({ user }) => {
               <img src="../src/assets/RatingsIcon.png" alt="Ratings" />
             </div>
             <div className="text-left font-inter w-auto">
-              <strong>Rating:</strong> {userData?.rating || "4.4"} (1,304)
+              <strong>Rating:</strong>{" "}
+              {getDisplayValue(userData?.rating, "New")}{" "}
+              {userData?.rating && "(Reviews available)"}
             </div>
           </div>
           <div className="flex items-center w-auto">
@@ -148,7 +195,11 @@ const SellerBanner = ({ user }) => {
               <img src="../src/assets/ProductsIcon.png" alt="Products" />
             </div>
             <div className="text-left font-inter w-full">
-              <strong>Products:</strong> {userData?.products || "67"}
+              <strong>Products:</strong>{" "}
+              {getDisplayValue(
+                userData?.products?.length || userData?.products,
+                "0"
+              )}
             </div>
           </div>
         </div>
@@ -162,13 +213,22 @@ SellerBanner.propTypes = {
     userId: PropTypes.string,
     userProfilePic: PropTypes.string,
     name: PropTypes.string,
+    userName: PropTypes.string,
     address: PropTypes.shape({
       fullAddress: PropTypes.string,
     }),
     bio: PropTypes.string,
-    followers: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    followers: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+      PropTypes.array,
+    ]),
     rating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    products: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    products: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number,
+      PropTypes.array,
+    ]),
   }),
 };
 
