@@ -2,6 +2,7 @@
 // This is the ONLY auth middleware file you need
 
 const { admin } = require("../config/firebase-config");
+const SecurityLogger = require("../../utils/SecurityLogger");
 
 const authenticateUser = async (req, res, next) => {
   try {
@@ -104,9 +105,33 @@ const requireStore = async (req, res, next) => {
   next();
 };
 
-// Optional: Middleware to check if user is admin
+// REPLACE YOUR EXISTING requireAdmin FUNCTION WITH THIS:
 const requireAdmin = async (req, res, next) => {
+  const ipAddress = req.ip;
+  const userAgent = req.get("User-Agent");
+  const endpoint = req.originalUrl;
+
   try {
+    // Make sure user is authenticated first
+    if (!req.user || !req.user.uid) {
+      await SecurityLogger.logAccessControlFailure({
+        userId: null,
+        ipAddress,
+        userAgent,
+        resource: "admin_functions",
+        permission: "admin_access",
+        userPermissions: [],
+        endpoint,
+        method: req.method,
+      });
+
+      return res.status(401).json({
+        error: true,
+        message: "Authentication required",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     const userDoc = await admin
       .firestore()
       .collection("users")
@@ -115,18 +140,80 @@ const requireAdmin = async (req, res, next) => {
 
     const userData = userDoc.data();
 
-    if (!userData.isAdmin) {
+    if (!userData || !userData.isAdmin) {
+      // 🆕 LOG ACCESS CONTROL FAILURE
+      await SecurityLogger.logAccessControlFailure({
+        userId: req.user.uid,
+        ipAddress,
+        userAgent,
+        resource: "admin_functions",
+        permission: "admin_access",
+        userPermissions: userData?.isStore ? ["store_user"] : ["basic_user"],
+        endpoint,
+        method: req.method,
+      });
+
       return res.status(403).json({
-        message: "Admin access required",
-        state: "error",
+        error: true,
+        message: "Administrative privileges required",
+        timestamp: new Date().toISOString(),
       });
     }
 
+    // Check if admin account is disabled (optional)
+    if (userData.isDisabled) {
+      await SecurityLogger.logAccessControlFailure({
+        userId: req.user.uid,
+        ipAddress,
+        userAgent,
+        resource: "admin_functions",
+        permission: "admin_access",
+        userPermissions: ["disabled_admin"],
+        endpoint,
+        method: req.method,
+      });
+
+      return res.status(403).json({
+        error: true,
+        message: "Account is disabled",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // 🆕 LOG SUCCESSFUL ADMIN ACCESS
+    await SecurityLogger.logAuthAttempt("ADMIN_ACCESS_SUCCESS", {
+      userId: req.user.uid,
+      email: userData.email,
+      ipAddress,
+      userAgent,
+      success: true,
+      metadata: {
+        endpoint,
+        accessType: "admin_function",
+      },
+    });
+
+    // Add user data to request for use in routes
+    req.userData = userData;
+    req.isAdmin = true;
+
     next();
   } catch (error) {
-    res.status(403).json({
-      message: "Admin access required",
-      state: "error",
+    // 🆕 LOG SYSTEM ERROR
+    await SecurityLogger.logSecurityEvent("ADMIN_AUTH_ERROR", {
+      userId: req.user?.uid || null,
+      ipAddress,
+      userAgent,
+      severity: "high",
+      description: "Admin authentication system error",
+      endpoint,
+      metadata: { error: error.message },
+    });
+
+    res.status(500).json({
+      error: true,
+      message: "Internal Server Error - An unexpected error occurred",
+      timestamp: new Date().toISOString(),
     });
   }
 };

@@ -1,5 +1,5 @@
-const logger = require("../config/logger");
-const admin = require("../config/firebase-config");
+const logger = require("../src/config/logger");
+const { admin } = require("../src/config/firebase-config");
 const db = admin.firestore();
 
 class SecurityLogger {

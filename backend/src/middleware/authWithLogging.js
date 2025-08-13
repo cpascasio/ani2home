@@ -1,5 +1,5 @@
-const admin = require("../config/firebase-config");
-const SecurityLogger = require("../utils/SecurityLogger");
+const { admin } = require("../config/firebase-config");
+const SecurityLogger = require("../../utils/SecurityLogger");
 
 const authenticateWithLogging = async (req, res, next) => {
   const ipAddress = req.ip;

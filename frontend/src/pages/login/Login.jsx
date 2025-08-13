@@ -13,6 +13,44 @@ import { useUser } from "../../../src/context/UserContext.jsx";
 import GoogleIcon from "../../assets/google-icon.png";
 import { useNavigate } from "react-router-dom";
 
+// 🆕 HELPER FUNCTIONS FOR COMPREHENSIVE LOGGING
+// Helper function to log authentication attempts
+const logAuthAttempt = async (
+  success,
+  email,
+  userId = null,
+  loginMethod = "email_password",
+  errorMessage = null,
+  errorCode = null
+) => {
+  try {
+    await axios.post("http://localhost:3000/api/auth/log-firebase-login", {
+      success,
+      email,
+      userId,
+      loginMethod,
+      errorMessage,
+      errorCode,
+    });
+  } catch (logError) {
+    console.error("Failed to log authentication attempt:", logError);
+    // Don't block login flow if logging fails
+  }
+};
+
+// Helper function to log MFA attempts
+const logMfaAttempt = async (success, userId, errorMessage = null) => {
+  try {
+    await axios.post("http://localhost:3000/api/auth/log-mfa-attempt", {
+      success,
+      userId,
+      errorMessage,
+    });
+  } catch (logError) {
+    console.error("Failed to log MFA attempt:", logError);
+  }
+};
+
 const Login = () => {
   const { user, dispatch } = useUser();
   const [authenticated, setAuthenticated] = useState(false || user === "true");
@@ -128,29 +166,13 @@ const Login = () => {
     }
   };
 
+  // 🆕 UPDATED completeLogin WITH ENHANCED LOGGING
   const completeLogin = async (user) => {
     try {
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists()) throw new Error("User document not found");
-
-      const userData = userDoc.data();
       const tokenResult = await user.getIdTokenResult();
       const userId = user.uid;
 
-      // Get username from different sources based on auth method
-      let userName;
-      if (user.providerData[0]?.providerId === "google.com") {
-        userName =
-          userData.userName ||
-          user.displayName?.replace(/\s+/g, "") ||
-          user.email.split("@")[0];
-      } else {
-        userName =
-          user.providerData[0]?.displayName?.replace(/\s+/g, "") ||
-          userData.userName;
-      }
-
-      // Log successful login to backend
+      // 🆕 LOG SUCCESSFUL LOGIN COMPLETION (for existing users)
       try {
         await axios.post(
           `http://localhost:3000/api/auth/log-successful-login`,
@@ -166,25 +188,11 @@ const Login = () => {
             },
           }
         );
+        console.log("✅ Login completion logged successfully");
       } catch (logError) {
-        console.error("Failed to log successful login:", logError);
+        console.error("Failed to log successful login completion:", logError);
+        // Don't block login flow if logging fails
       }
-
-      const storeResponse = await axios.get(
-        `http://localhost:3000/api/users/${userId}/isStore`,
-        { headers: { Authorization: `Bearer ${tokenResult.token}` } }
-      );
-
-      const enrichedUser = {
-        username: userName,
-        userId,
-        email: user.email,
-        token: tokenResult.token,
-        isStore: storeResponse.data.data,
-      };
-
-      localStorage.setItem("user", JSON.stringify(enrichedUser));
-      dispatch({ type: "LOGIN", payload: enrichedUser });
 
       // Show last login notification if available
       if (lastLoginInfo) {
@@ -196,6 +204,7 @@ const Login = () => {
         }
       }
 
+      // 🔥 ONLY NAVIGATION - UserContext handles all localStorage management
       navigate("/myProfile");
     } catch (error) {
       console.error("Login continuation error:", error);
@@ -203,12 +212,13 @@ const Login = () => {
     }
   };
 
+  // 🆕 UPDATED handleLogin WITH COMPREHENSIVE LOGGING
   const handleLogin = async () => {
     try {
       setLoginError("");
       setAccountLocked(false);
 
-      // Check for account lockout
+      // Check for account lockout (keep existing)
       try {
         const lockoutCheck = await axios.post(
           "http://localhost:3000/api/auth/check-lockout",
@@ -224,36 +234,60 @@ const Login = () => {
         console.error("Lockout check failed:", lockoutError);
       }
 
-      await signInWithEmailAndPassword(auth, email, password);
+      // 🆕 ATTEMPT FIREBASE LOGIN
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      // 🆕 LOG SUCCESSFUL LOGIN
+      await logAuthAttempt(
+        true, // success
+        email, // email
+        user.uid, // userId
+        "email_password", // loginMethod
+        null, // errorMessage
+        null // errorCode
+      );
+
+      // The rest of your login flow continues as normal...
+      // onAuthStateChanged will handle the completion
     } catch (error) {
       console.error("Login failed:", error.message);
 
-      // Log failed attempt to backend
+      // 🆕 LOG FAILED LOGIN WITH DETAILED ERROR INFO
+      await logAuthAttempt(
+        false, // success
+        email, // email
+        null, // userId
+        "email_password", // loginMethod
+        error.message, // errorMessage
+        error.code // errorCode
+      );
+
+      // 🆕 CHECK IF ACCOUNT WAS LOCKED DUE TO THIS FAILURE
       try {
-        const response = await axios.post(
-          "http://localhost:3000/api/auth/log-failed-login",
-          {
-            email,
-            ipAddress: window.location.hostname,
-            userAgent: navigator.userAgent,
-          }
+        const lockoutCheck = await axios.post(
+          "http://localhost:3000/api/auth/check-lockout",
+          { email }
         );
 
-        if (response.data.accountLocked) {
+        if (lockoutCheck.data.isLocked) {
           setAccountLocked(true);
-          setLockoutMessage(
-            response.data.message ||
-              "Account temporarily locked due to multiple failed attempts"
-          );
+          setLockoutMessage(lockoutCheck.data.message);
+          return;
         }
-      } catch (logError) {
-        console.error("Failed to log failed attempt:", logError);
+      } catch (lockoutError) {
+        console.error("Post-failure lockout check failed:", lockoutError);
       }
 
       setLoginError("Invalid username and/or password");
     }
   };
 
+  // 🆕 UPDATED handleMfaSubmit WITH LOGGING
   const handleMfaSubmit = async () => {
     try {
       const user = auth.currentUser;
@@ -274,15 +308,26 @@ const Login = () => {
         throw new Error("Invalid MFA token");
       }
 
+      // 🆕 LOG SUCCESSFUL MFA VERIFICATION
+      await logMfaAttempt(true, user.uid);
+
       localStorage.setItem("mfaVerified", "true");
       setShowMfaModal(false);
       await completeLogin(auth.currentUser);
     } catch (error) {
       console.error("MFA verification failed:", error.message);
+
+      // 🆕 LOG FAILED MFA VERIFICATION
+      const user = auth.currentUser;
+      if (user) {
+        await logMfaAttempt(false, user.uid, error.message);
+      }
+
       setLoginError("Invalid MFA token. Please try again.");
     }
   };
 
+  // 🆕 UPDATED handleGoogleLogin WITH COMPREHENSIVE LOGGING
   const handleGoogleLogin = async () => {
     try {
       setLoginError("");
@@ -292,23 +337,31 @@ const Login = () => {
       const user = result.user;
 
       console.log("Google login successful, user:", user.uid);
+
+      // 🆕 LOG SUCCESSFUL GOOGLE LOGIN
+      await logAuthAttempt(
+        true, // success
+        user.email, // email
+        user.uid, // userId
+        "google", // loginMethod
+        null, // errorMessage
+        null // errorCode
+      );
+
       // The onAuthStateChanged listener will handle the rest
     } catch (error) {
       console.error("Google login failed:", error);
 
-      // Log failed Google login attempt
+      // 🆕 LOG FAILED GOOGLE LOGIN (unless user cancelled)
       if (error.code !== "auth/popup-cancelled-by-user") {
-        try {
-          await axios.post("http://localhost:3000/api/auth/log-failed-login", {
-            email: error.email || "unknown",
-            error: error.message,
-            loginMethod: "google",
-            ipAddress: window.location.hostname,
-            userAgent: navigator.userAgent,
-          });
-        } catch (logError) {
-          console.error("Failed to log Google login failure:", logError);
-        }
+        await logAuthAttempt(
+          false, // success
+          error.email || "unknown", // email
+          null, // userId
+          "google", // loginMethod
+          error.message, // errorMessage
+          error.code // errorCode
+        );
       }
 
       setLoginError("Google login failed. Please try again.");
