@@ -2,31 +2,32 @@ const Joi = require("joi");
 
 const userSchema = Joi.object({
   userId: Joi.string().optional(),
+  uid: Joi.string().optional(), // Accept both uid and userId for flexibility
   name: Joi.string().optional(),
   userName: Joi.string().optional(),
   email: Joi.string().email().optional(),
   dateOfBirth: Joi.date().iso().optional(),
   userProfilePic: Joi.string().optional(),
-  userCover: Joi.string().optional(),
+  userCover: Joi.string().allow("").optional(),
   address: Joi.object({
-    fullAddress: Joi.string().optional(),
-    streetAddress: Joi.string().optional(),
-    city: Joi.string().optional(),
-    province: Joi.string().optional(),
-    barangay: Joi.string().optional(),
-    region: Joi.string().optional(),
-    country: Joi.string().optional(),
-    postalCode: Joi.string().optional(),
+    fullAddress: Joi.string().allow("").optional(),
+    streetAddress: Joi.string().allow("").optional(),
+    city: Joi.string().allow("").optional(),
+    province: Joi.string().allow("").optional(),
+    barangay: Joi.string().allow("").optional(),
+    region: Joi.string().allow("").optional(),
+    country: Joi.string().allow("").optional(),
+    postalCode: Joi.string().allow("").optional(),
     lng: Joi.number().optional(),
     lat: Joi.number().optional(),
   }).optional(),
-  phoneNumber: Joi.string().optional(),
+  phoneNumber: Joi.string().allow("").optional(),
   followers: Joi.array().items(Joi.string()).optional(),
   isStore: Joi.boolean().optional(),
-  bio: Joi.string().optional(),
+  bio: Joi.string().allow("").optional(),
   isVerified: Joi.boolean().optional(),
 
-  // Authentication & Security fields - CORRECTED SYNTAX
+  // Authentication & Security fields
   failedLoginAttempts: Joi.number().integer().min(0).default(0).optional(),
   accountLockedUntil: Joi.date().allow(null).optional(),
   lastLoginAttempt: Joi.date().allow(null).optional(),
@@ -45,14 +46,14 @@ const userSchema = Joi.object({
   passwordHistory: Joi.array()
     .items(
       Joi.object({
-        password: Joi.string().required(), // This will be the hashed password
+        password: Joi.string().required(),
         changedAt: Joi.date().required(),
       })
     )
     .optional(),
   lastPasswordChange: Joi.date().default(Date.now).optional(),
 
-  // MFA fields (you already have these)
+  // MFA fields
   mfaSecret: Joi.string().optional(),
   mfaEnabled: Joi.boolean().default(false).optional(),
 
@@ -61,14 +62,14 @@ const userSchema = Joi.object({
     .items(
       Joi.object({
         questionId: Joi.string().required(),
-        answer: Joi.string().required(), // This will be hashed
+        answer: Joi.string().required(),
       })
     )
     .min(3)
-    .optional(), // Require at least 3 security questions
+    .optional(),
 
-  // Password field (for registration/updates)
-  password: Joi.string().optional(), // Will be hashed before storage
+  // Password field
+  password: Joi.string().optional(),
 });
 
 module.exports = userSchema;
