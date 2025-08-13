@@ -151,14 +151,36 @@ const checkUserExists = async (userId) => {
 router.post("/create-user", async (req, res) => {
   console.log("Request body:", req.body);
 
-  const userId = req.body.userId;
+  // Get userId from Firebase token (most secure)
+  const firebaseUserId = req.firebaseUser.uid;
+
+  // Handle both uid and userId from request body
+  const requestUserId = req.body.userId || req.body.uid;
 
   try {
+    // Ensure the userId in the request matches the Firebase token
+    if (requestUserId && requestUserId !== firebaseUserId) {
+      return res.status(403).json({
+        message:
+          "User ID mismatch - you can only create your own user document",
+        state: "error",
+      });
+    }
+
+    // Normalize the request body to use userId consistently
+    const { uid, ...restOfBody } = req.body;
+    const requestBody = {
+      ...restOfBody,
+      userId: firebaseUserId, // Always use the Firebase token's UID
+    };
+
+    console.log("Normalized request body:", requestBody);
+
     // Check if the user already exists in Firestore
-    const userExists = await checkUserExists(userId);
+    const userExists = await checkUserExists(firebaseUserId);
 
     if (userExists) {
-      console.log("User already exists:", userId);
+      console.log("User already exists:", firebaseUserId);
       return res.status(400).json({
         message: "User already exists",
         state: "error",
@@ -166,7 +188,7 @@ router.post("/create-user", async (req, res) => {
     }
 
     // Validate the request body
-    const { error, value } = userSchema.validate(req.body);
+    const { error, value } = userSchema.validate(requestBody);
     if (error) {
       console.log("Validation error:", error.details[0].message);
       return res.status(400).send(error.details[0].message);
@@ -175,12 +197,13 @@ router.post("/create-user", async (req, res) => {
     console.log("Validated request body:", value);
 
     // Add the user to Firestore
+    console.log("About to add user to Firestore with value:", value);
     await addUserToFirestore(value);
-    console.log("User added to Firestore:", userId);
+    console.log("User added to Firestore:", firebaseUserId);
 
     // Create a cart for the user
-    await createCartForUser(userId);
-    console.log("Cart created for user:", userId);
+    await createCartForUser(firebaseUserId);
+    console.log("Cart created for user:", firebaseUserId);
 
     const logData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
@@ -193,9 +216,9 @@ router.post("/create-user", async (req, res) => {
         second: "2-digit",
         hour12: false,
       }).format(new Date()),
-      userId,
+      userId: firebaseUserId,
       action: "create_user",
-      resource: `users/${userId}`,
+      resource: `users/${firebaseUserId}`,
       status: "success",
     };
 
@@ -208,9 +231,35 @@ router.post("/create-user", async (req, res) => {
     });
   } catch (error) {
     console.error("Error in /create-user:", error);
+    console.error("Error stack:", error.stack);
+
+    // Log the error details
+    const logData = {
+      timestamp: new Intl.DateTimeFormat("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(new Date()),
+      userId: firebaseUserId,
+      action: "create_user",
+      resource: `users/${firebaseUserId}`,
+      status: "failed",
+      error: error.message,
+      stack: error.stack,
+    };
+
+    logger.error(logData);
+    await logToFirestore(logData);
+
     res.status(500).json({
       message: "Error creating user",
       state: "error",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined, // Only show error details in development
     });
   }
 });
