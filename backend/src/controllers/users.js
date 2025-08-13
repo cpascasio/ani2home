@@ -3,7 +3,8 @@ const admin = require("firebase-admin");
 const router = express.Router();
 const fs = require("fs");
 const userSchema = require("../models/userModels");
-const cartSchema = require("../models/cartModels");
+// FIX: Destructure cartSchema from the module exports
+const { cartSchema } = require("../models/cartModels");
 const cloudinary = require("../config/cloudinary");
 const otplib = require("otplib");
 const qrcode = require("qrcode");
@@ -105,24 +106,18 @@ const addUserToFirestore = async (value) => {
   }
 };
 
-// create cart for user
+// Updated createCartForUser function
 const createCartForUser = async (userId) => {
+  // For initial cart creation, we want a simple empty cart structure
+  // No need to validate against the full cartSchema since an empty cart is always valid
   const data = {
-    cart: [],
+    cart: [], // Empty cart is valid for new users
   };
 
-  // validate the cart
-  const { error, value } = cartSchema.validate(data);
-
-  if (error) {
-    console.error("Validation Error:", error.details[0].message); // Log the validation error
-    throw new Error("Error creating cart for user");
-  }
-
   try {
-    // Assuming 'add' is a method to add a new document. This might need to be adjusted based on your DB API.
-    await db.collection("cart").doc(userId).set(value);
-    console.log("Cart created successfully");
+    // Create cart document with empty cart structure
+    await db.collection("cart").doc(userId).set(data);
+    console.log("Cart created successfully for user:", userId);
   } catch (error) {
     console.error("Error creating cart:", error);
     throw new Error("Error creating cart for user");

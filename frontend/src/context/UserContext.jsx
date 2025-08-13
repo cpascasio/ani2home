@@ -30,6 +30,19 @@ export const UserProvider = ({ children }) => {
       if (!mounted) return;
 
       try {
+        // CRITICAL: Check if registration is in progress
+        const registrationInProgress =
+          localStorage.getItem("registrationInProgress") === "true";
+        const backendCreationInProgress =
+          localStorage.getItem("backendCreationInProgress") === "true";
+
+        if (registrationInProgress || backendCreationInProgress) {
+          console.log(
+            "Registration/backend creation in progress - ignoring auth state change"
+          );
+          return; // Don't process auth changes during registration
+        }
+
         if (firebaseUser) {
           // Firebase user exists, get user data from localStorage
           const storedUser = localStorage.getItem("user");
@@ -51,17 +64,19 @@ export const UserProvider = ({ children }) => {
               } else {
                 // Stored user doesn't match Firebase user, clear storage
                 console.warn("Stored user doesn't match Firebase user");
-                localStorage.clear();
-                dispatch({ type: "LOGOUT" });
+                localStorage.removeItem("user");
+                localStorage.removeItem("mfaVerified");
+                dispatch({ type: "LOGOUT_NO_CLEAR" });
               }
             } catch (error) {
               console.error("Error parsing stored user:", error);
-              localStorage.clear();
-              dispatch({ type: "LOGOUT" });
+              localStorage.removeItem("user");
+              localStorage.removeItem("mfaVerified");
+              dispatch({ type: "LOGOUT_NO_CLEAR" });
             }
           } else {
             // Firebase user exists but no stored user data
-            // This might happen during registration process
+            // This might happen during registration process or incomplete login
             console.log("Firebase user exists but no stored user data");
             dispatch({ type: "SET_LOADING", payload: false });
           }
@@ -99,8 +114,7 @@ UserProvider.propTypes = {
 const userReducer = (state, action) => {
   switch (action.type) {
     case "LOGIN":
-      // Store user data in localStorage
-      localStorage.setItem("user", JSON.stringify(action.payload));
+      // Don't store to localStorage here since Register component handles it
       console.log("User logged in:", action.payload);
 
       return {
@@ -118,6 +132,16 @@ const userReducer = (state, action) => {
       // Clear all localStorage
       localStorage.clear();
       console.log("User logged out");
+
+      return {
+        ...state,
+        user: null,
+        loading: false,
+      };
+
+    case "LOGOUT_NO_CLEAR":
+      // Logout without clearing localStorage (for registration flow)
+      console.log("User logged out (no localStorage clear)");
 
       return {
         ...state,

@@ -7,7 +7,7 @@ const userSchema = Joi.object({
   userName: Joi.string().optional(),
   email: Joi.string().email().optional(),
   dateOfBirth: Joi.date().iso().optional(),
-  userProfilePic: Joi.string().optional(),
+  userProfilePic: Joi.string().allow("").optional(),
   userCover: Joi.string().allow("").optional(),
   address: Joi.object({
     fullAddress: Joi.string().allow("").optional(),
