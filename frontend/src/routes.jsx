@@ -1,3 +1,4 @@
+// frontend/src/routes.jsx
 import React from "react";
 import HomePage from "./pages/homepage/HomePage";
 import Login from "./pages/login/Login";
@@ -14,26 +15,159 @@ import Checkout from "./pages/checkout/Checkout";
 import Confirmation from "./pages/confirmation/Confirmation";
 import ItemPage from "./pages/itemPage/ItemPage";
 import EnableMFA from "./pages/enableMfa/EnableMFA";
+import Unauthorized from "./pages/unauthorized/Unauthorized";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const routes = [
+  // ===== PUBLIC ROUTES (All users can access) =====
   {
-    /* CTRL + CLICK the elements to go to the file */
+    path: "/",
+    element: (
+      <ProtectedRoute publicAccess={true}>
+        <HomePage />
+      </ProtectedRoute>
+    ),
+    name: "Homepage",
   },
-  { path: "/", element: <HomePage />, name: "Homepage" },
-  { path: "/login", element: <Login />, name: "Login" },
-  { path: "/register", element: <Register />, name: "Register" },
-  { path: "/aboutus", element: <AboutUs />, name: "AboutUs" },
-  { path: "/products", element: <Products />, name: "Products" },
-  { path: "/seller", element: <Seller />, name: "Seller" },
-  { path: "/profile/:sellerId", element: <ShopProfile />, name: "ShopProfile" },
-  { path: "/myProfile", element: <MyProfile />, name: "MyProfile" },
-  { path: "/myOrders", element: <MyOrders />, name: "MyOrders" },
-  { path: "/myShop", element: <MyShop />, name: "MyShop" },
-  { path: "/cart", element: <Cart />, name: "Cart" },
-  { path: "/checkout/:sellerId", element: <Checkout />, name: "Checkout" },
-  { path: "/confirmation/:orderId", element: <Confirmation />, name: "Confirmation" },
-  { path: "/item/:productId", element: <ItemPage />, name: "ItemPage" },
-  { path: "/enable-mfa", element: <EnableMFA />, name: "EnableMFA" },
+  {
+    path: "/aboutus",
+    element: (
+      <ProtectedRoute publicAccess={true}>
+        <AboutUs />
+      </ProtectedRoute>
+    ),
+    name: "AboutUs",
+  },
+  {
+    path: "/products",
+    element: (
+      <ProtectedRoute publicAccess={true}>
+        <Products />
+      </ProtectedRoute>
+    ),
+    name: "Products",
+  },
+  {
+    path: "/profile/:sellerId",
+    element: (
+      <ProtectedRoute publicAccess={true}>
+        <ShopProfile />
+      </ProtectedRoute>
+    ),
+    name: "ShopProfile",
+  },
+  {
+    path: "/item/:productId",
+    element: (
+      <ProtectedRoute publicAccess={true}>
+        <ItemPage />
+      </ProtectedRoute>
+    ),
+    name: "ItemPage",
+  },
+
+  // ===== NO-AUTH REQUIRED ROUTES (Only for non-logged in users) =====
+  {
+    path: "/login",
+    element: (
+      <ProtectedRoute requireNoAuth={true}>
+        <Login />
+      </ProtectedRoute>
+    ),
+    name: "Login",
+  },
+  {
+    path: "/register",
+    element: (
+      <ProtectedRoute requireNoAuth={true}>
+        <Register />
+      </ProtectedRoute>
+    ),
+    name: "Register",
+  },
+
+  // ===== AUTHENTICATED ROUTES (Logged in users: buyers and sellers) =====
+  {
+    path: "/myProfile",
+    element: (
+      <ProtectedRoute requireAuth={true}>
+        <MyProfile />
+      </ProtectedRoute>
+    ),
+    name: "MyProfile",
+  },
+  {
+    path: "/myOrders",
+    element: (
+      <ProtectedRoute requireAuth={true}>
+        <MyOrders />
+      </ProtectedRoute>
+    ),
+    name: "MyOrders",
+  },
+  {
+    path: "/cart",
+    element: (
+      <ProtectedRoute requireAuth={true}>
+        <Cart />
+      </ProtectedRoute>
+    ),
+    name: "Cart",
+  },
+  {
+    path: "/checkout/:sellerId",
+    element: (
+      <ProtectedRoute requireAuth={true}>
+        <Checkout />
+      </ProtectedRoute>
+    ),
+    name: "Checkout",
+  },
+  {
+    path: "/confirmation/:orderId",
+    element: (
+      <ProtectedRoute requireAuth={true}>
+        <Confirmation />
+      </ProtectedRoute>
+    ),
+    name: "Confirmation",
+  },
+  {
+    path: "/enable-mfa",
+    element: (
+      <ProtectedRoute requireAuth={true}>
+        <EnableMFA />
+      </ProtectedRoute>
+    ),
+    name: "EnableMFA",
+  },
+
+  // ===== SELLER/STORE ONLY ROUTES (Logged in + isStore = true) =====
+  {
+    path: "/seller",
+    element: (
+      <ProtectedRoute requireAuth={true} requireStore={true}>
+        <Seller />
+      </ProtectedRoute>
+    ),
+    name: "Seller",
+  },
+  {
+    path: "/myShop",
+    element: (
+      <ProtectedRoute requireAuth={true} requireStore={true}>
+        <MyShop />
+      </ProtectedRoute>
+    ),
+    name: "MyShop",
+  },
+
+  // ===== ERROR PAGES =====
+  {
+    path: "/unauthorized",
+    element: <Unauthorized />,
+    name: "Unauthorized",
+  },
 ];
 
 export default routes;

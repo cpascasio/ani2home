@@ -39,14 +39,14 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Check authentication on component mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
-      navigate("/login");
-      return;
-    }
-  }, [navigate]);
+  // // Check authentication on component mount
+  // useEffect(() => {
+  //   const storedUser = localStorage.getItem("user");
+  //   if (!storedUser) {
+  //     navigate("/login");
+  //     return;
+  //   }
+  // }, [navigate]);
 
   // Fetch cart data when user is available
   useEffect(() => {
