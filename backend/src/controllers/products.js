@@ -5,9 +5,30 @@ const cloudinary = require("../config/cloudinary");
 const fs = require("fs");
 const productSchema = require("../models/productModels");
 const { logger, logToFirestore } = require("../config/firebase-config");
+const { authorize } = require("../middleware"); // or: require("../middleware/authorize")
 
 // Firestore database reference
 const db = admin.firestore();
+
+// POST /api/products
+router.post(
+  "/",
++ authorize({ roles: ["seller", "admin"], anyOfPermissions: ["products:create"], requireAuth: true }),
+  async (req, res) => {
+    const { sellerId, name } = req.body;
+    if (!sellerId || !name) {
+      return res.status(400).json({ error: "sellerId and name required" });
+    }
+
+    // Ownership check (fail closed)
+    if (!req.user?.admin && sellerId !== req.user?.uid) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    // ... create product owned by sellerId
+    return res.status(201).json({ ok: true });
+  }
+);
 
 // Route to get product detail
 router.get("/:productId", async (req, res) => {

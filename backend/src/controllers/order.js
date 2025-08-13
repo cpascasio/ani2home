@@ -5,9 +5,21 @@ const placeOrderSchema = require("../models/placeOrderModels");
 const orderDetailsSchema = require("../models/orderDetailsModels");
 const orderSchema = require("../models/orderModels");
 const { logger, logToFirestore } = require("../config/firebase-config");
+const { authorize } = require("../middleware"); // or: require("../middleware/authorize")
+
 
 // Firestore database reference
 const db = admin.firestore();
+
+// e.g. POST /api/orders/checkout
+router.post(
+  "/checkout",
++ authorize({ requireAuth: true, requireMFA: true, anyOfPermissions: ["orders:create"] }),
+  async (req, res) => {
+    // ... checkout logic
+    return res.json({ ok: true });
+  }
+);
 
 router.post("/place-order", async (req, res) => {
   console.log("Request body:", req.body); // Log the incoming request body

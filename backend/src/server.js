@@ -9,6 +9,7 @@ const orderDetailsRoutes = require("./controllers/orderDetails"); // Import the 
 const webhooksRoutes = require("./controllers/webhooks"); // Import the product routes
 const lalamoveRoutes = require("./controllers/lalamove"); // Import the product routes
 const firestoreDesignRoutes = require("./controllers/extractFirestoreDesign"); // Import the Firestore design routes
+const { decodeToken } = require("./middleware");
 
 // ADD THESE NEW IMPORTS
 const authRoutes = require("./controllers/authRoutes"); // New auth routes
@@ -72,6 +73,14 @@ const apiRouter = express.Router();
 
 // Apply general rate limiting to all API routes
 apiRouter.use(apiLimiter);
+
+// All API requests first get a decoded token (may be null → guest)
+app.use("/api", decodeToken);
+
+
+// then your routers, which can now use authorize()
+app.use("/api/checkout", require("./routes/checkout"));
+
 
 // PUBLIC ROUTES (No authentication required)
 // Authentication routes with stricter rate limiting
