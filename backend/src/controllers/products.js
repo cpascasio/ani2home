@@ -17,19 +17,21 @@ const db = admin.firestore();
 // Route to get product detail
 router.get("/:productId", async (req, res) => {
   try {
-    const product = await db
-      .collection("products")
-      .doc(req.params.productId)
-      .get();
-    if (!product.exists) {
-      return res.status(404).json({ message: "Product not found" });
+    const { error } = productIdParamValidation.validate(req.params.productId);
+    if (error) {
+      return res.status(400).json({ message: "Invalid productId", details: error.details });
     }
-    res.json(product.data());
-  } catch (error) {
-    console.error("Error getting product:", error);
+
+    const doc = await db.collection("products").doc(req.params.productId).get();
+    if (!doc.exists) return res.status(404).json({ message: "Product not found" });
+
+    res.json({ id: doc.id, ...doc.data() });
+  } catch (err) {
+    console.error("Error getting product:", err);
     res.status(500).send("Error getting product");
   }
 });
+
 
 // route to get products given userId
 router.get("/user/:userId", async (req, res) => {
@@ -159,268 +161,202 @@ router.post(
   "/create-product",
   authorize({ requireAuth: true, roles: ["seller","admin"], anyOfPermissions: ["products:create"] }),
   async (req, res) => {
-    const { error, value } = productCreateValidation.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: false,
-    });
-    if (error) {
-      return res.status(400).json({
-        message: "Invalid input data",
-        state: "error",
-        details: error.details,
-      });
-    }
-
-    if (!req.user?.admin && value.storeId !== req.user?.uid) {
-      return res.status(403).json({ message: "Forbidden", state: "error" });
-    }
-
-    value.dateAdded = new Date().toISOString();
-    value.rating = 0;
-    value.totalSales = 0;
-
     try {
-      if (Array.isArray(value.pictures) && value.pictures.length) {
-        const uploadPromises = value.pictures.map(async (picture) => {
-          const result = await cloudinary.uploader.upload(picture, {
-            folder: "ani2home",
-            resource_type: "image",
-          });
-          return result.secure_url;
-        });
-        value.pictures = await Promise.all(uploadPromises);
+      // Strict validation (reject unknowns, collect all issues)
+      const { error, value } = productCreateValidation.validate(req.body, {
+        abortEarly: false,
+        stripUnknown: false,
+      });
+      if (error) {
+        return res.status(400).json({ message: "Invalid input data", state: "error", details: error.details });
       }
 
-      const newProductRef = db.collection("products").doc();
-      await newProductRef.set(value);
+      // Ownership (seller can only create for their own store)
+      if (!req.user?.admin && value.storeId !== req.user?.uid) {
+        return res.status(403).json({ message: "Forbidden", state: "error" });
+      }
+
+      // Optional: upload pictures (supports https:// and data:image/*)
+      if (Array.isArray(value.pictures) && value.pictures.length > 0) {
+        const uploaded = await Promise.all(
+          value.pictures.map(async (imgStr) => {
+            const result = await cloudinary.uploader.upload(imgStr, {
+              folder: "ani2home",
+              resource_type: "image",
+            });
+            return result.secure_url;
+          })
+        );
+        value.pictures = uploaded;
+      }
+
+      // Server‑controlled fields AFTER validation
+      value.dateAdded = new Date().toISOString();
+      value.rating = 0;
+      value.totalSales = 0;
+
+      const ref = db.collection("products").doc();
+      await ref.set(value);
 
       const logData = {
-        timestamp: new Intl.DateTimeFormat("en-PH", {
-          timeZone: "Asia/Manila",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        }).format(new Date()),
+        timestamp: new Date().toISOString(),
         action: "create_product",
-        resource: `products/${newProductRef.id}`,
+        resource: `products/${ref.id}`,
         status: "success",
-        details: { message: "Product created successfully", productId: newProductRef.id },
-      };
-
-      logger.info(logData);
-      await logToFirestore(logData);
-
-      res.status(201).json({
-        message: "Product created successfully",
-        product: { ...value, productId: newProductRef.id },
-      });
-    } catch (error) {
-      console.error("Error creating product:", error);
-
-      const logData = {
-        timestamp: new Intl.DateTimeFormat("en-PH", {
-          timeZone: "Asia/Manila",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        }).format(new Date()),
         userId: req.user?.uid || "unknown",
+        details: { productId: ref.id, storeId: value.storeId },
+      };
+      logger.info(logData); await logToFirestore(logData);
+
+      return res.status(201).json({
+        message: "Product created successfully",
+        product: { ...value, productId: ref.id },
+      });
+    } catch (err) {
+      const logData = {
+        timestamp: new Date().toISOString(),
         action: "create_product",
         resource: "products",
         status: "failed",
-        error: error.message,
+        userId: req.user?.uid || "unknown",
+        error: err.message,
       };
-
-      logger.error(logData);
-      await logToFirestore(logData);
-
-      res.status(500).send("Error creating product");
+      logger.error(logData); await logToFirestore(logData);
+      return res.status(500).send("Error creating product");
     }
   }
 );
+
 
 // Route to update a product
 router.put(
   "/:productId",
   authorize({ requireAuth: true, roles: ["seller","admin"], anyOfPermissions: ["products:update"] }),
   async (req, res) => {
-    // Validate path param
-    const { error: pidErr } = productIdParamValidation.validate(req.params.productId);
-    if (pidErr) {
-      return res.status(400).json({ message: "Invalid productId", details: pidErr.details });
-    }
-
-    // Strict body validation (partial allowed; reject unknown fields)
-    const { error, value } = productUpdateValidation.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: false,
-    });
-    if (error) {
-      return res.status(400).json({
-        message: "Invalid input data",
-        state: "error",
-        details: error.details,
-      });
-    }
-
     try {
-      const productId = req.params.productId;
-      const productRef = db.collection("products").doc(productId);
-      const productDoc = await productRef.get();
-
-      if (!productDoc.exists) {
-        return res.status(404).json({ message: "Product not found", state: "error" });
+      // Validate path param
+      const { error: pidErr } = productIdParamValidation.validate(req.params.productId);
+      if (pidErr) {
+        return res.status(400).json({ message: "Invalid productId", details: pidErr.details });
       }
 
-      // Ownership (fail securely)
-      const oldData = productDoc.data();
-      if (!req.user?.admin && oldData.storeId !== req.user?.uid) {
+      // Strict body validation (partial allowed; reject unknown)
+      const { error, value } = productUpdateValidation.validate(req.body, {
+        abortEarly: false,
+        stripUnknown: false,
+      });
+      if (error) {
+        return res.status(400).json({ message: "Invalid input data", state: "error", details: error.details });
+      }
+
+      const ref = db.collection("products").doc(req.params.productId);
+      const doc = await ref.get();
+      if (!doc.exists) return res.status(404).json({ message: "Product not found", state: "error" });
+
+      const current = doc.data();
+
+      // Ownership (seller can only update their own product)
+      if (!req.user?.admin && current.storeId !== req.user?.uid) {
         return res.status(403).json({ message: "Forbidden", state: "error" });
       }
 
-      // Update Firestore document with the validated values
-      await productRef.update(value);
+      // If pictures provided, upload and replace
+      if (value.pictures) {
+        const uploaded = await Promise.all(
+          value.pictures.map(async (imgStr) => {
+            const result = await cloudinary.uploader.upload(imgStr, {
+              folder: "ani2home",
+              resource_type: "image",
+            });
+            return result.secure_url;
+          })
+        );
+        value.pictures = uploaded;
+      }
 
-      // Compare old and new for logging (optional)
+      await ref.update(value);
+
+      // Diff for audit
       const changes = {};
-      for (const key of Object.keys(value)) {
-        if (value[key] !== oldData[key]) {
-          changes[key] = { old: oldData[key], new: value[key] };
-        }
+      for (const k of Object.keys(value)) {
+        if (value[k] !== current[k]) changes[k] = { old: current[k], new: value[k] };
       }
 
       const logData = {
-        timestamp: new Intl.DateTimeFormat("en-PH", {
-          timeZone: "Asia/Manila",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        }).format(new Date()),
+        timestamp: new Date().toISOString(),
         action: "update_product",
-        resource: `products/${productId}`,
+        resource: `products/${req.params.productId}`,
         status: "success",
-        details: {
-          message: "Product updated successfully",
-          productId,
-          changes,
-        },
+        userId: req.user?.uid || "unknown",
+        details: { productId: req.params.productId, changes },
       };
+      logger.info(logData); await logToFirestore(logData);
 
-      logger.info(logData);
-      await logToFirestore(logData);
-
-      res.status(200).json({ message: "Product updated successfully" });
-    } catch (error) {
-      console.error("Error updating product:", error);
-
-      const productId = req.params.productId; // for logging
+      return res.status(200).json({ message: "Product updated successfully" });
+    } catch (err) {
       const logData = {
-        timestamp: new Intl.DateTimeFormat("en-PH", {
-          timeZone: "Asia/Manila",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        }).format(new Date()),
+        timestamp: new Date().toISOString(),
         action: "update_product",
-        resource: `products/${productId}`,
+        resource: `products/${req.params.productId}`,
         status: "failed",
-        error: error.message,
+        userId: req.user?.uid || "unknown",
+        error: err.message,
       };
-
-      logger.error(logData);
-      await logToFirestore(logData);
-
-      res.status(500).send("Error updating product");
+      logger.error(logData); await logToFirestore(logData);
+      return res.status(500).send("Error updating product");
     }
   }
 );
 
+
 // Route to delete a product
-router.delete("/:productId", async (req, res) => {
-  const { productId } = req.params;
+router.delete(
+  "/:productId",
+  authorize({ requireAuth: true, roles: ["seller","admin"], anyOfPermissions: ["products:update"] }),
+  async (req, res) => {
+    try {
+      const { error: pidErr } = productIdParamValidation.validate(req.params.productId);
+      if (pidErr) {
+        return res.status(400).json({ message: "Invalid productId", details: pidErr.details });
+      }
 
-  try {
-    const productRef = db.collection("products").doc(productId);
-    const productDoc = await productRef.get();
+      const ref = db.collection("products").doc(req.params.productId);
+      const doc = await ref.get();
+      if (!doc.exists) return res.status(404).json({ message: "Product not found", state: "error" });
 
-    // Check if the product exists
-    if (!productDoc.exists) {
-      return res
-        .status(404)
-        .json({ message: "Product not found", state: "error" });
+      const current = doc.data();
+
+      // Ownership
+      if (!req.user?.admin && current.storeId !== req.user?.uid) {
+        return res.status(403).json({ message: "Forbidden", state: "error" });
+      }
+
+      await ref.delete();
+
+      const logData = {
+        timestamp: new Date().toISOString(),
+        action: "delete_product",
+        resource: `products/${req.params.productId}`,
+        status: "success",
+        userId: req.user?.uid || "unknown",
+        details: { productId: req.params.productId },
+      };
+      logger.info(logData); await logToFirestore(logData);
+
+      return res.status(200).json({ message: "Product deleted successfully" });
+    } catch (err) {
+      const logData = {
+        timestamp: new Date().toISOString(),
+        action: "delete_product",
+        resource: `products/${req.params.productId}`,
+        status: "failed",
+        userId: req.user?.uid || "unknown",
+        error: err.message,
+      };
+      logger.error(logData); await logToFirestore(logData);
+      return res.status(500).send("Error deleting product");
     }
-
-    // Delete the product
-    await productRef.delete();
-
-    // Log the successful deletion
-    const logData = {
-      timestamp: new Intl.DateTimeFormat("en-PH", {
-        timeZone: "Asia/Manila",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }).format(new Date()),
-      action: "delete_product",
-      resource: `products/${productId}`,
-      status: "success",
-      details: {
-        message: "Product deleted successfully",
-        productId: productId,
-      },
-    };
-
-    logger.info(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
-
-    res.status(200).json({ message: "Product deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting product:", error);
-
-    // Log the error
-    const logData = {
-      timestamp: new Intl.DateTimeFormat("en-PH", {
-        timeZone: "Asia/Manila",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }).format(new Date()),
-      userId: req.headers["x-user-id"] || "unknown", // Extract userId from the headers
-      action: "delete_product",
-      resource: `products/${productId}`,
-      status: "failed",
-      error: error.message,
-    };
-
-    logger.error(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
-
-    res.status(500).send("Error deleting product");
   }
-});
+);
 
 module.exports = router;
