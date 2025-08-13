@@ -1,15 +1,21 @@
+// frontend/src/pages/seller/Seller.jsx
 import { useEffect, useState } from "react";
 import { useUser } from "../../context/UserContext";
+import { useSecureAuth } from "../../hooks/useSecureAuth";
 import useFetch from "../../../hooks/useFetch";
 import InventoryTable from "../../components/seller/InventoryTable";
 import Menu from "../../components/seller/Menu";
 import SellerBanner from "../../components/seller/SellerBanner";
 import OrdersTable from "../../components/seller/OrdersTable";
 import Overview from "../../components/seller/Overview";
-import { useNavigate } from "react-router-dom";
 
 const Seller = () => {
   const [selectedMenu, setSelectedMenu] = useState("overview");
+  const { user } = useUser();
+  const { localUser } = useSecureAuth();
+
+  const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
+  const [userData, setUserData] = useState("");
 
   const renderContent = () => {
     switch (selectedMenu) {
@@ -24,36 +30,23 @@ const Seller = () => {
     }
   };
 
-  const navigate = useNavigate();
-
-  const { user, dispatch } = useUser();
-
-  const { data: userFetch } = useFetch(`/api/users/${user?.userId}`);
-
-  const [userData, setUserData] = useState("");
+  // Remove all validation logic - ProtectedRoute handles this now
+  // If this component renders, the user is guaranteed to have store access
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (!storedUser) {
-      navigate("/login");
-    } else if (storedUser.isStore === false) {
-      navigate("/myProfile");
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    console.log(userFetch);
-    console.log(userFetch?.data?.isStore);
+    console.log("Seller userFetch:", userFetch);
+    console.log("Seller userFetch isStore:", userFetch?.data?.isStore);
     setUserData(userFetch?.data);
   }, [userFetch]);
 
   useEffect(() => {
-    console.log(userData);
+    console.log("Seller userData:", userData);
   }, [userData]);
 
   useEffect(() => {
-    console.log(user);
-  }, [user]);
+    console.log("Seller context user:", user);
+    console.log("Seller local user:", localUser);
+  }, [user, localUser]);
 
   return (
     <div className="seller-bg">
