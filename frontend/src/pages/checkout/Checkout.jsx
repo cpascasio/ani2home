@@ -267,105 +267,172 @@ const Checkout = () => {
     setMarkerPosition({ lat: latitude, lng: longitude });
     console.log("marker clicked:", event.detail.latLng);
     event.map.panTo(event.detail.latLng);
-    console.log("marker clicked lat:", event.detail.latLng.lat);
-    console.log("marker clicked lng:", event.detail.latLng.lng);
+    console.log("marker clicked lat:", latitude);
+    console.log("marker clicked lng:", longitude);
+
     try {
-      const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+      // First, let's check if we're in editing mode
+      if (!editing) {
+        console.log("Not in editing mode - click Edit Location first");
+        return;
+      }
+
+      // Build the URL exactly as shown in documentation
+      const apiUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&language=en`;
+
+      console.log("API URL:", apiUrl);
+      console.log(
+        "API Key exists:",
+        !!import.meta.env.VITE_GOOGLE_MAPS_API_KEY
       );
 
-      if (response.data.results.length > 0) {
-        const result = response.data.results[0];
+      // Make the request
+      const response = await fetch(apiUrl);
 
-        console.log("result: ", result);
-
-        const fullAddress = response.data.results[0].formatted_address;
-
-        const streetNumber = response.data.results[0]?.address_components.find(
-          (address) => address.types.includes("street_number")
-        )?.short_name;
-        const premise = response.data.results[0]?.address_components.find(
-          (address) => address.types.includes("premise")
-        )?.short_name;
-        const plusCode =
-          response.data.results[0]?.address_components.find((address) =>
-            address.types.includes("plus_code")
-          )?.short_name ?? "";
-        console.log("PLUS:" + plusCode);
-        const route =
-          response.data.results[0]?.address_components.find((address) =>
-            address.types.includes("route")
-          )?.short_name ?? "";
-        console.log("ROUTE:" + route);
-        const barangay =
-          response.data.results[0]?.address_components.find((address) =>
-            address.types.includes("sublocality")
-          )?.short_name ?? "";
-        console.log("BARANGAY:" + barangay);
-        const city =
-          response.data.results[0]?.address_components.find((address) =>
-            address.types.includes("locality")
-          )?.short_name ?? "";
-        console.log("CITY:" + city);
-        const province =
-          response.data.results[0]?.address_components.find((address) =>
-            address.types.includes("administrative_area_level_2")
-          )?.short_name ?? "";
-        console.log("PROVINCE:" + province);
-        const region =
-          response.data.results[0]?.address_components.find((address) =>
-            address.types.includes("administrative_area_level_1")
-          )?.short_name ?? "";
-        console.log("REGION:" + region);
-        const country =
-          response.data.results[0]?.address_components.find((address) =>
-            address.types.includes("country")
-          )?.long_name ?? "";
-        console.log("COUNTRY:" + country);
-        const postalCode =
-          response.data.results[0]?.address_components.find((address) =>
-            address.types.includes("postal_code")
-          )?.short_name ?? "";
-
-        const streetAddress = [premise, plusCode, streetNumber, route]
-          .filter(Boolean)
-          .join(", ");
-
-        console.log("fullAddress: ", fullAddress);
-        console.log("streetAddress: ", streetAddress);
-        console.log("premise: ", premise);
-        console.log("plusCode: ", plusCode);
-        console.log("route: ", route);
-        console.log("barangay: ", barangay);
-        console.log("city: ", city);
-        console.log("province: ", province);
-        console.log("region: ", region);
-        console.log("country: ", country);
-        console.log("POSTAL CODE:" + postalCode);
-
-        document.getElementById("newStreetAddress").value = streetAddress;
-        document.getElementById("newProvice").value = province;
-        document.getElementById("newRegion").value = region;
-        document.getElementById("newCity").value = city;
-        document.getElementById("newBarangay").value = barangay;
-        document.getElementById("newCountry").value = country;
-        document.getElementById("newPostalCode").value = postalCode;
-
-        setAddressDetails({
-          fullAddress,
-          streetAddress,
-          city,
-          province,
-          barangay,
-          region,
-          country,
-          postalCode,
-          lng: longitude,
-          lat: latitude,
-        });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      console.log("Geocoding API Response:", data);
+
+      // Check if we have results
+      if (data.status !== "OK") {
+        console.error("Geocoding API Error:", data.status, data.error_message);
+        alert(`Geocoding failed: ${data.error_message || data.status}`);
+        return;
+      }
+
+      if (!data.results || data.results.length === 0) {
+        console.error("No geocoding results found");
+        alert("No address found for this location");
+        return;
+      }
+
+      const result = data.results[0];
+      console.log("Selected result:", result);
+
+      const fullAddress = result.formatted_address;
+
+      // Helper function to find address component
+      const findComponent = (components, types) => {
+        if (!Array.isArray(types)) types = [types];
+        const component = components.find((comp) =>
+          types.some((type) => comp.types.includes(type))
+        );
+        return component?.short_name || component?.long_name || "";
+      };
+
+      // Extract address components with better fallbacks
+      const components = result.address_components || [];
+
+      const streetNumber = findComponent(components, "street_number");
+      const premise = findComponent(components, "premise");
+      const subpremise = findComponent(components, "subpremise");
+      const route = findComponent(components, "route");
+      const plusCode = findComponent(components, "plus_code");
+
+      // For Philippines-specific components
+      const barangay = findComponent(components, [
+        "sublocality_level_1",
+        "sublocality",
+        "administrative_area_level_4",
+      ]);
+
+      const city = findComponent(components, [
+        "locality",
+        "administrative_area_level_2",
+      ]);
+
+      const province = findComponent(components, [
+        "administrative_area_level_2",
+        "administrative_area_level_1",
+      ]);
+
+      const region = findComponent(components, "administrative_area_level_1");
+
+      const country = findComponent(components, "country");
+
+      const postalCode = findComponent(components, "postal_code");
+
+      // Build street address from available components
+      const streetAddressParts = [
+        subpremise,
+        premise,
+        streetNumber,
+        route,
+        plusCode,
+      ].filter(Boolean);
+      const streetAddress =
+        streetAddressParts.length > 0
+          ? streetAddressParts.join(", ")
+          : route || "Unnamed Road";
+
+      console.log("Extracted components:");
+      console.log("Full Address:", fullAddress);
+      console.log("Street Address:", streetAddress);
+      console.log("Barangay:", barangay);
+      console.log("City:", city);
+      console.log("Province:", province);
+      console.log("Region:", region);
+      console.log("Country:", country);
+      console.log("Postal Code:", postalCode);
+
+      // Update form fields - Make sure we're in editing mode and fields exist
+      const updateFormField = (id, value) => {
+        // Wait a bit for DOM to be ready
+        setTimeout(() => {
+          const element = document.getElementById(id);
+          if (element) {
+            element.value = value;
+            console.log(`Updated ${id} with value: ${value}`);
+            // Trigger change event to ensure React state updates
+            const changeEvent = new Event("input", { bubbles: true });
+            element.dispatchEvent(changeEvent);
+          } else {
+            console.warn(`Element with id '${id}' not found`);
+          }
+        }, 100);
+      };
+
+      // Update all form fields
+      updateFormField("newStreetAddress", streetAddress);
+      updateFormField("newProvice", province); // Note: your form has "Provice" not "Province"
+      updateFormField("newRegion", region);
+      updateFormField("newCity", city);
+      updateFormField("newBarangay", barangay);
+      updateFormField("newCountry", country);
+      updateFormField("newPostalCode", postalCode);
+
+      // Update the state as well
+      const newAddressDetails = {
+        fullAddress,
+        streetAddress,
+        city,
+        province,
+        barangay,
+        region,
+        country,
+        postalCode,
+        lng: longitude,
+        lat: latitude,
+      };
+
+      setAddressDetails(newAddressDetails);
+      setBuyerAddress({ lat: latitude, lng: longitude });
+
+      console.log("Address details updated:", newAddressDetails);
     } catch (error) {
       console.error("Error fetching address details:", error);
+
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        alert("Network error. Please check your internet connection.");
+      } else {
+        console.error("Error details:", error);
+        alert(
+          "An error occurred while fetching address details. Check console for details."
+        );
+      }
     }
   };
 
