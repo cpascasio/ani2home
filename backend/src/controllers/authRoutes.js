@@ -1200,6 +1200,54 @@ router.post("/reset-password-secure", async (req, res) => {
   }
 });
 
+// ✅ UPDATED: Add admin validation endpoint (if you need it)
+router.get("/validate-admin-access", async (req, res) => {
+  try {
+    const authHeader = req.header("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ hasAccess: false });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const decodedToken = await admin.auth().verifyIdToken(token);
+
+    const userDoc = await admin
+      .firestore()
+      .collection("users")
+      .doc(decodedToken.uid)
+      .get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ hasAccess: false });
+    }
+
+    const userData = userDoc.data();
+
+    // ✅ UPDATED: Only check isAdmin and isDisabled - removed isVerified requirement
+    const hasAccess = userData.isAdmin === true && !userData.isDisabled;
+
+    console.log("👑 Admin access validation:", {
+      userId: decodedToken.uid,
+      isAdmin: userData.isAdmin,
+      isDisabled: userData.isDisabled || false,
+      hasAccess,
+    });
+
+    res.json({
+      hasAccess,
+      isAdmin: userData.isAdmin,
+      // Optional: include debug info
+      debug: {
+        isDisabled: userData.isDisabled || false,
+        userId: decodedToken.uid,
+      },
+    });
+  } catch (error) {
+    console.error("Admin access validation error:", error);
+    res.status(401).json({ hasAccess: false });
+  }
+});
+
 // Specific endpoint for store access validation
 router.get("/validate-store-access", async (req, res) => {
   try {
@@ -1223,13 +1271,25 @@ router.get("/validate-store-access", async (req, res) => {
 
     const userData = userDoc.data();
 
-    // Check all conditions for store access
-    const hasAccess =
-      userData.isStore === true &&
-      !userData.isDisabled &&
-      userData.isVerified === true;
+    // ✅ UPDATED: Only check isStore and isDisabled - removed isVerified requirement
+    const hasAccess = userData.isStore === true && !userData.isDisabled;
 
-    res.json({ hasAccess, isStore: userData.isStore });
+    console.log("🏪 Store access validation:", {
+      userId: decodedToken.uid,
+      isStore: userData.isStore,
+      isDisabled: userData.isDisabled || false,
+      hasAccess,
+    });
+
+    res.json({
+      hasAccess,
+      isStore: userData.isStore,
+      // Optional: include debug info
+      debug: {
+        isDisabled: userData.isDisabled || false,
+        userId: decodedToken.uid,
+      },
+    });
   } catch (error) {
     console.error("Store access validation error:", error);
     res.status(401).json({ hasAccess: false });
