@@ -3,6 +3,9 @@ const admin = require("firebase-admin");
 const router = express.Router();
 const { logger, logToFirestore } = require("../config/firebase-config");
 
+// ✅ ADD SECURITY LOGGER - same as authRoutes.js
+const SecurityLogger = require("../../utils/SecurityLogger");
+
 // Import validation schemas from cartModels.js
 const {
   addToCartValidation,
@@ -54,6 +57,18 @@ router.get("/:userId", async (req, res) => {
       await logToFirestore(logData);
       logger.error(logData);
 
+      // ✅ ADD SECURITY LOGGING FOR UNAUTHORIZED ACCESS
+      await SecurityLogger.logAccessControlFailure({
+        userId: req.user.uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        resource: `cart/${userId}`,
+        permission: "cart_access",
+        userPermissions: ["basic_user"],
+        endpoint: req.originalUrl,
+        method: req.method,
+      });
+
       return res.status(403).json({
         message: "Access denied",
         state: "error",
@@ -73,6 +88,21 @@ router.get("/:userId", async (req, res) => {
 
       await logToFirestore(logData);
       logger.info(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR EMPTY CART ACCESS
+      await SecurityLogger.logSecurityEvent("CART_ACCESS", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Cart accessed - returning empty cart",
+        severity: "low",
+        metadata: {
+          cartExists: false,
+          action: "get_cart",
+        },
+      });
 
       return res.json([]); // Return empty array instead of 404
     }
@@ -114,6 +144,22 @@ router.get("/:userId", async (req, res) => {
     await logToFirestore(logData);
     logger.info(logData);
 
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL CART ACCESS
+    await SecurityLogger.logSecurityEvent("CART_ACCESS", {
+      userId,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Cart accessed successfully",
+      severity: "low",
+      metadata: {
+        cartExists: true,
+        itemCount: cartWithSellerDetails.length,
+        action: "get_cart",
+      },
+    });
+
     res.json(cartWithSellerDetails);
   } catch (error) {
     console.error("Error getting cart:", error);
@@ -129,6 +175,18 @@ router.get("/:userId", async (req, res) => {
 
     await logToFirestore(logData);
     logger.error(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error retrieving cart",
+      metadata: { error: error.message },
+    });
 
     res.status(500).json({
       message: "Error retrieving cart",
@@ -155,6 +213,18 @@ router.put("/remove-seller-items/", async (req, res) => {
       await logToFirestore(logData);
       logger.error(logData);
 
+      // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+      await SecurityLogger.logValidationFailure({
+        userId: req.user?.uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: "removeSellerItems",
+        rule: "schema_validation",
+        error: "Invalid input data for removing seller items",
+      });
+
       return res.status(400).json({
         message: "Invalid input data",
         state: "error",
@@ -179,6 +249,18 @@ router.put("/remove-seller-items/", async (req, res) => {
 
       await logToFirestore(logData);
       logger.error(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR UNAUTHORIZED MODIFICATION
+      await SecurityLogger.logAccessControlFailure({
+        userId: req.user.uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        resource: `cart/${userId}`,
+        permission: "cart_modification",
+        userPermissions: ["basic_user"],
+        endpoint: req.originalUrl,
+        method: req.method,
+      });
 
       return res.status(403).json({
         message: "Access denied",
@@ -207,6 +289,18 @@ router.put("/remove-seller-items/", async (req, res) => {
 
       await logToFirestore(logData);
       logger.error(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR RESOURCE NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Cart not found for seller items removal",
+        severity: "medium",
+        metadata: { sellerId, action: "remove_seller_items" },
+      });
 
       return res.status(404).json({
         message: errorMsg,
@@ -244,6 +338,22 @@ router.put("/remove-seller-items/", async (req, res) => {
     await logToFirestore(logData);
     logger.info(logData);
 
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL SELLER ITEMS REMOVAL
+    await SecurityLogger.logSecurityEvent("CART_SELLER_ITEMS_REMOVED", {
+      userId,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Seller items removed from cart successfully",
+      severity: "low",
+      metadata: {
+        sellerId,
+        itemsRemoved: cartData.length - updatedCart.length,
+        updatedCartLength: updatedCart.length,
+      },
+    });
+
     res.json({
       message: successMsg,
       state: "success",
@@ -263,6 +373,18 @@ router.put("/remove-seller-items/", async (req, res) => {
 
     await logToFirestore(logData);
     logger.error(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error removing seller items from cart",
+      metadata: { error: error.message },
+    });
 
     res.status(500).json({
       message: "Error removing seller items from cart",
@@ -292,6 +414,18 @@ router.get("/:userId/:sellerId", async (req, res) => {
       await logToFirestore(logData);
       logger.error(logData);
 
+      // ✅ ADD SECURITY LOGGING FOR UNAUTHORIZED ACCESS
+      await SecurityLogger.logAccessControlFailure({
+        userId: req.user.uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        resource: `cart/${userId}/${sellerId}`,
+        permission: "cart_access",
+        userPermissions: ["basic_user"],
+        endpoint: req.originalUrl,
+        method: req.method,
+      });
+
       return res.status(403).json({
         message: "Access denied",
         state: "error",
@@ -301,6 +435,18 @@ router.get("/:userId/:sellerId", async (req, res) => {
     const userCartDoc = await db.collection("cart").doc(userId).get();
 
     if (!userCartDoc.exists) {
+      // ✅ ADD SECURITY LOGGING FOR RESOURCE NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Cart not found for seller-specific access",
+        severity: "medium",
+        metadata: { sellerId, action: "get_seller_cart" },
+      });
+
       return res.status(404).json({
         message: "Cart not found",
         state: "error",
@@ -323,6 +469,22 @@ router.get("/:userId/:sellerId", async (req, res) => {
     await logToFirestore(logData);
     logger.info(logData);
 
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL SELLER CART ACCESS
+    await SecurityLogger.logSecurityEvent("CART_SELLER_ACCESS", {
+      userId,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Seller-specific cart accessed successfully",
+      severity: "low",
+      metadata: {
+        sellerId,
+        itemCount: filteredCart.length,
+        action: "get_seller_cart",
+      },
+    });
+
     res.json(filteredCart);
   } catch (error) {
     console.error("Error getting cart:", error);
@@ -338,6 +500,18 @@ router.get("/:userId/:sellerId", async (req, res) => {
 
     await logToFirestore(logData);
     logger.error(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error retrieving seller-specific cart",
+      metadata: { error: error.message },
+    });
 
     res.status(500).json({
       message: "Error retrieving cart",
@@ -367,6 +541,18 @@ router.get("/checkout/:userId/:sellerId", async (req, res) => {
       await logToFirestore(logData);
       logger.error(logData);
 
+      // ✅ ADD SECURITY LOGGING FOR UNAUTHORIZED CHECKOUT ACCESS
+      await SecurityLogger.logAccessControlFailure({
+        userId: req.user.uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        resource: `cart/checkout/${userId}/${sellerId}`,
+        permission: "checkout_access",
+        userPermissions: ["basic_user"],
+        endpoint: req.originalUrl,
+        method: req.method,
+      });
+
       return res.status(403).json({
         message: "Access denied",
         state: "error",
@@ -376,6 +562,18 @@ router.get("/checkout/:userId/:sellerId", async (req, res) => {
     const value = await db.collection("cart").doc(userId).get();
 
     if (!value.exists) {
+      // ✅ ADD SECURITY LOGGING FOR RESOURCE NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Cart not found for checkout",
+        severity: "medium",
+        metadata: { sellerId, action: "get_checkout_data" },
+      });
+
       return res.status(404).json({
         message: "Cart not found",
         state: "error",
@@ -414,6 +612,22 @@ router.get("/checkout/:userId/:sellerId", async (req, res) => {
       await logToFirestore(logData);
       logger.info(logData);
 
+      // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL CHECKOUT DATA ACCESS
+      await SecurityLogger.logSecurityEvent("CHECKOUT_DATA_ACCESS", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Checkout data accessed successfully",
+        severity: "low",
+        metadata: {
+          sellerId,
+          itemCount: result.items.length,
+          action: "get_checkout_data",
+        },
+      });
+
       res.json(result);
     } else {
       const logData = createLogData(
@@ -427,6 +641,21 @@ router.get("/checkout/:userId/:sellerId", async (req, res) => {
 
       await logToFirestore(logData);
       logger.error(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR NO ITEMS FOUND
+      await SecurityLogger.logSecurityEvent("CHECKOUT_NO_ITEMS", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "No items found for checkout with seller",
+        severity: "low",
+        metadata: {
+          sellerId,
+          action: "get_checkout_data",
+        },
+      });
 
       res.status(404).json({
         message: "No items found for the given seller",
@@ -447,6 +676,18 @@ router.get("/checkout/:userId/:sellerId", async (req, res) => {
 
     await logToFirestore(logData);
     logger.error(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error retrieving checkout data",
+      metadata: { error: error.message },
+    });
 
     res.status(500).json({
       message: "Error retrieving checkout data",
@@ -472,6 +713,18 @@ router.post("/add-to-cart", async (req, res) => {
 
       await logToFirestore(logData);
       logger.error(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+      await SecurityLogger.logValidationFailure({
+        userId: req.user?.uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: "addToCart",
+        rule: "schema_validation",
+        error: "Invalid input data for adding to cart",
+      });
 
       return res.status(400).json({
         message: "Invalid input data",
@@ -501,6 +754,18 @@ router.post("/add-to-cart", async (req, res) => {
       await logToFirestore(logData);
       logger.error(logData);
 
+      // ✅ ADD SECURITY LOGGING FOR UNAUTHORIZED MODIFICATION
+      await SecurityLogger.logAccessControlFailure({
+        userId: req.user.uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        resource: `cart/${userId}`,
+        permission: "cart_modification",
+        userPermissions: ["basic_user"],
+        endpoint: req.originalUrl,
+        method: req.method,
+      });
+
       return res.status(403).json({
         message: "Access denied",
         state: "error",
@@ -523,6 +788,18 @@ router.post("/add-to-cart", async (req, res) => {
 
       await logToFirestore(logData);
       logger.error(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR PRODUCT NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Product not found for cart addition",
+        severity: "medium",
+        metadata: { productId, action: "add_to_cart" },
+      });
 
       return res.status(404).json({
         message: errorMsg,
@@ -548,6 +825,18 @@ router.post("/add-to-cart", async (req, res) => {
       await logToFirestore(logData);
       logger.error(logData);
 
+      // ✅ ADD SECURITY LOGGING FOR INVALID PRODUCT DATA
+      await SecurityLogger.logSecurityEvent("DATA_INTEGRITY_ERROR", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Product has no associated seller",
+        severity: "medium",
+        metadata: { productId, action: "add_to_cart" },
+      });
+
       return res.status(400).json({
         message: errorMsg,
         state: "error",
@@ -570,6 +859,18 @@ router.post("/add-to-cart", async (req, res) => {
 
       await logToFirestore(logData);
       logger.error(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR SELLER VALIDATION FAILURE
+      await SecurityLogger.logSecurityEvent("SELLER_VALIDATION_FAILED", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Seller not found or not a store",
+        severity: "medium",
+        metadata: { sellerId, productId, action: "add_to_cart" },
+      });
 
       return res.status(404).json({
         message: errorMsg,
@@ -650,6 +951,24 @@ router.post("/add-to-cart", async (req, res) => {
     logger.info(logData);
     await logToFirestore(logData);
 
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL CART ADDITION
+    await SecurityLogger.logSecurityEvent("CART_ITEM_ADDED", {
+      userId,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Product added to cart successfully",
+      severity: "low",
+      metadata: {
+        sellerId,
+        productId,
+        quantity,
+        cartItemCount: cartData.length,
+        action: "add_to_cart",
+      },
+    });
+
     res.status(201).json({
       message: "Product added to cart successfully",
       state: "success",
@@ -669,6 +988,18 @@ router.post("/add-to-cart", async (req, res) => {
 
     logger.error(logData);
     await logToFirestore(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error adding product to cart",
+      metadata: { error: error.message },
+    });
 
     res.status(500).json({
       message: "Error adding product to cart",
@@ -694,6 +1025,18 @@ router.delete("/remove-from-cart", async (req, res) => {
 
       await logToFirestore(logData);
       logger.error(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+      await SecurityLogger.logValidationFailure({
+        userId: req.user?.uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: "removeFromCart",
+        rule: "schema_validation",
+        error: "Invalid input data for removing from cart",
+      });
 
       return res.status(400).json({
         message: "Invalid input data",
@@ -722,6 +1065,18 @@ router.delete("/remove-from-cart", async (req, res) => {
       await logToFirestore(logData);
       logger.error(logData);
 
+      // ✅ ADD SECURITY LOGGING FOR UNAUTHORIZED MODIFICATION
+      await SecurityLogger.logAccessControlFailure({
+        userId: req.user.uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        resource: `cart/${userId}`,
+        permission: "cart_modification",
+        userPermissions: ["basic_user"],
+        endpoint: req.originalUrl,
+        method: req.method,
+      });
+
       return res.status(403).json({
         message: "Access denied",
         state: "error",
@@ -744,6 +1099,18 @@ router.delete("/remove-from-cart", async (req, res) => {
 
       logger.error(logData);
       await logToFirestore(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR RESOURCE NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Cart not found for item removal",
+        severity: "medium",
+        metadata: { productId, action: "remove_from_cart" },
+      });
 
       return res.status(404).json({
         message: "Cart not found",
@@ -797,6 +1164,22 @@ router.delete("/remove-from-cart", async (req, res) => {
     logger.info(logData);
     await logToFirestore(logData);
 
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL ITEM REMOVAL
+    await SecurityLogger.logSecurityEvent("CART_ITEM_REMOVED", {
+      userId,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Product removed from cart successfully",
+      severity: "low",
+      metadata: {
+        productId,
+        updatedCartLength: updatedCart.length,
+        action: "remove_from_cart",
+      },
+    });
+
     res.json({
       message: "Product removed from cart",
       state: "success",
@@ -815,6 +1198,18 @@ router.delete("/remove-from-cart", async (req, res) => {
 
     logger.error(logData);
     await logToFirestore(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error removing product from cart",
+      metadata: { error: error.message },
+    });
 
     res.status(500).json({
       message: "Error removing product from cart",

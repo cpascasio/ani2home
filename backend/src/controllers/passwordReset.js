@@ -8,7 +8,30 @@ const crypto = require("crypto");
 const PasswordManager = require("../../utils/PasswordManager"); // You'll need to create this
 const PasswordValidator = require("../../utils/PasswordValidator"); // You'll need to create this
 
+// ✅ ADD SECURITY LOGGER - same as other files
+const SecurityLogger = require("../../utils/SecurityLogger");
+
 const db = admin.firestore();
+
+// Helper function to create standardized log data
+const createLogData = (
+  userId,
+  action,
+  resource,
+  status,
+  details = {},
+  error = null
+) => {
+  return {
+    timestamp: new Date().toISOString(),
+    userId,
+    action,
+    resource,
+    status,
+    details,
+    ...(error && { error: error.message || error }),
+  };
+};
 
 // Security questions for password reset (Requirement 2.1.9)
 const SECURITY_QUESTIONS = [
@@ -29,6 +52,20 @@ const SECURITY_QUESTIONS = [
 // GET route to retrieve security questions (public)
 router.get("/security-questions", async (req, res) => {
   try {
+    // ✅ ADD SECURITY LOGGING FOR PUBLIC ENDPOINT ACCESS
+    await SecurityLogger.logSecurityEvent("SECURITY_QUESTIONS_ACCESSED", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Security questions list accessed",
+      severity: "low",
+      metadata: {
+        questionCount: SECURITY_QUESTIONS.length,
+        action: "get_security_questions",
+      },
+    });
+
     res.status(200).json({
       message: "Security questions retrieved successfully",
       state: "success",
@@ -36,6 +73,18 @@ router.get("/security-questions", async (req, res) => {
     });
   } catch (error) {
     console.error("Error retrieving security questions:", error);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error retrieving security questions",
+      metadata: { error: error.message },
+    });
+
     res.status(500).json({
       message: "Error retrieving security questions",
       state: "error",
@@ -50,6 +99,18 @@ router.post("/setup-security-questions", authenticateUser, async (req, res) => {
   try {
     // Validate input - require exactly 3 questions since we only have 3
     if (!questions || questions.length !== 3) {
+      // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+      await SecurityLogger.logValidationFailure({
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: "questions",
+        rule: "array_length",
+        error: "Must provide exactly 3 security questions",
+      });
+
       return res.status(400).json({
         message: "Please provide answers to all 3 security questions",
         state: "error",
@@ -59,6 +120,18 @@ router.post("/setup-security-questions", authenticateUser, async (req, res) => {
     // Validate each question
     for (const q of questions) {
       if (!q.questionId || !q.answer || q.answer.trim().length < 2) {
+        // ✅ ADD SECURITY LOGGING FOR INVALID QUESTION FORMAT
+        await SecurityLogger.logValidationFailure({
+          userId: uid,
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent"),
+          endpoint: req.originalUrl,
+          method: req.method,
+          fieldName: "question_answer",
+          rule: "min_length",
+          error: "Security question answers too short",
+        });
+
         return res.status(400).json({
           message:
             "All security question answers must be at least 2 characters long",
@@ -71,6 +144,18 @@ router.post("/setup-security-questions", authenticateUser, async (req, res) => {
         (sq) => sq.id === q.questionId
       );
       if (!validQuestion) {
+        // ✅ ADD SECURITY LOGGING FOR INVALID QUESTION ID
+        await SecurityLogger.logValidationFailure({
+          userId: uid,
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent"),
+          endpoint: req.originalUrl,
+          method: req.method,
+          fieldName: "questionId",
+          rule: "valid_question",
+          error: "Invalid security question ID provided",
+        });
+
         return res.status(400).json({
           message: "Invalid security question ID",
           state: "error",
@@ -82,6 +167,18 @@ router.post("/setup-security-questions", authenticateUser, async (req, res) => {
     const questionIds = questions.map((q) => q.questionId);
     const uniqueQuestionIds = new Set(questionIds);
     if (uniqueQuestionIds.size !== 3) {
+      // ✅ ADD SECURITY LOGGING FOR DUPLICATE QUESTIONS
+      await SecurityLogger.logValidationFailure({
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: "questions",
+        rule: "unique_questions",
+        error: "Duplicate security questions provided",
+      });
+
       return res.status(400).json({
         message: "Please answer all 3 different security questions",
         state: "error",
@@ -105,20 +202,35 @@ router.post("/setup-security-questions", authenticateUser, async (req, res) => {
     });
 
     // Log the setup
-    const logData = {
-      timestamp: new Date(),
-      userId: uid,
-      action: "security_questions_setup",
-      resource: `users/${uid}`,
-      status: "success",
-      details: {
+    const logData = createLogData(
+      uid,
+      "security_questions_setup",
+      `users/${uid}`,
+      "success",
+      {
         questionCount: questions.length,
         questionIds: questions.map((q) => q.questionId),
-      },
-    };
+      }
+    );
 
     logger.info(logData);
     await logToFirestore(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL SETUP
+    await SecurityLogger.logSecurityEvent("SECURITY_QUESTIONS_SETUP", {
+      userId: uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Security questions set up successfully",
+      severity: "low",
+      metadata: {
+        questionCount: questions.length,
+        questionIds: questions.map((q) => q.questionId),
+        action: "setup_security_questions",
+      },
+    });
 
     res.status(200).json({
       message: "Security questions set successfully",
@@ -127,17 +239,29 @@ router.post("/setup-security-questions", authenticateUser, async (req, res) => {
   } catch (error) {
     console.error("Error setting up security questions:", error);
 
-    const logData = {
-      timestamp: new Date(),
-      userId: uid,
-      action: "security_questions_setup",
-      resource: `users/${uid}`,
-      status: "failed",
-      error: error.message,
-    };
+    const logData = createLogData(
+      uid,
+      "security_questions_setup",
+      `users/${uid}`,
+      "failed",
+      {},
+      error
+    );
 
     logger.error(logData);
     await logToFirestore(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error setting up security questions",
+      metadata: { error: error.message },
+    });
 
     res.status(500).json({
       message: "Error setting up security questions",
@@ -151,12 +275,44 @@ router.post("/send-email-verification", async (req, res) => {
   const { email } = req.body;
 
   try {
+    if (!email) {
+      // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+      await SecurityLogger.logValidationFailure({
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: "email",
+        rule: "required",
+        error: "Email is required for verification",
+      });
+
+      return res.status(400).json({
+        message: "Email is required",
+        state: "error",
+      });
+    }
+
     console.log("📧 Sending email verification for:", email);
 
     // Check if user exists in Firebase Auth
     const userRecord = await admin.auth().getUserByEmail(email);
 
     if (userRecord.emailVerified) {
+      // ✅ ADD SECURITY LOGGING FOR ALREADY VERIFIED EMAIL
+      await SecurityLogger.logSecurityEvent("EMAIL_ALREADY_VERIFIED", {
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Email verification requested for already verified email",
+        severity: "low",
+        metadata: {
+          email: email.substring(0, 3) + "***",
+          action: "email_verification",
+        },
+      });
+
       return res.status(200).json({
         message: "Email is already verified",
         state: "success",
@@ -174,12 +330,38 @@ router.post("/send-email-verification", async (req, res) => {
 
     console.log("✅ Email verification link generated:", verificationLink);
 
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL EMAIL VERIFICATION SEND
+    await SecurityLogger.logSecurityEvent("EMAIL_VERIFICATION_SENT", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Email verification link generated successfully",
+      severity: "low",
+      metadata: {
+        email: email.substring(0, 3) + "***",
+        action: "send_email_verification",
+      },
+    });
+
     res.status(200).json({
       message: "Email verification sent successfully",
       state: "success",
     });
   } catch (error) {
     console.error("Email verification error:", error);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error sending email verification",
+      metadata: { error: error.message },
+    });
+
     res.status(500).json({
       message: "Error sending email verification",
       state: "error",
@@ -193,14 +375,46 @@ router.post("/force-verify-email", async (req, res) => {
 
   // ⚠️ WARNING: Only use this in development!
   if (process.env.NODE_ENV !== "development") {
+    // ✅ ADD SECURITY LOGGING FOR PRODUCTION ATTEMPT
+    await SecurityLogger.logSecurityEvent("DEVELOPMENT_ENDPOINT_BLOCKED", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Attempt to use development endpoint in production",
+      severity: "high",
+      metadata: {
+        email: email ? email.substring(0, 3) + "***" : "unknown",
+        environment: process.env.NODE_ENV,
+      },
+    });
+
     return res.status(403).json({
       message: "This endpoint is only available in development",
       state: "error",
     });
   }
 
+  if (!email) {
+    // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+    await SecurityLogger.logValidationFailure({
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      fieldName: "email",
+      rule: "required",
+      error: "Email is required for force verification",
+    });
+
+    return res.status(400).json({
+      message: "Email is required",
+      state: "error",
+    });
+  }
+
   try {
-    console.log("🔧 Force verifying email for development:", email);
+    console.log("📧 Force verifying email for development:", email);
 
     // Get user by email
     const userRecord = await admin.auth().getUserByEmail(email);
@@ -212,12 +426,40 @@ router.post("/force-verify-email", async (req, res) => {
 
     console.log("✅ Email force-verified for development");
 
+    // ✅ ADD SECURITY LOGGING FOR DEVELOPMENT FORCE VERIFICATION
+    await SecurityLogger.logSecurityEvent("EMAIL_FORCE_VERIFIED", {
+      userId: userRecord.uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Email force-verified in development mode",
+      severity: "low",
+      metadata: {
+        email: email.substring(0, 3) + "***",
+        environment: process.env.NODE_ENV,
+        action: "force_verify_email",
+      },
+    });
+
     res.status(200).json({
       message: "Email verified successfully (development only)",
       state: "success",
     });
   } catch (error) {
     console.error("Force verification error:", error);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error force-verifying email",
+      metadata: { error: error.message },
+    });
+
     res.status(500).json({
       message: "Error force-verifying email",
       state: "error",
@@ -230,6 +472,24 @@ router.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
 
   try {
+    if (!email) {
+      // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+      await SecurityLogger.logValidationFailure({
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: "email",
+        rule: "required",
+        error: "Email is required for password reset",
+      });
+
+      return res.status(400).json({
+        message: "Email is required",
+        state: "error",
+      });
+    }
+
     console.log("🔍 Starting password reset for email:", email);
 
     // Check if user exists in Firestore
@@ -270,16 +530,36 @@ router.post("/forgot-password", async (req, res) => {
         );
 
         // Log this event
-        await logToFirestore({
-          timestamp: new Date(),
-          action: "password_reset_attempted_no_questions",
-          email: email,
-          userId: userId,
-          status: "blocked",
-          debug: {
+        const logData = createLogData(
+          userId,
+          "password_reset_attempted_no_questions",
+          `users/${userId}`,
+          "blocked",
+          {
             hasSecurityQuestions: !!userData.securityQuestions,
             isArray: Array.isArray(userData.securityQuestions),
             length: userData.securityQuestions
+              ? userData.securityQuestions.length
+              : 0,
+          }
+        );
+
+        await logToFirestore(logData);
+
+        // ✅ ADD SECURITY LOGGING FOR INSUFFICIENT SECURITY QUESTIONS
+        await SecurityLogger.logSecurityEvent("PASSWORD_RESET_BLOCKED", {
+          userId,
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent"),
+          endpoint: req.originalUrl,
+          method: req.method,
+          description:
+            "Password reset blocked - insufficient security questions",
+          severity: "medium",
+          metadata: {
+            email: email.substring(0, 3) + "***",
+            hasSecurityQuestions: !!userData.securityQuestions,
+            securityQuestionsCount: userData.securityQuestions
               ? userData.securityQuestions.length
               : 0,
           },
@@ -318,7 +598,23 @@ router.post("/forgot-password", async (req, res) => {
           console.log("  - Disabled:", userRecord.disabled);
 
           if (userRecord.disabled) {
-            console.log("⚠️  WARNING: User account is disabled");
+            console.log("⚠️ WARNING: User account is disabled");
+
+            // ✅ ADD SECURITY LOGGING FOR DISABLED ACCOUNT
+            await SecurityLogger.logSecurityEvent("PASSWORD_RESET_BLOCKED", {
+              userId,
+              ipAddress: req.ip,
+              userAgent: req.get("User-Agent"),
+              endpoint: req.originalUrl,
+              method: req.method,
+              description: "Password reset blocked - account disabled",
+              severity: "medium",
+              metadata: {
+                email: email.substring(0, 3) + "***",
+                reason: "account_disabled",
+              },
+            });
+
             return res.status(400).json({
               message: "User account is disabled",
               state: "error",
@@ -326,11 +622,26 @@ router.post("/forgot-password", async (req, res) => {
           }
 
           if (!userRecord.emailVerified) {
-            console.log("⚠️  WARNING: Email is not verified");
+            console.log("⚠️ WARNING: Email is not verified");
             // Continue anyway for development
           }
         } catch (getUserError) {
           console.log("❌ User NOT found in Firebase Auth:", getUserError.code);
+
+          // ✅ ADD SECURITY LOGGING FOR USER NOT FOUND IN AUTH
+          await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+            ipAddress: req.ip,
+            userAgent: req.get("User-Agent"),
+            endpoint: req.originalUrl,
+            method: req.method,
+            description: "User not found in Firebase Auth for password reset",
+            severity: "medium",
+            metadata: {
+              email: email.substring(0, 3) + "***",
+              error: getUserError.code,
+            },
+          });
+
           return res.status(404).json({
             message: "User not found in authentication system",
             state: "error",
@@ -365,15 +676,35 @@ router.post("/forgot-password", async (req, res) => {
         );
 
         // Log successful link generation
-        await logToFirestore({
-          timestamp: new Date(),
-          action: "password_reset_link_generated",
-          email: email,
-          userId: userId,
-          status: "success",
-          method: "direct_link",
-          linkParameters: {
-            mode,
+        const logData = createLogData(
+          userId,
+          "password_reset_link_generated",
+          `users/${userId}`,
+          "success",
+          {
+            method: "direct_link",
+            linkParameters: {
+              mode,
+              hasOobCode: !!oobCode,
+              hasApiKey: !!apiKey,
+            },
+          }
+        );
+
+        await logToFirestore(logData);
+
+        // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL LINK GENERATION
+        await SecurityLogger.logSecurityEvent("PASSWORD_RESET_LINK_GENERATED", {
+          userId,
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent"),
+          endpoint: req.originalUrl,
+          method: req.method,
+          description: "Password reset link generated successfully",
+          severity: "low",
+          metadata: {
+            email: email.substring(0, 3) + "***",
+            method: "direct_link",
             hasOobCode: !!oobCode,
             hasApiKey: !!apiKey,
           },
@@ -402,14 +733,33 @@ router.post("/forgot-password", async (req, res) => {
         console.error("  - Error message:", firebaseError.message);
 
         // Log the error
-        await logToFirestore({
-          timestamp: new Date(),
-          action: "password_reset_link_generation_failed",
-          email: email,
-          userId: userId,
-          status: "error",
-          error: firebaseError.message,
-          errorCode: firebaseError.code,
+        const logData = createLogData(
+          userId,
+          "password_reset_link_generation_failed",
+          `users/${userId}`,
+          "error",
+          {
+            errorCode: firebaseError.code,
+          },
+          firebaseError
+        );
+
+        await logToFirestore(logData);
+
+        // ✅ ADD SECURITY LOGGING FOR FIREBASE ERROR
+        await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+          userId,
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent"),
+          endpoint: req.originalUrl,
+          method: req.method,
+          severity: "high",
+          description: "Error generating password reset link",
+          metadata: {
+            error: firebaseError.message,
+            errorCode: firebaseError.code,
+            email: email.substring(0, 3) + "***",
+          },
         });
 
         res.status(500).json({
@@ -422,11 +772,26 @@ router.post("/forgot-password", async (req, res) => {
       console.log("❌ No user document found for email:", searchEmail);
 
       // Log failed attempt (email doesn't exist)
-      await logToFirestore({
-        timestamp: new Date(),
-        action: "password_reset_attempted",
-        email: email,
-        status: "email_not_found",
+      const logData = createLogData(
+        "unknown",
+        "password_reset_attempted",
+        "users/unknown",
+        "email_not_found"
+      );
+
+      await logToFirestore(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR EMAIL NOT FOUND
+      await SecurityLogger.logSecurityEvent("PASSWORD_RESET_EMAIL_NOT_FOUND", {
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Password reset attempted for non-existent email",
+        severity: "medium",
+        metadata: {
+          email: email.substring(0, 3) + "***",
+        },
       });
 
       // For security, don't reveal that email doesn't exist
@@ -439,12 +804,26 @@ router.post("/forgot-password", async (req, res) => {
     console.error("❌ Password reset initiation error:", error);
     console.error("❌ Error stack:", error.stack);
 
-    await logToFirestore({
-      timestamp: new Date(),
-      action: "password_reset_error",
-      email: email,
-      error: error.message,
-      status: "error",
+    const logData = createLogData(
+      "unknown",
+      "password_reset_error",
+      "users/unknown",
+      "error",
+      {},
+      error
+    );
+
+    await logToFirestore(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Password reset initiation error",
+      metadata: { error: error.message },
     });
 
     res.status(500).json({
@@ -460,8 +839,40 @@ router.post("/generate-reset-link", async (req, res) => {
 
   // Only allow in development
   if (process.env.NODE_ENV !== "development") {
+    // ✅ ADD SECURITY LOGGING FOR PRODUCTION ATTEMPT
+    await SecurityLogger.logSecurityEvent("DEVELOPMENT_ENDPOINT_BLOCKED", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Attempt to use development endpoint in production",
+      severity: "high",
+      metadata: {
+        email: email ? email.substring(0, 3) + "***" : "unknown",
+        environment: process.env.NODE_ENV,
+      },
+    });
+
     return res.status(403).json({
       message: "This endpoint is only available in development",
+      state: "error",
+    });
+  }
+
+  if (!email) {
+    // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+    await SecurityLogger.logValidationFailure({
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      fieldName: "email",
+      rule: "required",
+      error: "Email is required for reset link generation",
+    });
+
+    return res.status(400).json({
+      message: "Email is required",
       state: "error",
     });
   }
@@ -478,6 +889,20 @@ router.post("/generate-reset-link", async (req, res) => {
 
     console.log("🔗 Generated reset link for testing:", resetLink);
 
+    // ✅ ADD SECURITY LOGGING FOR DEVELOPMENT LINK GENERATION
+    await SecurityLogger.logSecurityEvent("DEV_RESET_LINK_GENERATED", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Reset link generated for testing in development",
+      severity: "low",
+      metadata: {
+        email: email.substring(0, 3) + "***",
+        environment: process.env.NODE_ENV,
+      },
+    });
+
     res.status(200).json({
       message: "Reset link generated for testing",
       state: "success",
@@ -487,6 +912,18 @@ router.post("/generate-reset-link", async (req, res) => {
     });
   } catch (error) {
     console.error("Error generating test reset link:", error);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error generating test reset link",
+      metadata: { error: error.message },
+    });
+
     res.status(500).json({
       message: "Error generating reset link",
       state: "error",
@@ -505,6 +942,18 @@ router.post("/change-password", authenticateUser, async (req, res) => {
 
     // Validate input
     if (!currentPassword || !newPassword) {
+      // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+      await SecurityLogger.logValidationFailure({
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: !currentPassword ? "currentPassword" : "newPassword",
+        rule: "required",
+        error: "Password fields are required",
+      });
+
       return res.status(400).json({
         message: "Current password and new password are required",
         state: "error",
@@ -514,6 +963,18 @@ router.post("/change-password", authenticateUser, async (req, res) => {
     // Get user document
     const userDoc = await db.collection("users").doc(uid).get();
     if (!userDoc.exists) {
+      // ✅ ADD SECURITY LOGGING FOR USER NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "User not found for password change",
+        severity: "medium",
+        metadata: { action: "change_password" },
+      });
+
       return res.status(404).json({
         message: "User not found",
         state: "error",
@@ -522,7 +983,7 @@ router.post("/change-password", authenticateUser, async (req, res) => {
 
     const userData = userDoc.data();
 
-    // 🔐 REQUIREMENT 2.1.13: Re-authenticate before password change
+    // 🔍 REQUIREMENT 2.1.13: Re-authenticate before password change
     console.log("🔍 Verifying current password for re-authentication...");
 
     // For Firebase Auth users, verify current password by attempting to sign in
@@ -537,13 +998,27 @@ router.post("/change-password", authenticateUser, async (req, res) => {
       console.log("❌ Re-authentication failed:", reAuthError.code);
 
       // Log failed re-authentication attempt
-      await logToFirestore({
-        timestamp: new Date(),
+      const logData = createLogData(
+        uid,
+        "password_change_reauth_failed",
+        `users/${uid}`,
+        "failed",
+        { error: reAuthError.code }
+      );
+
+      await logToFirestore(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR FAILED RE-AUTHENTICATION
+      await SecurityLogger.logAuthAttempt("PASSWORD_CHANGE_REAUTH_FAILED", {
         userId: uid,
-        action: "password_change_reauth_failed",
         ipAddress: req.ip,
         userAgent: req.get("User-Agent"),
-        error: reAuthError.code,
+        success: false,
+        failureReason: "Current password incorrect",
+        metadata: {
+          action: "password_change",
+          errorCode: reAuthError.code,
+        },
       });
 
       return res.status(401).json({
@@ -552,7 +1027,7 @@ router.post("/change-password", authenticateUser, async (req, res) => {
       });
     }
 
-    // 🔐 REQUIREMENT 2.1.11: Check if password is at least 1 day old
+    // 🔍 REQUIREMENT 2.1.11: Check if password is at least 1 day old
     console.log("🔍 Checking password age requirement...");
 
     const lastPasswordChange = userData.lastPasswordChange;
@@ -574,13 +1049,33 @@ router.post("/change-password", authenticateUser, async (req, res) => {
           `❌ Password too young. Hours remaining: ${hoursRemaining}`
         );
 
-        await logToFirestore({
-          timestamp: new Date(),
+        const logData = createLogData(
+          uid,
+          "password_change_blocked_too_young",
+          `users/${uid}`,
+          "blocked",
+          {
+            lastPasswordChange: lastChangeDate,
+            hoursRemaining: hoursRemaining,
+          }
+        );
+
+        await logToFirestore(logData);
+
+        // ✅ ADD SECURITY LOGGING FOR PASSWORD TOO YOUNG
+        await SecurityLogger.logSecurityEvent("PASSWORD_CHANGE_BLOCKED", {
           userId: uid,
-          action: "password_change_blocked_too_young",
           ipAddress: req.ip,
-          lastPasswordChange: lastChangeDate,
-          hoursRemaining: hoursRemaining,
+          userAgent: req.get("User-Agent"),
+          endpoint: req.originalUrl,
+          method: req.method,
+          description: "Password change blocked - password too young",
+          severity: "medium",
+          metadata: {
+            hoursRemaining,
+            lastPasswordChange: lastChangeDate.toISOString(),
+            reason: "password_too_young",
+          },
         });
 
         return res.status(400).json({
@@ -598,6 +1093,18 @@ router.post("/change-password", authenticateUser, async (req, res) => {
 
     const validation = PasswordValidator.validate(newPassword);
     if (!validation.isValid) {
+      // ✅ ADD SECURITY LOGGING FOR WEAK PASSWORD
+      await SecurityLogger.logValidationFailure({
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: "newPassword",
+        rule: "password_strength",
+        error: "Password does not meet security requirements",
+      });
+
       return res.status(400).json({
         message: "Password does not meet security requirements",
         errors: validation.errors,
@@ -607,7 +1114,7 @@ router.post("/change-password", authenticateUser, async (req, res) => {
 
     console.log("✅ New password meets strength requirements");
 
-    // 🔐 REQUIREMENT 2.1.10: Check password history to prevent reuse
+    // 🔍 REQUIREMENT 2.1.10: Check password history to prevent reuse
     console.log("🔍 Checking password history for reuse...");
 
     // ADD DEBUGGING HERE
@@ -626,10 +1133,6 @@ router.post("/change-password", authenticateUser, async (req, res) => {
     console.log(
       "🔍 DEBUG: New password (first 10 chars):",
       newPassword.substring(0, 10) + "..."
-    );
-    console.log(
-      "🔍 DEBUG: Full password history:",
-      JSON.stringify(passwordHistory, null, 2)
     );
 
     // Check if new password matches any in history
@@ -681,12 +1184,30 @@ router.post("/change-password", authenticateUser, async (req, res) => {
             `❌ Password reuse detected. Matches password #${i + 1} in history`
           );
 
-          await logToFirestore({
-            timestamp: new Date(),
+          const logData = createLogData(
+            uid,
+            "password_change_blocked_reuse",
+            `users/${uid}`,
+            "blocked",
+            { historyPosition: i + 1 }
+          );
+
+          await logToFirestore(logData);
+
+          // ✅ ADD SECURITY LOGGING FOR PASSWORD REUSE
+          await SecurityLogger.logSecurityEvent("PASSWORD_CHANGE_BLOCKED", {
             userId: uid,
-            action: "password_change_blocked_reuse",
             ipAddress: req.ip,
-            historyPosition: i + 1,
+            userAgent: req.get("User-Agent"),
+            endpoint: req.originalUrl,
+            method: req.method,
+            description: "Password change blocked - password reuse detected",
+            severity: "medium",
+            metadata: {
+              historyPosition: i + 1,
+              historySize: passwordHistory.length,
+              reason: "password_reuse",
+            },
           });
 
           return res.status(400).json({
@@ -745,13 +1266,30 @@ router.post("/change-password", authenticateUser, async (req, res) => {
     });
 
     // Log successful password change
-    await logToFirestore({
-      timestamp: new Date(),
+    const logData = createLogData(
+      uid,
+      "password_changed_successfully",
+      `users/${uid}`,
+      "success",
+      { passwordHistorySize: updatedHistory.length }
+    );
+
+    await logToFirestore(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL PASSWORD CHANGE
+    await SecurityLogger.logSecurityEvent("PASSWORD_CHANGED", {
       userId: uid,
-      action: "password_changed_successfully",
       ipAddress: req.ip,
       userAgent: req.get("User-Agent"),
-      passwordHistorySize: updatedHistory.length,
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Password changed successfully",
+      severity: "low",
+      metadata: {
+        method: "authenticated_change",
+        passwordHistorySize: updatedHistory.length,
+        action: "change_password",
+      },
     });
 
     console.log("✅ Password change completed successfully");
@@ -765,13 +1303,27 @@ router.post("/change-password", authenticateUser, async (req, res) => {
     console.error("❌ Password change error:", error);
 
     // Log the error
-    await logToFirestore({
-      timestamp: new Date(),
+    const logData = createLogData(
+      uid,
+      "password_change_error",
+      `users/${uid}`,
+      "error",
+      {},
+      error
+    );
+
+    await logToFirestore(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
       userId: uid,
-      action: "password_change_error",
       ipAddress: req.ip,
-      error: error.message,
-      stack: error.stack,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Password change system error",
+      metadata: { error: error.message },
     });
 
     res.status(500).json({
@@ -788,6 +1340,18 @@ router.get("/password-change-status", authenticateUser, async (req, res) => {
   try {
     const userDoc = await db.collection("users").doc(uid).get();
     if (!userDoc.exists) {
+      // ✅ ADD SECURITY LOGGING FOR USER NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "User not found for password change status",
+        severity: "medium",
+        metadata: { action: "get_password_change_status" },
+      });
+
       return res.status(404).json({
         message: "User not found",
         state: "error",
@@ -819,6 +1383,24 @@ router.get("/password-change-status", authenticateUser, async (req, res) => {
       }
     }
 
+    // ✅ ADD SECURITY LOGGING FOR PASSWORD CHANGE STATUS ACCESS
+    await SecurityLogger.logSecurityEvent("PASSWORD_CHANGE_STATUS_ACCESSED", {
+      userId: uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Password change status retrieved",
+      severity: "low",
+      metadata: {
+        canChangePassword,
+        hoursRemaining,
+        passwordHistoryCount: userData.passwordHistory
+          ? userData.passwordHistory.length
+          : 0,
+      },
+    });
+
     res.status(200).json({
       message: "Password change status retrieved",
       state: "success",
@@ -834,14 +1416,25 @@ router.get("/password-change-status", authenticateUser, async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting password change status:", error);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error retrieving password change status",
+      metadata: { error: error.message },
+    });
+
     res.status(500).json({
       message: "Error retrieving password change status",
       state: "error",
     });
   }
 });
-
-// Add these new endpoints for the Firebase Default System:
 
 // POST route to verify security questions (for Firebase reset flow)
 router.post("/verify-security-questions", async (req, res) => {
@@ -852,6 +1445,17 @@ router.post("/verify-security-questions", async (req, res) => {
 
     // Validate input
     if (!email || !answers) {
+      // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+      await SecurityLogger.logValidationFailure({
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: !email ? "email" : "answers",
+        rule: "required",
+        error: "Email and answers are required",
+      });
+
       return res.status(400).json({
         message: "Email and answers are required",
         state: "error",
@@ -867,6 +1471,21 @@ router.post("/verify-security-questions", async (req, res) => {
 
     if (usersSnapshot.empty) {
       console.log("❌ User not found for email:", email);
+
+      // ✅ ADD SECURITY LOGGING FOR USER NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "User not found for security questions verification",
+        severity: "medium",
+        metadata: {
+          email: email.substring(0, 3) + "***",
+          action: "verify_security_questions",
+        },
+      });
+
       return res.status(404).json({
         message: "User not found",
         state: "error",
@@ -881,6 +1500,23 @@ router.post("/verify-security-questions", async (req, res) => {
     const userQuestions = userData.securityQuestions || [];
     if (userQuestions.length < 3) {
       console.log("❌ User does not have sufficient security questions");
+
+      // ✅ ADD SECURITY LOGGING FOR INSUFFICIENT SECURITY QUESTIONS
+      await SecurityLogger.logSecurityEvent("SECURITY_QUESTIONS_INSUFFICIENT", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description:
+          "Security questions verification failed - insufficient questions",
+        severity: "medium",
+        metadata: {
+          securityQuestionsCount: userQuestions.length,
+          email: email.substring(0, 3) + "***",
+        },
+      });
+
       return res.status(400).json({
         message: "Security questions not set up for this account",
         state: "error",
@@ -912,15 +1548,35 @@ router.post("/verify-security-questions", async (req, res) => {
     if (correctAnswers < userQuestions.length) {
       console.log("❌ Security questions verification failed");
 
-      await logToFirestore({
-        timestamp: new Date(),
-        action: "security_questions_verification_failed",
-        email: email,
-        userId: userId,
-        status: "failed",
-        correctAnswers: correctAnswers,
-        totalQuestions: userQuestions.length,
-        method: "firebase_reset",
+      const logData = createLogData(
+        userId,
+        "security_questions_verification_failed",
+        `users/${userId}`,
+        "failed",
+        {
+          correctAnswers: correctAnswers,
+          totalQuestions: userQuestions.length,
+          method: "firebase_reset",
+        }
+      );
+
+      await logToFirestore(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR FAILED SECURITY QUESTIONS
+      await SecurityLogger.logSecurityEvent("SECURITY_QUESTIONS_FAILED", {
+        userId,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Security questions verification failed",
+        severity: "high",
+        metadata: {
+          correctAnswers,
+          totalQuestions: userQuestions.length,
+          email: email.substring(0, 3) + "***",
+          method: "firebase_reset",
+        },
       });
 
       return res.status(400).json({
@@ -932,15 +1588,35 @@ router.post("/verify-security-questions", async (req, res) => {
     console.log("✅ All security questions verified successfully");
 
     // Log successful verification
-    await logToFirestore({
-      timestamp: new Date(),
-      action: "security_questions_verification_success",
-      email: email,
-      userId: userId,
-      status: "success",
-      correctAnswers: correctAnswers,
-      totalQuestions: userQuestions.length,
-      method: "firebase_reset",
+    const logData = createLogData(
+      userId,
+      "security_questions_verification_success",
+      `users/${userId}`,
+      "success",
+      {
+        correctAnswers: correctAnswers,
+        totalQuestions: userQuestions.length,
+        method: "firebase_reset",
+      }
+    );
+
+    await logToFirestore(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL SECURITY QUESTIONS
+    await SecurityLogger.logSecurityEvent("SECURITY_QUESTIONS_VERIFIED", {
+      userId,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Security questions verified successfully",
+      severity: "low",
+      metadata: {
+        correctAnswers,
+        totalQuestions: userQuestions.length,
+        email: email.substring(0, 3) + "***",
+        method: "firebase_reset",
+      },
     });
 
     res.status(200).json({
@@ -950,13 +1626,26 @@ router.post("/verify-security-questions", async (req, res) => {
   } catch (error) {
     console.error("Security questions verification error:", error);
 
-    await logToFirestore({
-      timestamp: new Date(),
-      action: "security_questions_verification_error",
-      email: email,
-      error: error.message,
-      status: "error",
-      method: "firebase_reset",
+    const logData = createLogData(
+      "unknown",
+      "security_questions_verification_error",
+      "users/unknown",
+      "error",
+      { method: "firebase_reset" },
+      error
+    );
+
+    await logToFirestore(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error verifying security questions",
+      metadata: { error: error.message },
     });
 
     res.status(500).json({
@@ -972,6 +1661,17 @@ router.post("/get-user-by-email", async (req, res) => {
 
   try {
     if (!email) {
+      // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+      await SecurityLogger.logValidationFailure({
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: "email",
+        rule: "required",
+        error: "Email is required",
+      });
+
       return res.status(400).json({
         message: "Email is required",
         state: "error",
@@ -986,6 +1686,20 @@ router.post("/get-user-by-email", async (req, res) => {
       .get();
 
     if (usersSnapshot.empty) {
+      // ✅ ADD SECURITY LOGGING FOR USER NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "User not found by email lookup",
+        severity: "medium",
+        metadata: {
+          email: email.substring(0, 3) + "***",
+          action: "get_user_by_email",
+        },
+      });
+
       return res.status(404).json({
         message: "User not found",
         state: "error",
@@ -994,6 +1708,25 @@ router.post("/get-user-by-email", async (req, res) => {
 
     const userDoc = usersSnapshot.docs[0];
     const userData = userDoc.data();
+
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL USER LOOKUP
+    await SecurityLogger.logSecurityEvent("USER_LOOKUP_BY_EMAIL", {
+      userId: userDoc.id,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "User found by email lookup",
+      severity: "low",
+      metadata: {
+        email: email.substring(0, 3) + "***",
+        hasSecurityQuestions:
+          userData.securityQuestions && userData.securityQuestions.length >= 3,
+        securityQuestionsCount: userData.securityQuestions
+          ? userData.securityQuestions.length
+          : 0,
+      },
+    });
 
     // Return only necessary data for password reset
     res.status(200).json({
@@ -1008,178 +1741,18 @@ router.post("/get-user-by-email", async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting user by email:", error);
-    res.status(500).json({
-      message: "An error occurred while fetching user data",
-      state: "error",
-    });
-  }
-});
 
-// POST route to verify security questions (for Firebase reset flow)
-router.post("/verify-security-questions", async (req, res) => {
-  const { email, answers } = req.body;
-
-  try {
-    console.log("🔍 Verifying security questions for email:", email);
-
-    // Validate input
-    if (!email || !answers) {
-      return res.status(400).json({
-        message: "Email and answers are required",
-        state: "error",
-      });
-    }
-
-    // Find user by email
-    const usersSnapshot = await db
-      .collection("users")
-      .where("email", "==", email.toLowerCase().trim())
-      .limit(1)
-      .get();
-
-    if (usersSnapshot.empty) {
-      console.log("❌ User not found for email:", email);
-      return res.status(404).json({
-        message: "User not found",
-        state: "error",
-      });
-    }
-
-    const userDoc = usersSnapshot.docs[0];
-    const userData = userDoc.data();
-    const userId = userDoc.id;
-
-    // Check if user has security questions
-    const userQuestions = userData.securityQuestions || [];
-    if (userQuestions.length < 3) {
-      console.log("❌ User does not have sufficient security questions");
-      return res.status(400).json({
-        message: "Security questions not set up for this account",
-        state: "error",
-      });
-    }
-
-    console.log("🔍 Checking", userQuestions.length, "security questions");
-
-    // Verify security question answers
-    let correctAnswers = 0;
-    for (const userQuestion of userQuestions) {
-      const providedAnswer = answers[userQuestion.questionId];
-      if (providedAnswer) {
-        const isCorrect = await PasswordManager.verifyPassword(
-          providedAnswer.toLowerCase().trim(),
-          userQuestion.answer
-        );
-        if (isCorrect) {
-          correctAnswers++;
-        }
-      }
-    }
-
-    console.log(
-      `🔍 Correct answers: ${correctAnswers}/${userQuestions.length}`
-    );
-
-    // Require all answers to be correct
-    if (correctAnswers < userQuestions.length) {
-      console.log("❌ Security questions verification failed");
-
-      await logToFirestore({
-        timestamp: new Date(),
-        action: "security_questions_verification_failed",
-        email: email,
-        userId: userId,
-        status: "failed",
-        correctAnswers: correctAnswers,
-        totalQuestions: userQuestions.length,
-        method: "firebase_reset",
-      });
-
-      return res.status(400).json({
-        message: "Security question answers are incorrect",
-        state: "error",
-      });
-    }
-
-    console.log("✅ All security questions verified successfully");
-
-    // Log successful verification
-    await logToFirestore({
-      timestamp: new Date(),
-      action: "security_questions_verification_success",
-      email: email,
-      userId: userId,
-      status: "success",
-      correctAnswers: correctAnswers,
-      totalQuestions: userQuestions.length,
-      method: "firebase_reset",
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error getting user by email",
+      metadata: { error: error.message },
     });
 
-    res.status(200).json({
-      message: "Security questions verified successfully",
-      state: "success",
-    });
-  } catch (error) {
-    console.error("Security questions verification error:", error);
-
-    await logToFirestore({
-      timestamp: new Date(),
-      action: "security_questions_verification_error",
-      email: email,
-      error: error.message,
-      status: "error",
-      method: "firebase_reset",
-    });
-
-    res.status(500).json({
-      message: "An error occurred while verifying security questions",
-      state: "error",
-    });
-  }
-});
-
-// Also add a helper endpoint to get user by email (for security questions)
-router.post("/get-user-by-email", async (req, res) => {
-  const { email } = req.body;
-
-  try {
-    if (!email) {
-      return res.status(400).json({
-        message: "Email is required",
-        state: "error",
-      });
-    }
-
-    // Find user by email
-    const usersSnapshot = await db
-      .collection("users")
-      .where("email", "==", email.toLowerCase().trim())
-      .limit(1)
-      .get();
-
-    if (usersSnapshot.empty) {
-      return res.status(404).json({
-        message: "User not found",
-        state: "error",
-      });
-    }
-
-    const userDoc = usersSnapshot.docs[0];
-    const userData = userDoc.data();
-
-    // Return only necessary data for password reset
-    res.status(200).json({
-      message: "User found",
-      state: "success",
-      data: {
-        email: userData.email,
-        securityQuestions: userData.securityQuestions || [],
-        hasSecurityQuestions:
-          userData.securityQuestions && userData.securityQuestions.length >= 3,
-      },
-    });
-  } catch (error) {
-    console.error("Error getting user by email:", error);
     res.status(500).json({
       message: "An error occurred while fetching user data",
       state: "error",
@@ -1190,6 +1763,19 @@ router.post("/get-user-by-email", async (req, res) => {
 // Debug endpoint to test Firebase configuration
 router.get("/debug-firebase", async (req, res) => {
   try {
+    // ✅ ADD SECURITY LOGGING FOR DEBUG ENDPOINT ACCESS
+    await SecurityLogger.logSecurityEvent("DEBUG_ENDPOINT_ACCESSED", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Firebase debug endpoint accessed",
+      severity: "medium",
+      metadata: {
+        environment: process.env.NODE_ENV,
+      },
+    });
+
     console.log("🔍 Firebase Configuration Debug");
     console.log("================================");
 
@@ -1285,6 +1871,18 @@ router.get("/debug-firebase", async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Firebase debug error:", error);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error in Firebase debug endpoint",
+      metadata: { error: error.message },
+    });
+
     res.status(500).json({
       success: false,
       error: error.message,
@@ -1298,6 +1896,21 @@ router.get("/reset-password/:token/:uid", async (req, res) => {
   const { token, uid } = req.params;
 
   try {
+    // ✅ ADD SECURITY LOGGING FOR RESET TOKEN VALIDATION ATTEMPT
+    await SecurityLogger.logSecurityEvent("RESET_TOKEN_VALIDATION_ATTEMPT", {
+      userId: uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Reset token validation attempted",
+      severity: "medium",
+      metadata: {
+        tokenProvided: !!token,
+        action: "validate_reset_token",
+      },
+    });
+
     // Hash the provided token
     const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
 
@@ -1305,6 +1918,18 @@ router.get("/reset-password/:token/:uid", async (req, res) => {
     const userDoc = await db.collection("users").doc(uid).get();
 
     if (!userDoc.exists) {
+      // ✅ ADD SECURITY LOGGING FOR USER NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "User not found for reset token validation",
+        severity: "medium",
+        metadata: { action: "validate_reset_token" },
+      });
+
       return res.status(404).json({
         message: "Invalid reset link",
         state: "error",
@@ -1318,6 +1943,21 @@ router.get("/reset-password/:token/:uid", async (req, res) => {
       !userData.passwordResetToken ||
       userData.passwordResetToken !== tokenHash
     ) {
+      // ✅ ADD SECURITY LOGGING FOR INVALID TOKEN
+      await SecurityLogger.logSecurityEvent("RESET_TOKEN_INVALID", {
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Invalid reset token provided",
+        severity: "high",
+        metadata: {
+          hasStoredToken: !!userData.passwordResetToken,
+          action: "validate_reset_token",
+        },
+      });
+
       return res.status(400).json({
         message: "Invalid or expired reset link",
         state: "error",
@@ -1335,6 +1975,21 @@ router.get("/reset-password/:token/:uid", async (req, res) => {
         passwordResetTokenExpiry: admin.firestore.FieldValue.delete(),
       });
 
+      // ✅ ADD SECURITY LOGGING FOR EXPIRED TOKEN
+      await SecurityLogger.logSecurityEvent("RESET_TOKEN_EXPIRED", {
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Expired reset token provided",
+        severity: "medium",
+        metadata: {
+          expiry: expiry ? expiry.toISOString() : "no_expiry",
+          action: "validate_reset_token",
+        },
+      });
+
       return res.status(400).json({
         message: "Reset link has expired. Please request a new one.",
         state: "error",
@@ -1344,6 +1999,21 @@ router.get("/reset-password/:token/:uid", async (req, res) => {
     // Get user's security questions
     const userQuestions = userData.securityQuestions || [];
     if (userQuestions.length < 3) {
+      // ✅ ADD SECURITY LOGGING FOR INSUFFICIENT SECURITY QUESTIONS
+      await SecurityLogger.logSecurityEvent("SECURITY_QUESTIONS_INSUFFICIENT", {
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Reset token valid but insufficient security questions",
+        severity: "medium",
+        metadata: {
+          securityQuestionsCount: userQuestions.length,
+          action: "validate_reset_token",
+        },
+      });
+
       return res.status(400).json({
         message: "Security questions not set up for this account",
         state: "error",
@@ -1361,6 +2031,22 @@ router.get("/reset-password/:token/:uid", async (req, res) => {
       };
     });
 
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL TOKEN VALIDATION
+    await SecurityLogger.logSecurityEvent("RESET_TOKEN_VALID", {
+      userId: uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Reset token validated successfully",
+      severity: "low",
+      metadata: {
+        email: userData.email.substring(0, 3) + "***",
+        securityQuestionsCount: userQuestions.length,
+        action: "validate_reset_token",
+      },
+    });
+
     res.status(200).json({
       message: "Reset token is valid",
       state: "success",
@@ -1372,6 +2058,19 @@ router.get("/reset-password/:token/:uid", async (req, res) => {
     });
   } catch (error) {
     console.error("Reset token validation error:", error);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: uid,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error validating reset token",
+      metadata: { error: error.message },
+    });
+
     res.status(500).json({
       message: "An error occurred validating the reset link",
       state: "error",
@@ -1386,6 +2085,18 @@ router.post("/reset-password", async (req, res) => {
   try {
     // Validate input
     if (!token || !uid || !answers || !newPassword) {
+      // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+      await SecurityLogger.logValidationFailure({
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: "reset_password_fields",
+        rule: "required",
+        error: "Missing required fields for password reset",
+      });
+
       return res.status(400).json({
         message: "Missing required fields",
         state: "error",
@@ -1395,6 +2106,18 @@ router.post("/reset-password", async (req, res) => {
     // Validate password
     const passwordValidation = PasswordValidator.validate(newPassword);
     if (!passwordValidation.isValid) {
+      // ✅ ADD SECURITY LOGGING FOR WEAK PASSWORD
+      await SecurityLogger.logValidationFailure({
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        fieldName: "newPassword",
+        rule: "password_strength",
+        error: "Password does not meet security requirements",
+      });
+
       return res.status(400).json({
         message: "Password does not meet requirements",
         errors: passwordValidation.errors,
@@ -1409,6 +2132,18 @@ router.post("/reset-password", async (req, res) => {
     const userDoc = await db.collection("users").doc(uid).get();
 
     if (!userDoc.exists) {
+      // ✅ ADD SECURITY LOGGING FOR USER NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "User not found for password reset completion",
+        severity: "medium",
+        metadata: { action: "complete_password_reset" },
+      });
+
       return res.status(404).json({
         message: "Invalid reset request",
         state: "error",
@@ -1422,6 +2157,18 @@ router.post("/reset-password", async (req, res) => {
       !userData.passwordResetToken ||
       userData.passwordResetToken !== tokenHash
     ) {
+      // ✅ ADD SECURITY LOGGING FOR INVALID TOKEN
+      await SecurityLogger.logSecurityEvent("RESET_TOKEN_INVALID", {
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Invalid reset token for password reset completion",
+        severity: "high",
+        metadata: { action: "complete_password_reset" },
+      });
+
       return res.status(400).json({
         message: "Invalid or expired reset link",
         state: "error",
@@ -1433,6 +2180,18 @@ router.post("/reset-password", async (req, res) => {
     const expiry = userData.passwordResetTokenExpiry?.toDate();
 
     if (!expiry || now > expiry) {
+      // ✅ ADD SECURITY LOGGING FOR EXPIRED TOKEN
+      await SecurityLogger.logSecurityEvent("RESET_TOKEN_EXPIRED", {
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Expired reset token for password reset completion",
+        severity: "medium",
+        metadata: { action: "complete_password_reset" },
+      });
+
       return res.status(400).json({
         message: "Reset link has expired",
         state: "error",
@@ -1442,6 +2201,21 @@ router.post("/reset-password", async (req, res) => {
     // Verify security question answers
     const userQuestions = userData.securityQuestions || [];
     if (userQuestions.length < 3) {
+      // ✅ ADD SECURITY LOGGING FOR INSUFFICIENT SECURITY QUESTIONS
+      await SecurityLogger.logSecurityEvent("SECURITY_QUESTIONS_INSUFFICIENT", {
+        userId: uid,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Insufficient security questions for password reset",
+        severity: "medium",
+        metadata: {
+          securityQuestionsCount: userQuestions.length,
+          action: "complete_password_reset",
+        },
+      });
+
       return res.status(400).json({
         message: "Security questions not set up",
         state: "error",
@@ -1465,13 +2239,33 @@ router.post("/reset-password", async (req, res) => {
 
     // Require all answers to be correct
     if (correctAnswers < userQuestions.length) {
-      await logToFirestore({
-        timestamp: new Date(),
-        action: "password_reset_failed_security_questions",
+      const logData = createLogData(
+        uid,
+        "password_reset_failed_security_questions",
+        `users/${uid}`,
+        "failed",
+        {
+          correctAnswers: correctAnswers,
+          totalQuestions: userQuestions.length,
+        }
+      );
+
+      await logToFirestore(logData);
+
+      // ✅ ADD SECURITY LOGGING FOR FAILED SECURITY QUESTIONS
+      await SecurityLogger.logSecurityEvent("SECURITY_QUESTIONS_FAILED", {
         userId: uid,
-        status: "failed",
-        correctAnswers: correctAnswers,
-        totalQuestions: userQuestions.length,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: "Security questions failed for password reset",
+        severity: "high",
+        metadata: {
+          correctAnswers,
+          totalQuestions: userQuestions.length,
+          action: "complete_password_reset",
+        },
       });
 
       return res.status(400).json({
@@ -1488,6 +2282,21 @@ router.post("/reset-password", async (req, res) => {
         historyEntry.password
       );
       if (isReused) {
+        // ✅ ADD SECURITY LOGGING FOR PASSWORD REUSE
+        await SecurityLogger.logSecurityEvent("PASSWORD_RESET_REUSE_BLOCKED", {
+          userId: uid,
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent"),
+          endpoint: req.originalUrl,
+          method: req.method,
+          description: "Password reset blocked - password reuse detected",
+          severity: "medium",
+          metadata: {
+            historySize: passwordHistory.length,
+            action: "complete_password_reset",
+          },
+        });
+
         return res.status(400).json({
           message:
             "This password has been used recently. Please choose a different password.",
@@ -1524,12 +2333,30 @@ router.post("/reset-password", async (req, res) => {
     });
 
     // Log successful password reset
-    await logToFirestore({
-      timestamp: new Date(),
+    const logData = createLogData(
+      uid,
+      "password_reset_completed",
+      `users/${uid}`,
+      "success",
+      { method: "security_questions" }
+    );
+
+    await logToFirestore(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SUCCESSFUL PASSWORD RESET
+    await SecurityLogger.logSecurityEvent("PASSWORD_RESET_SUCCESS", {
       userId: uid,
-      action: "password_reset_completed",
-      status: "success",
-      method: "security_questions",
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Password reset completed successfully",
+      severity: "low",
+      metadata: {
+        method: "security_questions",
+        passwordHistorySize: updatedHistory.length,
+        action: "complete_password_reset",
+      },
     });
 
     res.status(200).json({
@@ -1539,12 +2366,27 @@ router.post("/reset-password", async (req, res) => {
   } catch (error) {
     console.error("Password reset completion error:", error);
 
-    await logToFirestore({
-      timestamp: new Date(),
-      action: "password_reset_error",
+    const logData = createLogData(
+      uid,
+      "password_reset_error",
+      `users/${uid}`,
+      "error",
+      {},
+      error
+    );
+
+    await logToFirestore(logData);
+
+    // ✅ ADD SECURITY LOGGING FOR SYSTEM ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
       userId: uid,
-      error: error.message,
-      status: "error",
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Error completing password reset",
+      metadata: { error: error.message },
     });
 
     res.status(500).json({
