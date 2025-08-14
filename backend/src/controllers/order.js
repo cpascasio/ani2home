@@ -1,3 +1,4 @@
+// backend/src/controllers/order.js
 const express = require("express");
 const admin = require("firebase-admin");
 const router = express.Router();
@@ -9,20 +10,28 @@ const { logger, logToFirestore } = require("../config/firebase-config");
 // Firestore database reference
 const db = admin.firestore();
 
+// Helper for consistent 400 responses (matches cart error shape)
+const badRequest = (res, error) =>
+  res.status(400).json({
+    message: "Invalid input data",
+    state: "error",
+    details: error.details || [{ message: error.message }],
+  });
+
+// ---------- SPECIFIC ROUTES FIRST (avoid shadowing) ----------
+
+// POST /api/orders/place-order - Checkout (strict validation like cart)
 router.post("/place-order", async (req, res) => {
-  console.log("Request body:", req.body); // Log the incoming request body
+  console.log("Request body:", req.body);
 
   try {
-    // Validate the request body
     const { error, value } = placeOrderSchema.validate(req.body);
     if (error) {
-      console.error("Validation Error:", error.details[0].message); // Log validation error
-      return res.status(400).json({ error: error.details[0].message });
+      console.error("Validation Error:", error);
+      return badRequest(res, error);
     }
 
-    console.log("Validated request body:", value); // Log the validated request body
-
-    // Destructure req.body to separate items and the rest of the data
+    console.log("Validated request body:", value);
     const { items, ...order } = value;
 
     // Create a new order in Firestore
@@ -30,34 +39,29 @@ router.post("/place-order", async (req, res) => {
     await newOrderRef.set(order);
     const orderId = newOrderRef.id;
 
-    console.log("Order created in Firestore with ID:", orderId); // Log the order ID
+    console.log("Order created in Firestore with ID:", orderId);
 
-    // Map items to include the orderId
-    const orderDetails = items.map((item) => {
-      return { ...item, orderId: orderId };
-    });
+    // Map items to include the orderId and validate each against orderDetails model
+    const orderDetails = items.map((item) => ({ ...item, orderId }));
+    const validationErrors = [];
 
-    console.log("Order details with orderId:", orderDetails); // Log the order details
-
-    // Validate each item in the order details
-    let validationErrors = [];
     orderDetails.forEach((item, index) => {
-      const { error, value } = orderDetailsSchema.validate(item);
-      if (error) {
-        console.error(
-          `Validation Error in item ${index}:`,
-          error.details[0].message
-        ); // Log item validation error
-        validationErrors.push(`Item ${index}: ${error.details[0].message}`);
+      const { error: itemError, value: validItem } = orderDetailsSchema.validate(item);
+      if (itemError) {
+        console.error(`Validation Error in item ${index}:`, itemError.details[0].message);
+        validationErrors.push(`Item ${index}: ${itemError.details[0].message}`);
       } else {
-        // Update the item with validated values if needed
-        orderDetails[index] = value;
+        orderDetails[index] = validItem;
       }
     });
 
     if (validationErrors.length > 0) {
-      console.error("Validation errors in order details:", validationErrors); // Log all validation errors
-      return res.status(400).json({ errors: validationErrors });
+      console.error("Validation errors in order details:", validationErrors);
+      return res.status(400).json({
+        message: "Invalid order items",
+        state: "error",
+        details: validationErrors.map((m) => ({ message: m })),
+      });
     }
 
     // Create a batch to write order details to Firestore
@@ -67,10 +71,10 @@ router.post("/place-order", async (req, res) => {
       batch.set(orderDetailRef, orderDetail);
     });
 
-    await batch.commit(); // Commit the batch
-    console.log("Order details written to Firestore"); // Log successful batch commit
+    await batch.commit();
+    console.log("Order details written to Firestore");
 
-    // Log the successful order creation
+    // Log success
     const logData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -82,29 +86,25 @@ router.post("/place-order", async (req, res) => {
         second: "2-digit",
         hour12: false,
       }).format(new Date()),
-      orderId: orderId,
+      orderId,
       action: "place_order",
       resource: `orders/${orderId}`,
       status: "success",
       userId: value.userId,
     };
 
-    logger.info(logData); // Log to your logging system
-    await logToFirestore(logData); // Log to Firestore if needed
+    logger.info(logData);
+    await logToFirestore(logData);
 
-    // Send success response
-    res.status(201).json({
+    return res.status(201).json({
       message: "Order created successfully",
-      order: order,
-      orderDetails: orderDetails,
-      orderId: orderId,
+      order,
+      orderDetails,
+      orderId,
     });
-
-    console.log("Order creation completed successfully"); // Log successful completion
   } catch (error) {
-    console.error("Error in /place-order:", error); // Log the error
+    console.error("Error in /place-order:", error);
 
-    // Log the error to Firestore
     const errorLogData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -122,34 +122,34 @@ router.post("/place-order", async (req, res) => {
       error: error.message || "Unknown error",
     };
 
-    logger.error(errorLogData); // Log to your logging system
-    await logToFirestore(errorLogData); // Log to Firestore if needed
+    logger.error(errorLogData);
+    await logToFirestore(errorLogData);
 
-    // Send error response
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error creating order",
       error: error.message || "Unknown error",
     });
   }
 });
 
-// route for post order
+// POST /api/orders/create-order - Non-checkout path (strict as well)
 router.post("/create-order", async (req, res) => {
   const { error, value } = orderSchema.validate(req.body);
 
   if (error) {
-    console.error("Validation Error:", error.details[0].message); // Log the validation error
-    return res.status(400).json({ error: error.details[0].message });
+    console.error("Validation Error:", error);
+    return badRequest(res, error);
   }
 
   try {
     const newOrderRef = db.collection("orders").doc();
     await newOrderRef.set(value);
     const orderId = newOrderRef.id;
+
     res.status(201).json({
       message: "Order created successfully",
       order: value,
-      orderId: orderId,
+      orderId,
     });
     console.log("Order Id from order route: ", orderId);
   } catch (error) {
@@ -158,45 +158,45 @@ router.post("/create-order", async (req, res) => {
   }
 });
 
+// GET /api/orders/order/:orderId - Get order by document ID
+router.get("/order/:orderId", async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const orderDocRef = db.collection("orders").doc(orderId);
+    const orderDoc = await orderDocRef.get();
+
+    if (!orderDoc.exists) {
+      return res.status(404).json({ message: `Order with ID ${orderId} not found` });
+    }
+
+    const orderData = { orderId: orderDoc.id, ...orderDoc.data() };
+    return res.status(200).json(orderData);
+  } catch (error) {
+    console.error("Error getting order by ID:", error);
+    return res.status(500).send("Error getting order by ID");
+  }
+});
+
+// ---------- GENERIC ROUTE LAST (avoid shadowing) ----------
+
+// GET /api/orders/:userId - Get user's orders
 router.get("/:userId", async (req, res) => {
   try {
     const snapshot = await db
       .collection("orders")
       .where("userId", "==", req.params.userId)
       .get();
+
     const orders = snapshot.docs.map((doc) => ({
       orderId: doc.id,
       ...doc.data(),
     }));
-    res.status(200).json(orders);
+
+    return res.status(200).json(orders);
   } catch (error) {
     console.error("Error getting orders:", error);
-    res.status(500).send("Error getting orders");
-  }
-});
-
-// Endpoint to get order by document ID
-router.get("/order/:orderId", async (req, res) => {
-  const { orderId } = req.params; // Get the orderId from the request parameters
-
-  try {
-    // Fetch the order document by orderId from the Firestore orders collection
-    const orderDocRef = db.collection("orders").doc(orderId);
-    const orderDoc = await orderDocRef.get();
-
-    if (!orderDoc.exists) {
-      // If the document doesn't exist, return a 404
-      return res
-        .status(404)
-        .json({ message: `Order with ID ${orderId} not found` });
-    }
-
-    // If document exists, send back the order data along with its documentId
-    const orderData = { orderId: orderDoc.id, ...orderDoc.data() };
-    res.status(200).json(orderData); // Respond with the order details
-  } catch (error) {
-    console.error("Error getting order by ID:", error);
-    res.status(500).send("Error getting order by ID");
+    return res.status(500).send("Error getting orders");
   }
 });
 

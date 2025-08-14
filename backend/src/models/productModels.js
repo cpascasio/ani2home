@@ -1,42 +1,24 @@
+// backend/src/models/productModels.js
 const Joi = require("joi");
-
-const now = new Date().toISOString();
+const { id, prefs } = require("./validators/common");
 
 const productSchema = Joi.object({
-  // productId: Joi.string().guid({ version: 'uuidv4' }).required(),
-  storeId: Joi.string().optional(),
-  productName: Joi.string().optional(),
-  productDescription: Joi.string().optional(),
-  dateAdded: Joi.date().iso().optional(),
-  rating: Joi.number().min(0).max(5).precision(1).optional(),
-  isKilo: Joi.boolean().optional(),
-  totalSales: Joi.number().optional(),
-  stock: Joi.number().optional(),
-  price: Joi.number().precision(2).optional(),
-  pictures: Joi.array().items(Joi.string()).max(5).optional(),
-  type: Joi.string().optional(),
-  category: Joi.string().valid("Vegetable", "Fruit").optional(),
-});
+  storeId: id.required(), // match cart-style ID rules
+  productName: Joi.string().min(2).max(120).required(),
+  productDescription: Joi.string().min(10).max(1000).required(),
+  isKilo: Joi.boolean().required(),
+  stock: Joi.number().integer().min(0).max(10_000_000).required(),
+  price: Joi.number().min(0).max(10_000_000).precision(2).required(),
+  pictures: Joi.array().max(5).items(Joi.string().uri()).optional(),
+  type: Joi.string().max(50).optional(),
+  category: Joi.string().valid("Vegetable", "Fruit").required(),
+
+  // server-managed; forbid in payload to enforce "reject, don't sanitize"
+  dateAdded: Joi.forbidden(),
+  rating: Joi.forbidden(),
+  totalSales: Joi.forbidden(),
+})
+  .unknown(false)
+  .prefs(prefs);
 
 module.exports = productSchema;
-
-// dateAdded
-// rating
-// totalSales
-
-// modal specifications
-
-// Name
-// Description
-// category (vegetable, fruit)
-// create a dropdown that follows these conditions:
-// if(vegetable) dropdown should have a list of vegetables
-// if(fruit) dropdown should have a list of fruits
-
-// if dropdown has selected empty, create a custom other input field.
-
-// kilo or pieces
-// price per kilo or per piece
-// Stock
-
-// add picture that displays the pictures already added to be

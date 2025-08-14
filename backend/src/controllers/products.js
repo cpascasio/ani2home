@@ -1,3 +1,4 @@
+// backend/src/controllers/products.js
 const express = require("express");
 const admin = require("firebase-admin");
 const router = express.Router();
@@ -9,24 +10,17 @@ const { logger, logToFirestore } = require("../config/firebase-config");
 // Firestore database reference
 const db = admin.firestore();
 
-// Route to get product detail
-router.get("/:productId", async (req, res) => {
-  try {
-    const product = await db
-      .collection("products")
-      .doc(req.params.productId)
-      .get();
-    if (!product.exists) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-    res.json(product.data());
-  } catch (error) {
-    console.error("Error getting product:", error);
-    res.status(500).send("Error getting product");
-  }
-});
+// Helper for consistent 400 responses (matches cart error shape)
+const badRequest = (res, error) =>
+  res.status(400).json({
+    message: "Invalid input data",
+    state: "error",
+    details: error.details || [{ message: error.message }],
+  });
 
-// route to get products given userId
+// ---------- SPECIFIC GET ROUTES FIRST (avoid shadowing) ----------
+
+// Route to get products given userId
 router.get("/user/:userId", async (req, res) => {
   try {
     const products = [];
@@ -34,13 +28,15 @@ router.get("/user/:userId", async (req, res) => {
       .collection("products")
       .where("storeId", "==", req.params.userId)
       .get();
+
     snapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });
-    res.json(products);
+
+    return res.json(products);
   } catch (error) {
     console.error("Error getting products:", error);
-    res.status(500).send("Error getting products");
+    return res.status(500).send("Error getting products");
   }
 });
 
@@ -51,21 +47,23 @@ router.get("/product/:productId", async (req, res) => {
       .collection("products")
       .doc(req.params.productId)
       .get();
+
     if (!productDoc.exists) {
       return res.status(404).json({ message: "Product not found" });
     }
 
     const productData = productDoc.data();
-    productData.id = productDoc.id; // Add the document ID to the product data
+    productData.id = productDoc.id;
 
     const sellerDoc = await db
       .collection("users")
       .doc(productData.storeId)
       .get();
-    res.json({ product: productData, seller: sellerDoc.data() });
+
+    return res.json({ product: productData, seller: sellerDoc.data() || null });
   } catch (error) {
     console.error("Error getting product:", error);
-    res.status(500).send("Error getting product");
+    return res.status(500).send("Error getting product");
   }
 });
 
@@ -77,6 +75,7 @@ router.get("/seller/:sellerId", async (req, res) => {
       .collection("products")
       .where("storeId", "==", req.params.sellerId)
       .get();
+
     snapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });
@@ -85,12 +84,43 @@ router.get("/seller/:sellerId", async (req, res) => {
       .collection("users")
       .doc(req.params.sellerId)
       .get();
-    res.json({ products, seller: sellerDoc.data() });
+
+    return res.json({ products, seller: sellerDoc.data() || null });
   } catch (error) {
     console.error("Error getting products:", error);
-    res.status(500).send("Error getting products");
+    return res.status(500).send("Error getting products");
   }
 });
+
+// Route to get products category
+router.get("/category/:categ", async (req, res) => {
+  const { categ } = req.params;
+  try {
+    const products = [];
+    let snapshot;
+
+    if (categ.toLowerCase() === "fruits") {
+      snapshot = await db.collection("products").where("category", "==", "Fruit").get();
+    } else if (categ.toLowerCase() === "vegetables") {
+      snapshot = await db.collection("products").where("category", "==", "Vegetable").get();
+    } else if (categ.toLowerCase() === "artisanal food") {
+      snapshot = await db.collection("products").where("category", "==", "Artisinal Food").get();
+    } else {
+      snapshot = await db.collection("products").get();
+    }
+
+    snapshot.forEach((doc) => {
+      products.push({ id: doc.id, ...doc.data() });
+    });
+
+    return res.json(products);
+  } catch (error) {
+    console.error("Error getting products:", error);
+    return res.status(500).send("Error getting products");
+  }
+});
+
+// ---------- GENERAL GET ROUTES AFTER SPECIFICS ----------
 
 // Route to get all products
 router.get("/", async (req, res) => {
@@ -100,80 +130,54 @@ router.get("/", async (req, res) => {
     snapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });
-    res.json(products);
+    return res.json(products);
   } catch (error) {
     console.error("Error getting products:", error);
-    res.status(500).send("Error getting products");
+    return res.status(500).send("Error getting products");
   }
 });
 
-// Route to get products category
-router.get("/category/:categ", async (req, res) => {
-  const { categ } = req.params;
-  console.log("Received category:", categ); // Added for debugging
+// Route to get product detail (single ID) — keep last among GETs to avoid shadowing
+router.get("/:productId", async (req, res) => {
   try {
-    const products = [];
-    let snapshot;
+    const product = await db
+      .collection("products")
+      .doc(req.params.productId)
+      .get();
 
-    if (categ === "fruits" || categ === "Fruits") {
-      snapshot = await db
-        .collection("products")
-        .where("category", "==", "Fruit")
-        .get();
-      console.log("Fetched fruits"); // Added for debugging
-    } else if (categ === "vegetables" || categ === "Vegetables") {
-      snapshot = await db
-        .collection("products")
-        .where("category", "==", "Vegetable")
-        .get();
-      console.log("Fetched vegetables"); // Added for debugging
-    } else if (categ === "artisanal food" || categ === "Artisanal Food") {
-      snapshot = await db
-        .collection("products")
-        .where("category", "==", "Artisinal Food")
-        .get();
-      console.log("Fetched artisinal food"); // Added for debugging
-    } else {
-      snapshot = await db.collection("products").get();
-      console.log("Fetched all products"); // Added for debugging
+    if (!product.exists) {
+      return res.status(404).json({ message: "Product not found" });
     }
-
-    snapshot.forEach((doc) => {
-      products.push({ id: doc.id, ...doc.data() });
-    });
-
-    res.json(products);
+    return res.json(product.data());
   } catch (error) {
-    console.error("Error getting products:", error);
-    res.status(500).send("Error getting products");
+    console.error("Error getting product:", error);
+    return res.status(500).send("Error getting product");
   }
 });
+
+// ---------- CREATE / UPDATE / DELETE ----------
 
 // Route to create a new product
 router.post("/create-product", async (req, res) => {
   const { error, value } = productSchema.validate(req.body);
-
-  // Add these fields to the value
-  value.dateAdded = new Date().toISOString();
-  value.rating = 0;
-  value.totalSales = 0;
-
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
+  if (error) return badRequest(res, error);
 
   try {
-    // Check if pictures exist and is an array
+    // Server-controlled fields only after validation
+    value.dateAdded = new Date().toISOString();
+    value.rating = 0;
+    value.totalSales = 0;
+
+    // If pictures are provided and you want to upload base64 -> Cloudinary:
     if (value.pictures) {
       const uploadPromises = value.pictures.map(async (picture) => {
         const result = await cloudinary.uploader.upload(picture, {
           folder: "ani2home",
-          resource_type: "image", // Optional: if you have an upload preset
+          resource_type: "image",
         });
         return result.secure_url;
       });
 
-      // Wait for all uploads to complete
       value.pictures = await Promise.all(uploadPromises);
     }
 
@@ -201,14 +205,14 @@ router.post("/create-product", async (req, res) => {
       },
     };
 
-    logger.info(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.info(logData);
+    await logToFirestore(logData);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Product created successfully",
       product: {
         ...value,
-        productId: newProductRef.id, // Include the document ID
+        productId: newProductRef.id,
       },
     });
   } catch (error) {
@@ -226,43 +230,37 @@ router.post("/create-product", async (req, res) => {
         second: "2-digit",
         hour12: false,
       }).format(new Date()),
-      userId: req.user?.uid || "unknown", // Include the user ID who attempted to create the product
+      userId: req.user?.uid || "unknown",
       action: "create_product",
       resource: "products",
       status: "failed",
       error: error.message,
     };
 
-    logger.error(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.error(logData);
+    await logToFirestore(logData);
 
-    res.status(500).send("Error creating product");
+    return res.status(500).send("Error creating product");
   }
 });
 
-// Route to update a product
+// Route to update a product (use :productId param)
 router.put("/:productId", async (req, res) => {
-  const { id, ...rest } = req.body;
-  const { error, value } = productSchema.validate(rest);
+  const { productId } = req.params;
 
-  console.log("Request body:", value);
-  console.log("Product ID from body:", id);
-
-  if (error) {
-    return res.status(400).json({ error: error.details[0].message });
-  }
+  // Validate the payload fields only; ID comes from params
+  const { error, value } = productSchema.validate(req.body);
+  if (error) return badRequest(res, error);
 
   try {
-    const productRef = db.collection("products").doc(id);
+    const productRef = db.collection("products").doc(productId);
     const productDoc = await productRef.get();
 
     if (!productDoc.exists) {
-      return res
-        .status(404)
-        .json({ message: "Product not found", state: "error" });
+      return res.status(404).json({ message: "Product not found", state: "error" });
     }
 
-    // Fetch the old values
+    // Fetch old values
     const oldData = productDoc.data();
 
     // Update Firestore document with the new values
@@ -279,7 +277,7 @@ router.put("/:productId", async (req, res) => {
       }
     }
 
-    // Log the successful product update with changes
+    // Log the successful update
     const logData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -292,23 +290,22 @@ router.put("/:productId", async (req, res) => {
         hour12: false,
       }).format(new Date()),
       action: "update_product",
-      resource: `products/${id}`,
+      resource: `products/${productId}`,
       status: "success",
       details: {
         message: "Product updated successfully",
-        productId: id,
-        changes, // Include old and new values
+        productId,
+        changes,
       },
     };
 
-    logger.info(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.info(logData);
+    await logToFirestore(logData);
 
-    res.status(200).json({ message: "Product updated successfully" });
+    return res.status(200).json({ message: "Product updated successfully" });
   } catch (error) {
     console.error("Error updating product:", error);
 
-    // Log the error
     const logData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -321,15 +318,15 @@ router.put("/:productId", async (req, res) => {
         hour12: false,
       }).format(new Date()),
       action: "update_product",
-      resource: `products/${id}`,
+      resource: `products/${productId}`,
       status: "failed",
       error: error.message,
     };
 
-    logger.error(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.error(logData);
+    await logToFirestore(logData);
 
-    res.status(500).send("Error updating product");
+    return res.status(500).send("Error updating product");
   }
 });
 
@@ -341,14 +338,10 @@ router.delete("/:productId", async (req, res) => {
     const productRef = db.collection("products").doc(productId);
     const productDoc = await productRef.get();
 
-    // Check if the product exists
     if (!productDoc.exists) {
-      return res
-        .status(404)
-        .json({ message: "Product not found", state: "error" });
+      return res.status(404).json({ message: "Product not found", state: "error" });
     }
 
-    // Delete the product
     await productRef.delete();
 
     // Log the successful deletion
@@ -368,14 +361,14 @@ router.delete("/:productId", async (req, res) => {
       status: "success",
       details: {
         message: "Product deleted successfully",
-        productId: productId,
+        productId,
       },
     };
 
-    logger.info(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.info(logData);
+    await logToFirestore(logData);
 
-    res.status(200).json({ message: "Product deleted successfully" });
+    return res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     console.error("Error deleting product:", error);
 
@@ -391,17 +384,17 @@ router.delete("/:productId", async (req, res) => {
         second: "2-digit",
         hour12: false,
       }).format(new Date()),
-      userId: req.headers["x-user-id"] || "unknown", // Extract userId from the headers
+      userId: req.headers["x-user-id"] || "unknown",
       action: "delete_product",
       resource: `products/${productId}`,
       status: "failed",
       error: error.message,
     };
 
-    logger.error(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.error(logData);
+    await logToFirestore(logData);
 
-    res.status(500).send("Error deleting product");
+    return res.status(500).send("Error deleting product");
   }
 });
 

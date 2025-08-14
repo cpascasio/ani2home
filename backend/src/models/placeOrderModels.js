@@ -1,32 +1,39 @@
+// backend/src/models/placeOrderModels.js
 const Joi = require("joi");
+const { id, quantity, phonePH, lat, lng, prefs } = require("./validators/common");
+
+const deliveryAddressSchema = Joi.object({
+  fullName: Joi.string().min(1).max(100).required(),
+  province: Joi.string().min(2).max(100).required(),
+  barangay: Joi.string().min(2).max(100).required(),
+  city: Joi.string().min(2).max(100).required(),
+  address: Joi.string().min(5).max(200).required(),
+  phoneNumber: phonePH.required(),
+  lat: lat.required(),
+  lng: lng.required(),
+}).unknown(false);
 
 const placeOrderSchema = Joi.object({
-  userId: Joi.string().required(),
-  sellerId: Joi.string().required(),
-  shippingFee: Joi.number().min(0).optional(),
-  totalPrice: Joi.number().min(0).optional(),
-  status: Joi.string().required(),
-  deliveryAddress: Joi.object({
-    fullName: Joi.string().optional(),
-    province: Joi.string().optional(),
-    barangay: Joi.string().optional(),
-    city: Joi.string().optional(),
-    address: Joi.string().optional(),
-    phoneNumber: Joi.string().optional(),
-    lng: Joi.number().optional(),
-    lat: Joi.number().optional(),
-  }).required(),
-  note: Joi.string().optional(),
-  paymentOption: Joi.string().required(),
-  paymentRefNo: Joi.string().optional(),
-  items: Joi.array()
-    .items(
-      Joi.object({
-        productId: Joi.string().optional(),
-        quantity: Joi.number().optional(),
-      })
-    )
+  userId: id.required(),
+  sellerId: id.required(),
+  shippingFee: Joi.number().min(0).precision(2).required(),
+  totalPrice: Joi.number().min(0).precision(2).required(),
+  status: Joi.string()
+    .valid("pending","paid","processing","shipped","delivered","cancelled")
     .required(),
-});
+  paymentOption: Joi.string().valid("COD","GCash","Card").required(),
+  paymentRefNo: Joi.string().max(64)
+    .when("paymentOption", { is: "COD", then: Joi.forbidden(), otherwise: Joi.required() }),
+  deliveryAddress: deliveryAddressSchema.required(),
+  note: Joi.string().max(500).allow("").optional(),
+  items: Joi.array().min(1).max(50).items(
+    Joi.object({
+      productId: id.required(),
+      quantity: quantity.required(),
+    }).unknown(false)
+  ).required(),
+})
+  .unknown(false)
+  .prefs(prefs);
 
 module.exports = placeOrderSchema;
