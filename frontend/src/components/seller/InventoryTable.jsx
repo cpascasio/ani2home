@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useUser } from "../../context/UserContext";
 import useFetch from "../../../hooks/useFetch";
+import { toast } from "react-hot-toast"; // ✅ toasts
+import { showValidationToast } from "../../utils/validationToasts";
 
 const InventoryTable = () => {
   const { user } = useUser();
@@ -25,12 +27,17 @@ const InventoryTable = () => {
   };
 
   const [formData, setFormData] = useState(initialFormData);
-  const { data: fetchProducts } = useFetch(
-    `/api/products/user/${user?.userId}`
-  );
+  const { data: fetchProducts } = useFetch(`/api/products/user/${user?.userId}`);
   const [products, setProducts] = useState([]);
-  const [pictures, setPictures] = useState([]); // For add modal
-  const [editPictures, setEditPictures] = useState([]); // ✅ NEW: For edit modal
+
+  // For add modal uploads
+  const [pictures, setPictures] = useState([]);
+  // For edit modal uploads
+  const [editPictures, setEditPictures] = useState([]);
+
+  // ✅ field-level errors from server 400
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [formSubmitting, setFormSubmitting] = useState(false);
 
   const itemsPerPage = 10;
 
@@ -41,7 +48,7 @@ const InventoryTable = () => {
   }, [fetchProducts]);
 
   const filteredData = products.filter((item) =>
-    item.productName.toLowerCase().includes(searchTerm.toLowerCase())
+    (item.productName || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -54,6 +61,24 @@ const InventoryTable = () => {
     setCurrentPage(pageNumber);
   };
 
+  // ✅ map backend Joi messages to input names (best-effort)
+  function mapServerErrorsToFields(details = []) {
+    const errs = {};
+    for (const d of details) {
+      const msg = d.message || String(d);
+      if (/productName/i.test(msg)) errs.productName = msg;
+      if (/productDescription/i.test(msg)) errs.productDescription = msg;
+      if (/\bcategory\b/i.test(msg)) errs.category = msg;
+      if (/\btype\b/i.test(msg)) errs.type = msg;
+      if (/\bisKilo\b/i.test(msg)) errs.unit = msg;
+      if (/\bprice\b/i.test(msg)) errs.price = msg;
+      if (/\bstock\b/i.test(msg)) errs.stock = msg;
+      if (/pictures/i.test(msg)) errs.pictures = msg;
+      if (/storeId/i.test(msg)) errs.storeId = msg;
+    }
+    return errs;
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -61,6 +86,8 @@ const InventoryTable = () => {
       [name]: value,
       isKilo: name === "unit" ? value === "kilo" : prevState.isKilo,
     }));
+    // ✅ clear field error as user edits
+    setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   // File reading helper
@@ -73,45 +100,54 @@ const InventoryTable = () => {
     });
   };
 
-  // ✅ FILE CHANGE HANDLER FOR ADD MODAL
+  // File change handler for ADD modal
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     try {
-      const base64Files = await Promise.all(
-        files.map((file) => readFile(file))
-      );
+      const base64Files = await Promise.all(files.map((file) => readFile(file)));
       setPictures(base64Files);
       console.log("Add modal: Files ready");
     } catch (error) {
       console.error("Error reading files for add", error);
+      toast.error("Failed to read image files.");
     }
   };
 
-  // ✅ NEW: FILE CHANGE HANDLER FOR EDIT MODAL
+  // File change handler for EDIT modal
   const handleEditFileChange = async (e) => {
     const files = Array.from(e.target.files);
     try {
-      const base64Files = await Promise.all(
-        files.map((file) => readFile(file))
-      );
+      const base64Files = await Promise.all(files.map((file) => readFile(file)));
       setEditPictures(base64Files);
       console.log("Edit modal: Files ready");
     } catch (error) {
       console.error("Error reading files for edit", error);
+      toast.error("Failed to read image files.");
     }
   };
 
   // ADD PRODUCT SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormSubmitting(true);
+    setFieldErrors({});
+
     const { unit, ...rest } = formData;
+
+    // IMPORTANT: numbers must be numbers (Joi convert:false on server)
+    const payload = {
+      ...rest,
+      price: Number(rest.price),
+      stock: Number(rest.stock),
+    };
     if (pictures.length > 0) {
-      rest.pictures = pictures;
+      payload.pictures = pictures;
     }
+
     try {
       const response = await axios.post(
         "http://localhost:3000/api/products/create-product",
-        rest,
+        payload,
         {
           headers: {
             Authorization: `Bearer ${user?.token}`,
@@ -119,36 +155,53 @@ const InventoryTable = () => {
           },
         }
       );
+
       const newProduct = response.data.product;
       setProducts((prevProducts) => [...prevProducts, newProduct]);
       setPictures([]);
       setFormData(initialFormData);
       setShowModal(false);
+      toast.success(response?.data?.message || "Product created successfully");
     } catch (error) {
       console.error("There was an error!", error);
+      const status = error?.response?.status;
+      const data = error?.response?.data || {};
+      if (status === 400) {
+        setFieldErrors(mapServerErrorsToFields(data.details || []));
+        showValidationToast(data.details, "Product validation failed");
+      } else if (status === 401) {
+        toast.error("Please sign in to continue.");
+      } else if (status === 403) {
+        toast.error("Access denied.");
+      } else if (status === 404) {
+        toast.error(data?.message || "Not found.");
+      } else {
+        toast.error(data?.message || "Something went wrong.");
+      }
+    } finally {
+      setFormSubmitting(false);
     }
   };
 
-  // ✅ UPDATED: EDIT PRODUCT SUBMIT
+  // EDIT PRODUCT SUBMIT
   const handleEditSubmit = async (e) => {
     e.preventDefault();
 
     const { unit, productId, ...rest } = formData;
 
-    // Create payload
     const payload = {
       ...rest,
       storeId: user?.userId,
+      price: Number(rest.price),
+      stock: Number(rest.stock),
       // Use editPictures if new ones uploaded, otherwise keep existing
-      pictures:
-        editPictures.length > 0 ? editPictures : formData.pictures || [],
+      pictures: editPictures.length > 0 ? editPictures : formData.pictures || [],
     };
 
     console.log("Update payload:", payload);
 
     try {
-      // Use the correct productId
-      const idToUse = selectedProduct.productId || selectedProduct.id;
+      const idToUse = selectedProduct?.productId || selectedProduct?.id;
 
       const response = await axios.put(
         `http://localhost:3000/api/products/${idToUse}`,
@@ -161,10 +214,9 @@ const InventoryTable = () => {
         }
       );
 
-      // Update local products state
       setProducts((prevProducts) =>
         prevProducts.map((product) =>
-          product.productId === idToUse || product.id === idToUse
+          (product.productId || product.id) === idToUse
             ? {
                 ...product,
                 ...payload,
@@ -174,53 +226,69 @@ const InventoryTable = () => {
         )
       );
 
-      // Reset and close
       setEditPictures([]);
       setFormData(initialFormData);
       setShowEditModal(false);
       setSelectedProduct(null);
 
-      alert("Product updated successfully!");
+      toast.success(response?.data?.message || "Product updated successfully!");
     } catch (error) {
       console.error("Error updating product:", error);
-      alert("Failed to update product. Please try again.");
+      const status = error?.response?.status;
+      const data = error?.response?.data || {};
+      if (status === 400) {
+        // Best-effort parse and show errors in toast; (edit form uses its own fields)
+        setFieldErrors(mapServerErrorsToFields(data.details || []));
+        showValidationToast(data.details, "Product update failed");
+      } else if (status === 401) {
+        toast.error("Please sign in to continue.");
+      } else if (status === 403) {
+        toast.error("Access denied.");
+      } else if (status === 404) {
+        toast.error(data?.message || "Product not found.");
+      } else {
+        toast.error(data?.message || "Failed to update product.");
+      }
     }
   };
 
-  // ✅ UPDATED: HANDLE EDIT
+  // OPEN EDIT MODAL
   const handleEdit = (product) => {
     setSelectedProduct(product);
-
-    // Populate form with all product data
     setFormData({
       ...product,
       unit: product.isKilo ? "kilo" : "piece",
       pictures: product.pictures || [],
     });
-
-    // Clear any previously uploaded pictures
+    setFieldErrors({});
     setEditPictures([]);
     setShowEditModal(true);
   };
 
+  // DELETE PRODUCT
   const handleDelete = async (productId) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this product?"
     );
     if (!confirmDelete) return;
+
     try {
       await axios.delete(`http://localhost:3000/api/products/${productId}`, {
         headers: {
           Authorization: `Bearer ${user?.token}`,
         },
       });
-      setProducts(
-        products.filter((product) => product.productId !== productId)
+
+      setProducts((prev) =>
+        prev.filter((p) => (p.productId || p.id) !== productId)
       );
-      alert("Product deleted successfully!");
+
+      toast.success("Product deleted successfully!");
     } catch (error) {
       console.error("There was an error!", error);
-      alert("Failed to delete the product. Please try again.");
+      const msg =
+        error?.response?.data?.message || "Failed to delete the product.";
+      toast.error(msg);
     }
   };
 
@@ -240,7 +308,10 @@ const InventoryTable = () => {
           </div>
           <button
             className="px-4 py-2 bg-[#67b045] text-white rounded-lg hover:bg-green-700"
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setShowModal(true);
+              setFieldErrors({});
+            }}
           >
             + Add Item
           </button>
@@ -270,7 +341,9 @@ const InventoryTable = () => {
           <tbody>
             {displayedData.map((item) => (
               <tr key={item.productId || item.id} className="hover:bg-gray-50">
-                <td className="p-2 border-b break-words">{item.id}</td>
+                <td className="p-2 border-b break-words">
+                  {item.id || item.productId}
+                </td>
                 <td className="p-2 border-b break-words">
                   <img
                     src={item?.pictures?.[0]}
@@ -293,13 +366,25 @@ const InventoryTable = () => {
                   </button>
                   <button
                     className="px-2 py-1 text-xs md:text-sm bg-red-500 text-white rounded-lg hover:bg-red-600"
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() =>
+                      handleDelete(item.productId || item.id) // ✅ handle both shapes
+                    }
                   >
                     Delete
                   </button>
                 </td>
               </tr>
             ))}
+            {displayedData.length === 0 && (
+              <tr>
+                <td
+                  colSpan={7}
+                  className="p-4 text-center text-sm text-gray-500"
+                >
+                  No products found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -330,6 +415,8 @@ const InventoryTable = () => {
               onClick={() => {
                 setShowModal(false);
                 setFormData(initialFormData);
+                setFieldErrors({});
+                setPictures([]);
               }}
               aria-label="Close modal"
             >
@@ -347,8 +434,15 @@ const InventoryTable = () => {
                   name="productName"
                   value={formData.productName}
                   onChange={handleChange}
-                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  className={`p-2 w-full border rounded-lg ${
+                    fieldErrors.productName ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
+                {fieldErrors.productName && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {fieldErrors.productName}
+                  </p>
+                )}
               </div>
               <div className="mb-4">
                 <label
@@ -362,8 +456,17 @@ const InventoryTable = () => {
                   name="productDescription"
                   value={formData.productDescription}
                   onChange={handleChange}
-                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  className={`p-2 w-full border rounded-lg ${
+                    fieldErrors.productDescription
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
                 />
+                {fieldErrors.productDescription && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {fieldErrors.productDescription}
+                  </p>
+                )}
               </div>
               <div className="mb-4">
                 <label htmlFor="category" className="block text-gray-700">
@@ -374,12 +477,19 @@ const InventoryTable = () => {
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  className={`p-2 w-full border rounded-lg ${
+                    fieldErrors.category ? "border-red-500" : "border-gray-300"
+                  }`}
                 >
                   <option value="">Select Category</option>
                   <option value="Vegetable">Vegetable</option>
                   <option value="Fruit">Fruit</option>
                 </select>
+                {fieldErrors.category && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {fieldErrors.category}
+                  </p>
+                )}
               </div>
               <div className="mb-4">
                 <label htmlFor="type" className="block text-gray-700">
@@ -391,8 +501,13 @@ const InventoryTable = () => {
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  className={`p-2 w-full border rounded-lg ${
+                    fieldErrors.type ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
+                {fieldErrors.type && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.type}</p>
+                )}
               </div>
               <div className="mb-4">
                 <label htmlFor="unit" className="block text-gray-700">
@@ -403,11 +518,16 @@ const InventoryTable = () => {
                   name="unit"
                   value={formData.unit}
                   onChange={handleChange}
-                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  className={`p-2 w-full border rounded-lg ${
+                    fieldErrors.unit ? "border-red-500" : "border-gray-300"
+                  }`}
                 >
                   <option value="kilo">Kilo</option>
                   <option value="piece">Piece</option>
                 </select>
+                {fieldErrors.unit && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.unit}</p>
+                )}
               </div>
               <div className="mb-4">
                 <label htmlFor="price" className="block text-gray-700">
@@ -419,8 +539,13 @@ const InventoryTable = () => {
                   name="price"
                   value={formData.price}
                   onChange={handleChange}
-                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  className={`p-2 w-full border rounded-lg ${
+                    fieldErrors.price ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
+                {fieldErrors.price && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.price}</p>
+                )}
               </div>
               <div className="mb-4">
                 <label htmlFor="stock" className="block text-gray-700">
@@ -432,8 +557,13 @@ const InventoryTable = () => {
                   name="stock"
                   value={formData.stock}
                   onChange={handleChange}
-                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  className={`p-2 w-full border rounded-lg ${
+                    fieldErrors.stock ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
+                {fieldErrors.stock && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.stock}</p>
+                )}
               </div>
               <div className="mb-4">
                 <label htmlFor="pictures" className="block text-gray-700">
@@ -445,27 +575,35 @@ const InventoryTable = () => {
                   name="pictures"
                   multiple
                   onChange={handleFileChange}
-                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  className={`p-2 w-full border rounded-lg ${
+                    fieldErrors.pictures ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
+                {fieldErrors.pictures && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {fieldErrors.pictures}
+                  </p>
+                )}
               </div>
               <button
                 type="submit"
-                className="px-4 py-2 bg-green-600 text-white rounded-lg"
+                className="px-4 py-2 bg-green-600 text-white rounded-lg disabled:opacity-50"
+                disabled={formSubmitting}
               >
-                Add Product
+                {formSubmitting ? "Saving..." : "Add Product"}
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* ✅ REPLACE YOUR EXISTING EDIT MODAL WITH THIS NEW ONE */}
+      {/* Edit Product Modal */}
       <EditProductModal
         showEditModal={showEditModal}
         selectedProduct={selectedProduct}
         formData={formData}
         handleChange={handleChange}
-        handleFileChange={handleEditFileChange} // ✅ Use separate handler
+        handleFileChange={handleEditFileChange}
         handleEditSubmit={handleEditSubmit}
         setShowEditModal={setShowEditModal}
         setFormData={setFormData}
@@ -475,7 +613,7 @@ const InventoryTable = () => {
   );
 };
 
-// ✅ PUT THIS COMPONENT AT THE BOTTOM OF THE FILE (after the main component)
+// ---------- Edit Modal component (kept, with minor improvements) ----------
 const EditProductModal = ({
   showEditModal,
   selectedProduct,
@@ -506,10 +644,7 @@ const EditProductModal = ({
             <form onSubmit={handleEditSubmit}>
               {/* Product Name */}
               <div className="mb-4">
-                <label
-                  htmlFor="edit-productName"
-                  className="block text-gray-700"
-                >
+                <label htmlFor="edit-productName" className="block text-gray-700">
                   Product Name *
                 </label>
                 <input

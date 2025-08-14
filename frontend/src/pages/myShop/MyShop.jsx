@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useUser } from "../../context/UserContext";
 import useFetch from "../../../hooks/useFetch";
 import InventoryTable from "../../components/seller/InventoryTable";
 import Menu from "../../components/seller/Menu";
 import SellerBanner from "../../components/seller/SellerBanner";
 import OrdersTable from "../../components/seller/OrdersTable";
 import Overview from "../../components/seller/Overview";
+import { useUser } from "../../context/UserContext";
 
 const MyShop = () => {
   const [selectedMenu, setSelectedMenu] = useState("overview");
@@ -16,7 +16,7 @@ const MyShop = () => {
 
   const renderContent = () => {
     switch (selectedMenu) {
-      // case 'overview':
+      // case "overview":
       //   return <Overview />;
       case "inventory":
         return <InventoryTable />;
@@ -29,7 +29,7 @@ const MyShop = () => {
 
   useEffect(() => {
     console.log(userData);
-    console.log(userData?.data.isStore);
+    console.log(userData?.data?.isStore);
   }, [userData]);
 
   useEffect(() => {
