@@ -98,7 +98,7 @@ const authenticateUser = async (req, res, next) => {
 const requireStore = async (req, res, next) => {
   if (!req.user || !req.user.isStore) {
     return res.status(403).json({
-      message: "Store access required",
+      message: "Store access requiredd",
       state: "error",
     });
   }

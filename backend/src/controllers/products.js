@@ -241,19 +241,20 @@ router.post("/create-product", async (req, res) => {
 });
 
 // Route to update a product
+// Route to update a product (UPDATED VERSION)
 router.put("/:productId", async (req, res) => {
-  const { id, ...rest } = req.body;
-  const { error, value } = productSchema.validate(rest);
+  const { productId } = req.params;
+  const { error, value } = productSchema.validate(req.body);
 
   console.log("Request body:", value);
-  console.log("Product ID from body:", id);
+  console.log("Product ID from params:", productId);
 
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
   }
 
   try {
-    const productRef = db.collection("products").doc(id);
+    const productRef = db.collection("products").doc(productId);
     const productDoc = await productRef.get();
 
     if (!productDoc.exists) {
@@ -265,13 +266,42 @@ router.put("/:productId", async (req, res) => {
     // Fetch the old values
     const oldData = productDoc.data();
 
+    // ✅ HANDLE PICTURE UPLOADS (copied from create route)
+    if (
+      value.pictures &&
+      Array.isArray(value.pictures) &&
+      value.pictures.length > 0
+    ) {
+      // Check if pictures are base64 strings (new uploads) or URLs (existing pictures)
+      const uploadPromises = value.pictures.map(async (picture) => {
+        // If it's already a URL (existing picture), keep it
+        if (typeof picture === "string" && picture.startsWith("http")) {
+          return picture;
+        }
+
+        // If it's a base64 string (new upload), upload to cloudinary
+        if (typeof picture === "string" && picture.startsWith("data:")) {
+          const result = await cloudinary.uploader.upload(picture, {
+            folder: "ani2home",
+            resource_type: "image",
+          });
+          return result.secure_url;
+        }
+
+        return picture; // fallback
+      });
+
+      // Wait for all uploads to complete
+      value.pictures = await Promise.all(uploadPromises);
+    }
+
     // Update Firestore document with the new values
     await productRef.update(value);
 
     // Compare old and new values
     const changes = {};
     for (const key in value) {
-      if (value[key] !== oldData[key]) {
+      if (JSON.stringify(value[key]) !== JSON.stringify(oldData[key])) {
         changes[key] = {
           old: oldData[key],
           new: value[key],
@@ -291,20 +321,27 @@ router.put("/:productId", async (req, res) => {
         second: "2-digit",
         hour12: false,
       }).format(new Date()),
+      userId: req.user?.uid || "unknown", // ✅ Fixed: use req.user.uid
       action: "update_product",
-      resource: `products/${id}`,
+      resource: `products/${productId}`,
       status: "success",
       details: {
         message: "Product updated successfully",
-        productId: id,
+        productId: productId,
         changes, // Include old and new values
       },
     };
 
-    logger.info(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.info(logData);
+    await logToFirestore(logData);
 
-    res.status(200).json({ message: "Product updated successfully" });
+    res.status(200).json({
+      message: "Product updated successfully",
+      product: {
+        ...value,
+        productId: productId,
+      },
+    });
   } catch (error) {
     console.error("Error updating product:", error);
 
@@ -320,14 +357,15 @@ router.put("/:productId", async (req, res) => {
         second: "2-digit",
         hour12: false,
       }).format(new Date()),
+      userId: req.user?.uid || "unknown", // ✅ Fixed: use req.user.uid
       action: "update_product",
-      resource: `products/${id}`,
+      resource: `products/${productId}`,
       status: "failed",
       error: error.message,
     };
 
-    logger.error(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.error(logData);
+    await logToFirestore(logData);
 
     res.status(500).send("Error updating product");
   }

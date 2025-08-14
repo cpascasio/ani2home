@@ -29,7 +29,8 @@ const InventoryTable = () => {
     `/api/products/user/${user?.userId}`
   );
   const [products, setProducts] = useState([]);
-  const [pictures, setPictures] = useState([]);
+  const [pictures, setPictures] = useState([]); // For add modal
+  const [editPictures, setEditPictures] = useState([]); // ✅ NEW: For edit modal
 
   const itemsPerPage = 10;
 
@@ -62,8 +63,7 @@ const InventoryTable = () => {
     }));
   };
 
-  // --- Refactored File Reading Logic ---
-  // This helper reads a single file and returns a Promise that resolves with the base64 string.
+  // File reading helper
   const readFile = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -73,7 +73,7 @@ const InventoryTable = () => {
     });
   };
 
-  // The file change handler now converts the FileList to an array and processes it.
+  // ✅ FILE CHANGE HANDLER FOR ADD MODAL
   const handleFileChange = async (e) => {
     const files = Array.from(e.target.files);
     try {
@@ -81,13 +81,27 @@ const InventoryTable = () => {
         files.map((file) => readFile(file))
       );
       setPictures(base64Files);
-      console.log("FINISHED READING FILES");
+      console.log("Add modal: Files ready");
     } catch (error) {
-      console.error("Error reading files", error);
+      console.error("Error reading files for add", error);
     }
   };
-  // --- End File Reading Logic ---
 
+  // ✅ NEW: FILE CHANGE HANDLER FOR EDIT MODAL
+  const handleEditFileChange = async (e) => {
+    const files = Array.from(e.target.files);
+    try {
+      const base64Files = await Promise.all(
+        files.map((file) => readFile(file))
+      );
+      setEditPictures(base64Files);
+      console.log("Edit modal: Files ready");
+    } catch (error) {
+      console.error("Error reading files for edit", error);
+    }
+  };
+
+  // ADD PRODUCT SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { unit, ...rest } = formData;
@@ -115,13 +129,30 @@ const InventoryTable = () => {
     }
   };
 
+  // ✅ UPDATED: EDIT PRODUCT SUBMIT
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+
     const { unit, productId, ...rest } = formData;
+
+    // Create payload
+    const payload = {
+      ...rest,
+      storeId: user?.userId,
+      // Use editPictures if new ones uploaded, otherwise keep existing
+      pictures:
+        editPictures.length > 0 ? editPictures : formData.pictures || [],
+    };
+
+    console.log("Update payload:", payload);
+
     try {
-      await axios.put(
-        `http://localhost:3000/api/products/${selectedProduct.productId}`,
-        rest,
+      // Use the correct productId
+      const idToUse = selectedProduct.productId || selectedProduct.id;
+
+      const response = await axios.put(
+        `http://localhost:3000/api/products/${idToUse}`,
+        payload,
         {
           headers: {
             Authorization: `Bearer ${user?.token}`,
@@ -129,23 +160,46 @@ const InventoryTable = () => {
           },
         }
       );
-      setProducts(
-        products.map((product) =>
-          product.productId === selectedProduct.productId
-            ? { ...product, ...rest }
+
+      // Update local products state
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product.productId === idToUse || product.id === idToUse
+            ? {
+                ...product,
+                ...payload,
+                productId: product.productId || product.id,
+              }
             : product
         )
       );
+
+      // Reset and close
+      setEditPictures([]);
       setFormData(initialFormData);
       setShowEditModal(false);
+      setSelectedProduct(null);
+
+      alert("Product updated successfully!");
     } catch (error) {
-      console.error("There was an error!", error);
+      console.error("Error updating product:", error);
+      alert("Failed to update product. Please try again.");
     }
   };
 
+  // ✅ UPDATED: HANDLE EDIT
   const handleEdit = (product) => {
     setSelectedProduct(product);
-    setFormData(product);
+
+    // Populate form with all product data
+    setFormData({
+      ...product,
+      unit: product.isKilo ? "kilo" : "piece",
+      pictures: product.pictures || [],
+    });
+
+    // Clear any previously uploaded pictures
+    setEditPictures([]);
     setShowEditModal(true);
   };
 
@@ -172,6 +226,7 @@ const InventoryTable = () => {
 
   return (
     <div className="p-4 md:p-5 bg-white rounded-lg shadow-lg mt-5 md:mt-10">
+      {/* Search and Add Button */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5">
         <div className="flex flex-col md:flex-row md:items-center md:space-x-4 w-full">
           <div className="flex-grow mb-4 md:mb-0">
@@ -192,6 +247,7 @@ const InventoryTable = () => {
         </div>
       </div>
 
+      {/* Products Table */}
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
@@ -213,7 +269,7 @@ const InventoryTable = () => {
           </thead>
           <tbody>
             {displayedData.map((item) => (
-              <tr key={item.productId} className="hover:bg-gray-50">
+              <tr key={item.productId || item.id} className="hover:bg-gray-50">
                 <td className="p-2 border-b break-words">{item.id}</td>
                 <td className="p-2 border-b break-words">
                   <img
@@ -248,6 +304,7 @@ const InventoryTable = () => {
         </table>
       </div>
 
+      {/* Pagination */}
       <div className="flex justify-center mt-5 flex-wrap">
         {Array.from({ length: totalPages }, (_, index) => (
           <button
@@ -280,7 +337,6 @@ const InventoryTable = () => {
             </button>
             <h2 className="text-xl mb-5">Add New Item</h2>
             <form onSubmit={handleSubmit}>
-              {/* Form fields for add product */}
               <div className="mb-4">
                 <label htmlFor="productName" className="block text-gray-700">
                   Product Name
@@ -379,7 +435,6 @@ const InventoryTable = () => {
                   className="p-2 w-full border border-gray-300 rounded-lg"
                 />
               </div>
-              {/* Additional fields omitted for brevity */}
               <div className="mb-4">
                 <label htmlFor="pictures" className="block text-gray-700">
                   Pictures
@@ -404,68 +459,243 @@ const InventoryTable = () => {
         </div>
       )}
 
-      {/* Edit Product Modal */}
+      {/* ✅ REPLACE YOUR EXISTING EDIT MODAL WITH THIS NEW ONE */}
+      <EditProductModal
+        showEditModal={showEditModal}
+        selectedProduct={selectedProduct}
+        formData={formData}
+        handleChange={handleChange}
+        handleFileChange={handleEditFileChange} // ✅ Use separate handler
+        handleEditSubmit={handleEditSubmit}
+        setShowEditModal={setShowEditModal}
+        setFormData={setFormData}
+        initialFormData={initialFormData}
+      />
+    </div>
+  );
+};
+
+// ✅ PUT THIS COMPONENT AT THE BOTTOM OF THE FILE (after the main component)
+const EditProductModal = ({
+  showEditModal,
+  selectedProduct,
+  formData,
+  handleChange,
+  handleFileChange,
+  handleEditSubmit,
+  setShowEditModal,
+  setFormData,
+  initialFormData,
+}) => {
+  return (
+    <>
       {showEditModal && selectedProduct && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
-          <div className="bg-white p-4 md:p-5 rounded-lg shadow-lg w-11/12 md:w-1/3 relative">
+          <div className="bg-white p-4 md:p-5 rounded-lg shadow-lg w-11/12 md:w-1/2 max-h-[90vh] overflow-y-auto relative">
             <button
               className="absolute top-2 right-2 text-2xl cursor-pointer"
               onClick={() => {
                 setShowEditModal(false);
                 setFormData(initialFormData);
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  setShowEditModal(false);
-                  setFormData(initialFormData);
-                }
-              }}
               aria-label="Close edit modal"
-              style={{ background: "transparent", border: "none", padding: 0 }}
             >
               &times;
             </button>
             <h2 className="text-xl mb-5">Edit Item</h2>
             <form onSubmit={handleEditSubmit}>
-              {/* Form fields for edit product */}
+              {/* Product Name */}
               <div className="mb-4">
-                <label htmlFor="productName" className="block text-gray-700">
-                  Product Name
+                <label
+                  htmlFor="edit-productName"
+                  className="block text-gray-700"
+                >
+                  Product Name *
                 </label>
                 <input
                   type="text"
-                  id="productName"
+                  id="edit-productName"
                   name="productName"
                   value={formData.productName}
                   onChange={handleChange}
                   className="p-2 w-full border border-gray-300 rounded-lg"
+                  required
                 />
               </div>
-              {/* Additional fields omitted for brevity */}
+
+              {/* Product Description */}
               <div className="mb-4">
-                <label htmlFor="pictures" className="block text-gray-700">
-                  Pictures
+                <label
+                  htmlFor="edit-productDescription"
+                  className="block text-gray-700"
+                >
+                  Description *
+                </label>
+                <textarea
+                  id="edit-productDescription"
+                  name="productDescription"
+                  value={formData.productDescription}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg h-24"
+                  required
+                />
+              </div>
+
+              {/* Category */}
+              <div className="mb-4">
+                <label htmlFor="edit-category" className="block text-gray-700">
+                  Category *
+                </label>
+                <select
+                  id="edit-category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  required
+                >
+                  <option value="">Select Category</option>
+                  <option value="Vegetable">Vegetable</option>
+                  <option value="Fruit">Fruit</option>
+                  <option value="Artisinal Food">Artisinal Food</option>
+                </select>
+              </div>
+
+              {/* Type */}
+              <div className="mb-4">
+                <label htmlFor="edit-type" className="block text-gray-700">
+                  Type *
+                </label>
+                <input
+                  type="text"
+                  id="edit-type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  placeholder="e.g., Organic, Local, Premium"
+                  required
+                />
+              </div>
+
+              {/* Unit */}
+              <div className="mb-4">
+                <label htmlFor="edit-unit" className="block text-gray-700">
+                  Unit *
+                </label>
+                <select
+                  id="edit-unit"
+                  name="unit"
+                  value={formData.unit}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  required
+                >
+                  <option value="kilo">Kilo (kg)</option>
+                  <option value="piece">Piece (pcs)</option>
+                </select>
+              </div>
+
+              {/* Price */}
+              <div className="mb-4">
+                <label htmlFor="edit-price" className="block text-gray-700">
+                  Price (₱) *
+                </label>
+                <input
+                  type="number"
+                  id="edit-price"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+
+              {/* Stock */}
+              <div className="mb-4">
+                <label htmlFor="edit-stock" className="block text-gray-700">
+                  Stock *
+                </label>
+                <input
+                  type="number"
+                  id="edit-stock"
+                  name="stock"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  className="p-2 w-full border border-gray-300 rounded-lg"
+                  min="0"
+                  required
+                />
+              </div>
+
+              {/* Current Pictures Preview */}
+              {formData.pictures && formData.pictures.length > 0 && (
+                <div className="mb-4">
+                  <label className="block text-gray-700 mb-2">
+                    Current Pictures
+                  </label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {formData.pictures.map((pic, index) => (
+                      <img
+                        key={index}
+                        src={pic}
+                        alt={`Product ${index + 1}`}
+                        className="w-16 h-16 object-cover rounded border"
+                      />
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Upload new pictures to replace existing ones
+                  </p>
+                </div>
+              )}
+
+              {/* Pictures Upload */}
+              <div className="mb-4">
+                <label htmlFor="edit-pictures" className="block text-gray-700">
+                  Pictures (Optional - upload to replace current pictures)
                 </label>
                 <input
                   type="file"
-                  id="pictures"
+                  id="edit-pictures"
                   name="pictures"
                   multiple
+                  accept="image/*"
                   onChange={handleFileChange}
                   className="p-2 w-full border border-gray-300 rounded-lg"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Accepted formats: JPG, PNG, GIF. Max 5 images.
+                </p>
               </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-green-600 text-white rounded-lg"
-              >
-                Update Product
-              </button>
+
+              {/* Submit Button */}
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setFormData(initialFormData);
+                  }}
+                  className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Update Product
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
