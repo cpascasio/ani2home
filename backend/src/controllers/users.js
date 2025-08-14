@@ -10,6 +10,7 @@ const otplib = require("otplib");
 const qrcode = require("qrcode");
 const { logger, logToFirestore } = require("../config/firebase-config");
 const { timeStamp } = require("console");
+const requireReauth = require("../middleware/requireReauth");
 
 // Firestore database reference
 const db = admin.firestore();
@@ -142,6 +143,186 @@ const checkUserExists = async (userId) => {
     throw error;
   }
 };
+
+// PUT route to set isStore to true for a user (with re-authentication)
+router.put("/:uid/set-store-secure", requireReauth, async (req, res) => {
+  const { uid } = req.params;
+  const userId = req.user.uid;
+
+  try {
+    // Ensure user can only modify their own store status
+    if (uid !== userId) {
+      return res.status(403).json({
+        message: "You can only modify your own store status",
+        state: "error",
+      });
+    }
+
+    const userRef = db.collection("users").doc(uid);
+    const doc = await userRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({
+        message: "User not found",
+        state: "error",
+      });
+    }
+
+    const currentData = doc.data();
+
+    // Check if user is already a store
+    if (currentData.isStore) {
+      return res.status(400).json({
+        message: "User is already a store",
+        state: "error",
+      });
+    }
+
+    // Update the isStore field to true
+    await userRef.update({
+      isStore: true,
+      storeCreatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Log the store creation
+    await db.collection("auditLogs").add({
+      timestamp: admin.firestore.Timestamp.now(),
+      userId: uid,
+      action: "store_created",
+      resource: `users/${uid}`,
+      details: {
+        previousIsStore: currentData.isStore,
+        newIsStore: true,
+      },
+      ipAddress: req.ip || "unknown",
+      userAgent: req.get("User-Agent") || "unknown",
+    });
+
+    console.log("✅ Store created successfully for user:", uid);
+
+    res.status(200).json({
+      message: "Store created successfully",
+      state: "success",
+      data: { isStore: true },
+    });
+  } catch (error) {
+    console.error("❌ Error creating store:", error);
+
+    // Log the error
+    await db.collection("auditLogs").add({
+      timestamp: admin.firestore.Timestamp.now(),
+      userId: uid,
+      action: "store_creation_failed",
+      resource: `users/${uid}`,
+      error: error.message,
+      ipAddress: req.ip || "unknown",
+      userAgent: req.get("User-Agent") || "unknown",
+    });
+
+    res.status(500).json({
+      message: "Error creating store",
+      state: "error",
+    });
+  }
+});
+
+// DELETE route to remove store status (with re-authentication)
+router.delete("/:uid/delete-store", requireReauth, async (req, res) => {
+  const { uid } = req.params;
+  const userId = req.user.uid;
+
+  try {
+    // Ensure user can only modify their own store status
+    if (uid !== userId) {
+      return res.status(403).json({
+        message: "You can only delete your own store",
+        state: "error",
+      });
+    }
+
+    const userRef = db.collection("users").doc(uid);
+    const doc = await userRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({
+        message: "User not found",
+        state: "error",
+      });
+    }
+
+    const currentData = doc.data();
+
+    // Check if user actually has a store to delete
+    if (!currentData.isStore) {
+      return res.status(400).json({
+        message: "User does not have a store to delete",
+        state: "error",
+      });
+    }
+
+    // Update the isStore field to false and remove store-related data
+    const updateData = {
+      isStore: false,
+      storeDeletedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    // Optional: You might want to keep storeCreatedAt for historical purposes
+    // or remove it completely - depends on your business logic
+    // updateData.storeCreatedAt = admin.firestore.FieldValue.delete();
+
+    await userRef.update(updateData);
+
+    // TODO: Add logic here to handle store-related data cleanup
+    // For example:
+    // - Archive or delete products associated with this store
+    // - Handle pending orders
+    // - Notify customers about store closure
+    // - Handle refunds if necessary
+
+    // Log the store deletion
+    await db.collection("auditLogs").add({
+      timestamp: admin.firestore.Timestamp.now(),
+      userId: uid,
+      action: "store_deleted",
+      resource: `users/${uid}`,
+      details: {
+        previousIsStore: currentData.isStore,
+        newIsStore: false,
+        storeCreatedAt: currentData.storeCreatedAt,
+      },
+      ipAddress: req.ip || "unknown",
+      userAgent: req.get("User-Agent") || "unknown",
+    });
+
+    console.log("✅ Store deleted successfully for user:", uid);
+
+    res.status(200).json({
+      message: "Store deleted successfully",
+      state: "success",
+      data: { isStore: false },
+    });
+  } catch (error) {
+    console.error("❌ Error deleting store:", error);
+
+    // Log the error
+    await db.collection("auditLogs").add({
+      timestamp: admin.firestore.Timestamp.now(),
+      userId: uid,
+      action: "store_deletion_failed",
+      resource: `users/${uid}`,
+      error: error.message,
+      ipAddress: req.ip || "unknown",
+      userAgent: req.get("User-Agent") || "unknown",
+    });
+
+    res.status(500).json({
+      message: "Error deleting store",
+      state: "error",
+    });
+  }
+});
 
 router.post("/create-user", async (req, res) => {
   console.log("Request body:", req.body);
