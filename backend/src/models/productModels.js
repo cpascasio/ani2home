@@ -4,6 +4,9 @@ const now = new Date().toISOString();
 
 const productSchema = Joi.object({
   // productId: Joi.string().guid({ version: 'uuidv4' }).required(),
+  id: Joi.string().optional(),
+  productId: Joi.string().optional(),
+  unit: Joi.string().optional(),
   storeId: Joi.string().optional(),
   productName: Joi.string().optional(),
   productDescription: Joi.string().optional(),
