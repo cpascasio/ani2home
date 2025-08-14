@@ -1,7 +1,8 @@
+// frontend/src/hooks/useSecureAuth.js
 import { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../config/firebase-config";
-import axios from "axios";
+import apiClient from "../utils/apiClient"; // 🆕 Changed from axios to apiClient
 
 export const useSecureAuth = () => {
   const [firebaseUser, loading] = useAuthState(auth);
@@ -32,7 +33,7 @@ export const useSecureAuth = () => {
     setValidating(true);
     try {
       const token = await firebaseUser.getIdToken();
-      const response = await axios.get("/api/auth/validate-permissions", {
+      const response = await apiClient.get("/auth/validate-permissions", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -59,12 +60,43 @@ export const useSecureAuth = () => {
 
     try {
       const token = await firebaseUser.getIdToken();
-      const response = await axios.get("/api/auth/validate-store-access", {
+      const response = await apiClient.get("/auth/validate-store-access", {
         headers: { Authorization: `Bearer ${token}` },
       });
       return response.data.hasAccess;
     } catch (error) {
       console.error("Store access validation failed:", error);
+      return false;
+    }
+  };
+
+  // 🆕 NEW: Validate admin access specifically
+  const validateAdminAccess = async () => {
+    if (!firebaseUser) {
+      console.log("❌ [ADMIN] No Firebase user");
+      return false;
+    }
+
+    try {
+      console.log("🔍 [ADMIN] Starting admin validation...");
+      const token = await firebaseUser.getIdToken();
+
+      const response = await apiClient.get("/admin/validate-access", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log("🔍 [ADMIN] Response status:", response.status);
+      console.log("🔍 [ADMIN] Response data:", response.data);
+
+      const hasAccess = response.data.hasAccess || false;
+      console.log(
+        hasAccess ? "✅ [ADMIN] Access granted" : "❌ [ADMIN] Access denied"
+      );
+
+      return hasAccess;
+    } catch (error) {
+      console.error("❌ [ADMIN] Admin access validation failed:", error);
+      console.error("❌ [ADMIN] Error details:", error.response?.data);
       return false;
     }
   };
@@ -84,6 +116,7 @@ export const useSecureAuth = () => {
     // Functions
     validatePermissions,
     validateStoreAccess,
+    validateAdminAccess, // 🆕 NEW: Admin validation function
 
     // Computed values
     isAuthenticated: !!firebaseUser,

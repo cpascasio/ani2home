@@ -10,150 +10,67 @@ const { logger, logToFirestore } = require("../config/firebase-config");
 const db = admin.firestore();
 
 router.post("/place-order", async (req, res) => {
-  console.log("Request body:", req.body);
+  console.log("Request body:", req.body); // Log the incoming request body
 
   try {
-    // 1) Strict validation (reject unknown fields; do not sanitize)
-    const { error, value } = placeOrderSchema.validate(req.body, {
-      abortEarly: false,
-      stripUnknown: false, // do NOT drop unknowns — reject instead
-    });
+    // Validate the request body
+    const { error, value } = placeOrderSchema.validate(req.body);
     if (error) {
-      console.error("Validation Error:", error.details);
-      return res.status(400).json({
-        message: "Invalid input data",
-        state: "error",
-        details: error.details,
-      });
+      console.error("Validation Error:", error.details[0].message); // Log validation error
+      return res.status(400).json({ error: error.details[0].message });
     }
 
-    const { userId, sellerId, items, deliveryAddress, note, paymentOption } = value;
+    console.log("Validated request body:", value); // Log the validated request body
 
-    // 2) Ownership: caller must match order.userId
-    if (!req.user || req.user.uid !== userId) {
-      const msg = "Access denied: cannot place an order for another user";
-      console.error(msg);
-      return res.status(403).json({ message: msg, state: "error" });
+    // Destructure req.body to separate items and the rest of the data
+    const { items, ...order } = value;
+
+    // Create a new order in Firestore
+    const newOrderRef = db.collection("orders").doc();
+    await newOrderRef.set(order);
+    const orderId = newOrderRef.id;
+
+    console.log("Order created in Firestore with ID:", orderId); // Log the order ID
+
+    // Map items to include the orderId
+    const orderDetails = items.map((item) => {
+      return { ...item, orderId: orderId };
+    });
+
+    console.log("Order details with orderId:", orderDetails); // Log the order details
+
+    // Validate each item in the order details
+    let validationErrors = [];
+    orderDetails.forEach((item, index) => {
+      const { error, value } = orderDetailsSchema.validate(item);
+      if (error) {
+        console.error(
+          `Validation Error in item ${index}:`,
+          error.details[0].message
+        ); // Log item validation error
+        validationErrors.push(`Item ${index}: ${error.details[0].message}`);
+      } else {
+        // Update the item with validated values if needed
+        orderDetails[index] = value;
+      }
+    });
+
+    if (validationErrors.length > 0) {
+      console.error("Validation errors in order details:", validationErrors); // Log all validation errors
+      return res.status(400).json({ errors: validationErrors });
     }
 
-    // 3) Server-side verification & totals (never trust client totals/prices)
-    let subtotal = 0;
-    const orderItems = [];
-
-    // fetch product docs in parallel
-    const productDocs = await Promise.all(
-      items.map((it) => db.collection("products").doc(it.productId).get())
-    );
-
-    for (let i = 0; i < items.length; i++) {
-      const reqItem = items[i];
-      const snap = productDocs[i];
-
-      if (!snap.exists) {
-        return res.status(400).json({
-          message: `Product not found: ${reqItem.productId}`,
-          state: "error",
-        });
-      }
-
-      const product = snap.data();
-
-      // Enforce product belongs to the seller for this order
-      if (product.storeId !== sellerId) {
-        return res.status(400).json({
-          message: `Product ${reqItem.productId} does not belong to seller ${sellerId}`,
-          state: "error",
-        });
-      }
-
-      // Stock check (if you maintain stock)
-      if (typeof product.stock === "number" && product.stock < reqItem.quantity) {
-        return res.status(400).json({
-          message: `Insufficient stock for ${reqItem.productId}`,
-          state: "error",
-        });
-      }
-
-      // Use server price only
-      const unitPrice = Number(product.price || 0);
-      if (!Number.isFinite(unitPrice) || unitPrice < 0) {
-        return res.status(400).json({
-          message: `Invalid price for ${reqItem.productId}`,
-          state: "error",
-        });
-      }
-
-      const lineTotal = unitPrice * reqItem.quantity;
-      subtotal += lineTotal;
-
-      orderItems.push({
-        productId: reqItem.productId,
-        quantity: reqItem.quantity,
-        unitPrice,
-        lineTotal,
-        snapshot: {
-          productName: product.productName,
-          category: product.category,
-          isKilo: product.isKilo,
-        },
-        _productRef: snap.ref, // hold for stock decrement later
-        _currentStock: product.stock,
-      });
-    }
-
-    // 4) Server-controlled amounts (don’t trust client)
-    const shippingFee = 0;             // compute here if you have rules/lalamove quotes
-    const totalPrice = subtotal + shippingFee;
-    const status = "pending";          // force initial status server-side
-
-    // 5) Create order + orderDetails atomically
+    // Create a batch to write order details to Firestore
     const batch = db.batch();
-    const orderRef = db.collection("orders").doc();
-    const nowISO = new Date().toISOString();
-
-    const orderDoc = {
-      orderId: orderRef.id,
-      userId,
-      sellerId,
-      status,
-      subtotal,
-      shippingFee,
-      totalPrice,
-      deliveryAddress,
-      note: note || "",
-      paymentOption,
-      createdAt: nowISO,
-      updatedAt: nowISO,
-    };
-
-    batch.set(orderRef, orderDoc);
-
-    orderItems.forEach((it) => {
-      const detailRef = db.collection("orderDetails").doc();
-      batch.set(detailRef, {
-        orderId: orderRef.id,
-        userId,
-        sellerId,
-        productId: it.productId,
-        quantity: it.quantity,
-        unitPrice: it.unitPrice,
-        lineTotal: it.lineTotal,
-        snapshot: it.snapshot,
-        createdAt: nowISO,
-      });
+    orderDetails.forEach((orderDetail) => {
+      const orderDetailRef = db.collection("orderDetails").doc();
+      batch.set(orderDetailRef, orderDetail);
     });
 
-    // Optional: decrement stock (best effort; if you need strict consistency use a transaction)
-    orderItems.forEach((it) => {
-      if (typeof it._currentStock === "number") {
-        const newStock = it._currentStock - it.quantity;
-        batch.update(it._productRef, { stock: newStock < 0 ? 0 : newStock });
-      }
-    });
+    await batch.commit(); // Commit the batch
+    console.log("Order details written to Firestore"); // Log successful batch commit
 
-    await batch.commit();
-
-    // 6) Audit log
+    // Log the successful order creation
     const logData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -165,27 +82,29 @@ router.post("/place-order", async (req, res) => {
         second: "2-digit",
         hour12: false,
       }).format(new Date()),
-      orderId: orderRef.id,
+      orderId: orderId,
       action: "place_order",
-      resource: `orders/${orderRef.id}`,
+      resource: `orders/${orderId}`,
       status: "success",
-      userId,
-      details: { itemCount: orderItems.length, subtotal, shippingFee, totalPrice },
+      userId: value.userId,
     };
 
-    logger.info(logData);
-    await logToFirestore(logData);
+    logger.info(logData); // Log to your logging system
+    await logToFirestore(logData); // Log to Firestore if needed
 
-    // 7) Response
-    return res.status(201).json({
+    // Send success response
+    res.status(201).json({
       message: "Order created successfully",
-      order: orderDoc,
-      orderDetails: orderItems.map(({ snapshot, _productRef, _currentStock, ...rest }) => rest),
-      orderId: orderRef.id,
+      order: order,
+      orderDetails: orderDetails,
+      orderId: orderId,
     });
-  } catch (error) {
-    console.error("Error in /place-order:", error);
 
+    console.log("Order creation completed successfully"); // Log successful completion
+  } catch (error) {
+    console.error("Error in /place-order:", error); // Log the error
+
+    // Log the error to Firestore
     const errorLogData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -201,19 +120,18 @@ router.post("/place-order", async (req, res) => {
       resource: "orders",
       status: "error",
       error: error.message || "Unknown error",
-      userId: req.user?.uid || "unknown",
     };
 
-    logger.error(errorLogData);
-    await logToFirestore(errorLogData);
+    logger.error(errorLogData); // Log to your logging system
+    await logToFirestore(errorLogData); // Log to Firestore if needed
 
-    return res.status(500).json({
+    // Send error response
+    res.status(500).json({
       message: "Error creating order",
-      state: "error",
+      error: error.message || "Unknown error",
     });
   }
 });
-
 
 // route for post order
 router.post("/create-order", async (req, res) => {

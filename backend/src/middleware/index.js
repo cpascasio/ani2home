@@ -1,5 +1,5 @@
-const admin = require("../config/firebase-config");
 const authorize = require("./authorize"); // ✅ Import your authorize function
+const { admin } = require("../config/firebase-config");
 
 class Middleware {
   async decodeToken(req, res, next) {

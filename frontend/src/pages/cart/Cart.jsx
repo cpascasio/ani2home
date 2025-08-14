@@ -7,6 +7,7 @@ import VerifiedUserIcon from "../../assets/verifiedUser.png";
 import StorefrontIcon from "../../assets/storefront.png";
 import StarFilled from "../../assets/StarFilled.png";
 import Star from "../../assets/Star.png";
+import TokenDebugger from "../../components/TokenDebugger";
 
 // Function to generate star elements based on the rating
 const generateStars = (rating, isProductCard = false) => {
@@ -181,6 +182,7 @@ const Cart = () => {
   if (loading) {
     return (
       <div style={{ backgroundColor: "#e5e7eb" }} className="w-full pt-24">
+        {/* Add this line for debugging */}
         <div className="px-4 md:px-20 lg:px-40 bg-gray-200 min-h-screen">
           <div className="flex justify-center items-center h-[400px]">
             <div className="text-gray-600 font-inter font-bold text-[18px]">

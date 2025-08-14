@@ -7,6 +7,7 @@ import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { Autocomplete } from "@react-google-maps/api";
 import LocationIcon from "../../assets/location.png"; // Path to the location icon
 import useDynamicFetch from "../../../hooks/useDynamicFetch.js";
+import apiClient from "../../utils/apiClient.js";
 
 const MyProfile = () => {
   const userLog = localStorage.getItem("user");
@@ -14,13 +15,9 @@ const MyProfile = () => {
   const [editing, setEditing] = useState(false);
   const placesLib = useMapsLibrary("places");
 
-  const [refetch, setRefetch] = useState(false);
-
-  const { data: userFetch } = useDynamicFetch(
-    `/api/users/${user?.userId}`,
-    refetch
-  );
   const [userData, setUserData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const navigate = useNavigate();
   const [isCollapseOpen, setIsCollapseOpen] = useState(false);
@@ -40,6 +37,40 @@ const MyProfile = () => {
   // for verification
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
+
+  // 🆕 FETCH USER DATA FUNCTION USING apiClient
+  const fetchUserData = async () => {
+    if (!user?.userId) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log("🚀 Fetching user data with apiClient for:", user.userId);
+
+      const response = await apiClient.get(`/users/${user.userId}`);
+
+      console.log("✅ User data fetched:", response.data);
+      setUserData(response.data.data); // Extract data from response
+    } catch (err) {
+      console.error("❌ Error fetching user data:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🆕 REPLACE the useDynamicFetch hook with useEffect
+  useEffect(() => {
+    if (user?.userId) {
+      fetchUserData();
+    }
+  }, [user?.userId]); // Re-fetch when user changes
+
+  // 🆕 REFETCH FUNCTION (to replace refetch from useDynamicFetch)
+  const refetchUserData = () => {
+    fetchUserData();
+  };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -237,14 +268,6 @@ const MyProfile = () => {
   }, [map]);
 
   useEffect(() => {
-    if (userFetch != null) {
-      setUserData(userFetch.data);
-      //setUserProfilePic(userFetch?.data?.userProfilePic);
-      console.log(userFetch.data);
-    }
-  }, [userFetch]);
-
-  useEffect(() => {
     if (userData != null) {
       console.log("USERDATA: ");
       console.log(userData);
@@ -276,12 +299,10 @@ const MyProfile = () => {
   };
 
   const handleSubmitAddress = async (event) => {
-    event.preventDefault(); // Prevent the default form submission behavior
+    event.preventDefault();
 
-    // Collect form data
     const formData = new FormData(event.target);
 
-    // Create an object to hold form values
     const address = {
       fullAddress: addressDetails?.fullAddress || "",
       streetAddress: formData.get("newStreetAddress") || "",
@@ -297,27 +318,16 @@ const MyProfile = () => {
 
     const data = { address };
 
-    // Get the token from localStorage or any other source
-    const token = user?.token; // Replace with your actual token retrieval method
-
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/users/edit-user/${user?.userId}`, // Include userId in the URL
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include the token in the Authorization header
-          },
-        }
+      const response = await apiClient.put(
+        `/users/edit-user/${user?.userId}`,
+        data
       );
       console.log("Success:", response.data);
-      setRefetch((prev) => !prev);
+      fetchUserData(); // 🆕 Use fetchUserData instead of setRefetch
       handleCancelEdit();
-      // Handle success (e.g., show a success message or redirect)
     } catch (error) {
       console.error("Error:", error.response?.data || error.message);
-      // Handle error (e.g., show an error message)
     }
   };
 
@@ -334,10 +344,8 @@ const MyProfile = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Collect form data
     const formData = new FormData(event.target);
 
-    // Create an object to hold form values
     const data = {};
 
     if (userProfilePic !== null) {
@@ -361,22 +369,13 @@ const MyProfile = () => {
       data.bio = formData.get("newBio") || "";
     }
 
-    // Get the token from localStorage or any other source
-    const token = user?.token;
-
     try {
-      const response = await axios.put(
-        `http://localhost:3000/api/users/edit-user/${user?.userId}`,
-        data,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await apiClient.put(
+        `/users/edit-user/${user?.userId}`,
+        data
       );
       console.log("Success:", response.data);
-      setRefetch((prev) => !prev);
+      fetchUserData(); // 🆕 Use fetchUserData instead of setRefetch
       setUserProfilePic(null);
       document.getElementById("modal_editProfile").close();
     } catch (error) {
@@ -1313,25 +1312,16 @@ const MyProfile = () => {
                         className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
                         onClick={async () => {
                           try {
-                            // Call the set-store endpoint
-                            const response = await axios.put(
-                              `http://localhost:3000/api/users/${user?.userId}/set-store`,
-                              {}, // Empty body since we're just updating a field
-                              {
-                                headers: {
-                                  Authorization: `Bearer ${user?.token}`, // Include auth token
-                                },
-                              }
+                            const response = await apiClient.put(
+                              `/users/${user?.userId}/set-store`,
+                              {}
                             );
 
                             if (response.data.state === "success") {
-                              // Update local user context if needed
                               dispatch({
                                 type: "UPDATE_USER",
                                 payload: { isStore: true },
                               });
-
-                              // Navigate to seller page
                               navigate("/seller");
                             } else {
                               console.error(

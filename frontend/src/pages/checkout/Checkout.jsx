@@ -14,6 +14,7 @@ import { useParams } from "react-router-dom";
 import useDynamicFetch from "../../../hooks/useDynamicFetch.js";
 import { useMap, Map, Marker, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { encode } from "base-64";
+import apiClient from "../../utils/apiClient.js";
 
 const Checkout = () => {
   const { user } = useUser();
@@ -609,23 +610,27 @@ const Checkout = () => {
         };
 
         // Make the POST request to Xendit API
-        axios
-          .post("https://api.xendit.co/ewallets/charges", payload, {
-            headers: {
-              Authorization: `Basic ${base64Auth}`, // Basic Auth
-              "Content-Type": "application/json", // Content-Type as JSON
-            },
-          })
+        fetch("https://api.xendit.co/ewallets/charges", {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${base64Auth}`, // Basic Auth
+            "Content-Type": "application/json", // Content-Type as JSON
+          },
+          body: JSON.stringify(payload),
+        })
           .then((response) => {
-            console.log("Xendit Response:", response.data);
+            // Check if response is ok
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Xendit Response:", data);
 
             // Check if the response contains the actions object and desktop_web_checkout_url
-            if (
-              response.data.actions &&
-              response.data.actions.desktop_web_checkout_url
-            ) {
-              const checkoutUrl =
-                response.data.actions.desktop_web_checkout_url;
+            if (data.actions && data.actions.desktop_web_checkout_url) {
+              const checkoutUrl = data.actions.desktop_web_checkout_url;
 
               // Redirect the user to the checkout URL to complete the payment
               window.location.href = checkoutUrl;
@@ -634,10 +639,7 @@ const Checkout = () => {
             }
           })
           .catch((error) => {
-            console.error(
-              "Error making request to Xendit:",
-              error.response?.data || error.message
-            );
+            console.error("Error making request to Xendit:", error.message);
           });
 
         // Navigate to the confirmation page
