@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../config/firebase-config";
-import apiClient from "../utils/apiClient"; // 🆕 Changed from axios to apiClient
+import apiClient from "../utils/apiClient";
+import { useCallback } from "react";
 
 export const useSecureAuth = () => {
   const [firebaseUser, loading] = useAuthState(auth);
@@ -10,15 +11,21 @@ export const useSecureAuth = () => {
   const [validating, setValidating] = useState(false);
   const [lastValidation, setLastValidation] = useState(null);
 
+  // ✅ FIXED: Define localUser properly
+  const localUser = getLocalUser();
+
+  // ✅ FIXED: Define isAuthenticated
+  const isAuthenticated = !!firebaseUser && !loading;
+
   // Get localStorage user data (for display/UX only)
-  const getLocalUser = () => {
+  function getLocalUser() {
     try {
       const stored = localStorage.getItem("user");
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
     }
-  };
+  }
 
   // Validate permissions with backend
   const validatePermissions = async (force = false) => {
@@ -54,60 +61,67 @@ export const useSecureAuth = () => {
     }
   };
 
-  // Validate store access specifically
-  const validateStoreAccess = async () => {
-    if (!firebaseUser) return false;
-
-    try {
-      const token = await firebaseUser.getIdToken();
-      const response = await apiClient.get("/auth/validate-store-access", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.data.hasAccess;
-    } catch (error) {
-      console.error("Store access validation failed:", error);
-      return false;
-    }
-  };
-
-  // 🆕 NEW: Validate admin access specifically
-  const validateAdminAccess = async () => {
+  // ✅ UPDATED: Store access validation (remove isVerified requirement)
+  const validateStoreAccess = useCallback(async () => {
     if (!firebaseUser) {
-      console.log("❌ [ADMIN] No Firebase user");
+      console.log("❌ No Firebase user for store validation");
       return false;
     }
 
     try {
-      console.log("🔍 [ADMIN] Starting admin validation...");
+      console.log("🔍 Validating store access...");
       const token = await firebaseUser.getIdToken();
 
-      const response = await apiClient.get("/admin/validate-access", {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await apiClient.get("/auth/validate-store-access", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      console.log("🔍 [ADMIN] Response status:", response.status);
-      console.log("🔍 [ADMIN] Response data:", response.data);
+      console.log("🏪 Store validation response:", response.data);
 
-      const hasAccess = response.data.hasAccess || false;
-      console.log(
-        hasAccess ? "✅ [ADMIN] Access granted" : "❌ [ADMIN] Access denied"
-      );
-
-      return hasAccess;
+      // ✅ UPDATED: Now only checks hasAccess (which is based on isStore + !isDisabled)
+      return response.data.hasAccess === true;
     } catch (error) {
-      console.error("❌ [ADMIN] Admin access validation failed:", error);
-      console.error("❌ [ADMIN] Error details:", error.response?.data);
+      console.error("❌ Store validation error:", error);
       return false;
     }
-  };
+  }, [firebaseUser]);
+
+  // ✅ UPDATED: Admin access validation (remove isVerified requirement)
+  const validateAdminAccess = useCallback(async () => {
+    if (!firebaseUser) {
+      console.log("❌ No Firebase user for admin validation");
+      return false;
+    }
+
+    try {
+      console.log("🔍 Validating admin access...");
+      const token = await firebaseUser.getIdToken();
+
+      const response = await apiClient.get("/auth/validate-admin-access", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("👑 Admin validation response:", response.data);
+
+      // ✅ UPDATED: Now only checks hasAccess (which is based on isAdmin + !isDisabled)
+      return response.data.hasAccess === true;
+    } catch (error) {
+      console.error("❌ Admin validation error:", error);
+      return false;
+    }
+  }, [firebaseUser]);
 
   return {
     // Firebase auth state
     firebaseUser,
     loading,
 
-    // Local user data (for display only)
-    localUser: getLocalUser(),
+    // ✅ FIXED: Now properly defined
+    localUser,
 
     // Validated permissions (secure)
     validatedPermissions,
@@ -116,10 +130,10 @@ export const useSecureAuth = () => {
     // Functions
     validatePermissions,
     validateStoreAccess,
-    validateAdminAccess, // 🆕 NEW: Admin validation function
+    validateAdminAccess,
 
-    // Computed values
-    isAuthenticated: !!firebaseUser,
-    isLocalStore: getLocalUser()?.isStore || false, // For UI display
+    // ✅ FIXED: Now properly defined
+    isAuthenticated,
+    isLocalStore: localUser?.isStore || false, // For UI display
   };
 };

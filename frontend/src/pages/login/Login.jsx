@@ -11,7 +11,7 @@ import {
 import { doc, getDoc } from "firebase/firestore";
 import { useUser } from "../../../src/context/UserContext.jsx";
 import GoogleIcon from "../../assets/google-icon.png";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // 🆕 HELPER FUNCTIONS FOR COMPREHENSIVE LOGGING
 // Helper function to log authentication attempts
@@ -397,16 +397,6 @@ const Login = () => {
 
         <div className="mb-4">
           <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-3 rounded-lg border border-[#209D48] focus:outline-none focus:ring focus:ring-[#67B045] focus:border-transparent"
-            autoComplete="username"
-          />
-        </div>
-        <div className="mb-4">
-          <input
             type="email"
             placeholder="Email"
             value={email}
@@ -434,6 +424,30 @@ const Login = () => {
             >
               {showPassword ? "Hide" : "Show"}
             </button>
+          </div>
+        </div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <input
+              id="remember-me"
+              name="remember-me"
+              type="checkbox"
+              className="h-4 w-4 text-[#209D48] focus:ring-[#67B045] border-gray-300 rounded"
+            />
+            <label
+              htmlFor="remember-me"
+              className="ml-2 block text-sm text-gray-600"
+            >
+              Remember me
+            </label>
+          </div>
+          <div className="text-sm">
+            <Link
+              to="/forgot-password"
+              className="text-[#209D48] hover:text-[#67B045] hover:underline font-medium"
+            >
+              Forgot your password?
+            </Link>
           </div>
         </div>
         <button
