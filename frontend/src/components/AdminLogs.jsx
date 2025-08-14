@@ -1,114 +1,139 @@
-// frontend/src/pages/adminDashboard/AdminDashboard.jsx
 import React, { useState, useEffect } from "react";
-import { usePermissions } from "../../context/UserContext";
-import { useNavigate } from "react-router-dom";
-import apiClient from "../../utils/apiClient";
 import {
   FiShield,
   FiRefreshCw,
-  FiLock,
-  FiCheckCircle,
   FiFilter,
   FiDownload,
   FiClock,
   FiUser,
   FiAlertTriangle,
+  FiCheckCircle,
   FiXCircle,
   FiInfo,
-} from "react-icons/fi";
+} from "lucide-react";
 
-const AdminDashboard = () => {
-  const { isAuthenticated, user } = usePermissions();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [adminVerified, setAdminVerified] = useState(false);
-  const [error, setError] = useState(null);
-
-  // Logs state
+const AdminLogs = () => {
   const [logs, setLogs] = useState([]);
-  const [logsLoading, setLogsLoading] = useState(false);
-  const [logsError, setLogsError] = useState(null);
-  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     category: "",
+    startDate: "",
+    endDate: "",
+    limit: 100,
   });
+  const [stats, setStats] = useState(null);
 
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const itemsPerPage = 5;
+  // Mock user data - replace with actual user context
+  const user = { token: "mock-token", email: "admin@example.com" };
 
-  // Redirect if not authenticated
+  // Mock API client - replace with actual apiClient
+  const apiClient = {
+    get: async (url) => {
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      if (url.includes("/admin/security-logs")) {
+        return {
+          data: {
+            success: true,
+            logs: [
+              {
+                id: "1",
+                eventType: "LOGIN_SUCCESS",
+                category: "AUTHENTICATION",
+                userId: "user123",
+                email: "john@example.com",
+                ipAddress: "192.168.1.100",
+                timestamp: new Date().toISOString(),
+                description: "User successfully logged in",
+                success: true,
+              },
+              {
+                id: "2",
+                eventType: "LOGIN_FAILURE",
+                category: "AUTHENTICATION",
+                userId: null,
+                email: "hacker@bad.com",
+                ipAddress: "10.0.0.1",
+                timestamp: new Date(Date.now() - 3600000).toISOString(),
+                description: "Failed login attempt - invalid credentials",
+                success: false,
+                failureReason: "Invalid password",
+              },
+              {
+                id: "3",
+                eventType: "ACCESS_CONTROL_FAILURE",
+                category: "AUTHORIZATION",
+                userId: "user456",
+                email: "user@example.com",
+                ipAddress: "192.168.1.105",
+                timestamp: new Date(Date.now() - 7200000).toISOString(),
+                description: "Unauthorized access attempt to admin panel",
+                success: false,
+              },
+              {
+                id: "4",
+                eventType: "INPUT_VALIDATION_FAILURE",
+                category: "DATA_VALIDATION",
+                userId: "user789",
+                email: "test@example.com",
+                ipAddress: "192.168.1.110",
+                timestamp: new Date(Date.now() - 10800000).toISOString(),
+                description: "Invalid input detected in form submission",
+                success: false,
+              },
+              {
+                id: "5",
+                eventType: "ADMIN_LOG_ACCESS",
+                category: "SECURITY_EVENT",
+                userId: "admin123",
+                email: "admin@example.com",
+                ipAddress: "192.168.1.200",
+                timestamp: new Date(Date.now() - 14400000).toISOString(),
+                description: "Administrator accessed security logs",
+                success: true,
+              },
+            ],
+          },
+        };
+      }
+
+      if (url.includes("/admin/log-stats")) {
+        return {
+          data: {
+            success: true,
+            stats: {
+              last24h: {
+                authEvents: 45,
+                accessControlFailures: 8,
+                validationFailures: 12,
+              },
+            },
+          },
+        };
+      }
+
+      throw new Error("API endpoint not found");
+    },
+  };
+
+  // Load logs on component mount and filter changes
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-  }, [isAuthenticated, navigate]);
+    fetchLogs();
+    fetchStats();
+  }, [filters]);
 
-  // Verify admin access with backend
-  useEffect(() => {
-    if (isAuthenticated && user?.token) {
-      verifyAdminAccess();
-    }
-  }, [isAuthenticated, user]);
-
-  // Load logs when admin is verified or pagination changes
-  useEffect(() => {
-    if (adminVerified) {
-      fetchLogs();
-      fetchStats();
-    }
-  }, [adminVerified, filters, currentPage]);
-
-  const verifyAdminAccess = async () => {
+  const fetchLogs = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await apiClient.get("/admin/validate-access");
-
-      if (response.data.hasAccess) {
-        setAdminVerified(true);
-      } else {
-        throw new Error("Admin access denied");
-      }
-    } catch (error) {
-      console.error("❌ [ADMIN] Verification failed:", error);
-
-      let errorMessage = "Failed to verify admin access";
-      if (error.response?.status === 403) {
-        errorMessage = "Admin privileges required";
-      } else if (error.response?.status === 401) {
-        errorMessage = "Authentication failed";
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      }
-
-      setError(errorMessage);
-
-      setTimeout(() => {
-        navigate("/unauthorized", {
-          state: {
-            reason: "Administrative privileges required to access this page.",
-          },
-        });
-      }, 2000);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchLogs = async () => {
-    try {
-      setLogsLoading(true);
-      setLogsError(null);
-
       const queryParams = new URLSearchParams();
       if (filters.category) queryParams.append("category", filters.category);
-      queryParams.append("limit", itemsPerPage.toString());
-      queryParams.append("page", currentPage.toString());
+      if (filters.startDate) queryParams.append("startDate", filters.startDate);
+      if (filters.endDate) queryParams.append("endDate", filters.endDate);
+      if (filters.limit) queryParams.append("limit", filters.limit.toString());
 
       const response = await apiClient.get(
         `/admin/security-logs?${queryParams.toString()}`
@@ -116,23 +141,14 @@ const AdminDashboard = () => {
 
       if (response.data.success) {
         setLogs(response.data.logs);
-        setTotalCount(response.data.totalCount || response.data.logs.length);
-        setTotalPages(
-          Math.ceil(
-            (response.data.totalCount || response.data.logs.length) /
-              itemsPerPage
-          )
-        );
       } else {
         throw new Error(response.data.message || "Failed to fetch logs");
       }
     } catch (error) {
       console.error("❌ [ADMIN LOGS] Failed to fetch logs:", error);
-      setLogsError(
-        error.response?.data?.message || error.message || "Failed to fetch logs"
-      );
+      setError(error.message || "Failed to fetch logs");
     } finally {
-      setLogsLoading(false);
+      setLoading(false);
     }
   };
 
@@ -152,45 +168,22 @@ const AdminDashboard = () => {
       ...prev,
       [field]: value,
     }));
-    setCurrentPage(1); // Reset to first page when filters change
   };
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const getPaginationNumbers = () => {
-    const pages = [];
-    const maxVisible = 5;
-
-    if (totalPages <= maxVisible) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) pages.push(i);
-        pages.push("...");
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1);
-        pages.push("...");
-        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
-      } else {
-        pages.push(1);
-        pages.push("...");
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-        pages.push("...");
-        pages.push(totalPages);
-      }
-    }
-    return pages;
+  const clearFilters = () => {
+    setFilters({
+      category: "",
+      startDate: "",
+      endDate: "",
+      limit: 100,
+    });
   };
 
   const exportLogs = () => {
     if (logs.length === 0) return;
 
     const csvContent = [
+      // Header
       [
         "Timestamp",
         "Event Type",
@@ -200,6 +193,7 @@ const AdminDashboard = () => {
         "Description",
         "Success",
       ].join(","),
+      // Data rows
       ...logs.map((log) =>
         [
           log.timestamp,
@@ -258,75 +252,61 @@ const AdminDashboard = () => {
 
   const formatTimestamp = (timestamp) => {
     return new Date(timestamp).toLocaleString("en-US", {
+      year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      second: "2-digit",
     });
   };
 
-  // Show loading state during verification
-  if (loading) {
+  if (loading && logs.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center pt-20">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#209D48] mx-auto"></div>
-          <p className="mt-4 text-lg text-gray-600">
-            Verifying admin access...
-          </p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-4 text-lg text-gray-600">Loading security logs...</p>
         </div>
       </div>
     );
-  }
-
-  // Show error state
-  if (error && !adminVerified) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center pt-20">
-        <div className="text-center">
-          <FiLock className="text-6xl text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Access Denied
-          </h1>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <p className="text-sm text-gray-500">Redirecting...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show admin dashboard only if verified
-  if (!adminVerified) {
-    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gray-100 p-8">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <FiShield className="text-[#209D48]" />
-                Admin Dashboard
+                <FiShield className="text-green-600" />
+                Security Logs
               </h1>
               <p className="text-gray-600 mt-2">
-                Welcome back, {user?.name || user?.email}!
-                <span className="inline-flex items-center gap-1 ml-2 text-green-600">
-                  <FiCheckCircle className="text-sm" />
-                  Admin Access Verified
-                </span>
+                Monitor and analyze system security events
               </p>
             </div>
-            <button
-              onClick={verifyAdminAccess}
-              className="px-4 py-2 bg-[#209D48] text-white rounded-lg hover:bg-[#67b045] transition-colors flex items-center gap-2"
-              disabled={loading}
-            >
-              <FiRefreshCw className={loading ? "animate-spin" : ""} />
-              Refresh Access
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={exportLogs}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                disabled={logs.length === 0}
+              >
+                <FiDownload className="w-4 h-4" />
+                Export CSV
+              </button>
+              <button
+                onClick={fetchLogs}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                disabled={loading}
+              >
+                <FiRefreshCw
+                  className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+                />
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
 
@@ -344,7 +324,7 @@ const AdminDashboard = () => {
                   </p>
                   <p className="text-sm text-gray-600">Last 24 hours</p>
                 </div>
-                <FiUser className="text-3xl text-blue-600" />
+                <FiUser className="w-8 h-8 text-blue-600" />
               </div>
             </div>
             <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
@@ -358,7 +338,7 @@ const AdminDashboard = () => {
                   </p>
                   <p className="text-sm text-gray-600">Last 24 hours</p>
                 </div>
-                <FiXCircle className="text-3xl text-red-600" />
+                <FiXCircle className="w-8 h-8 text-red-600" />
               </div>
             </div>
             <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
@@ -372,7 +352,7 @@ const AdminDashboard = () => {
                   </p>
                   <p className="text-sm text-gray-600">Last 24 hours</p>
                 </div>
-                <FiAlertTriangle className="text-3xl text-yellow-600" />
+                <FiAlertTriangle className="w-8 h-8 text-yellow-600" />
               </div>
             </div>
             <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
@@ -382,59 +362,31 @@ const AdminDashboard = () => {
                     Total Events
                   </h3>
                   <p className="text-2xl font-bold text-green-600">
-                    {totalCount}
+                    {logs.length}
                   </p>
-                  <p className="text-sm text-gray-600">All time</p>
+                  <p className="text-sm text-gray-600">Current view</p>
                 </div>
-                <FiShield className="text-3xl text-green-600" />
+                <FiShield className="w-8 h-8 text-green-600" />
               </div>
             </div>
           </div>
         )}
 
-        {/* Security Logs Section */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <FiShield className="text-[#209D48]" />
-                Security Events ({totalCount} total, page {currentPage} of{" "}
-                {totalPages})
-              </h2>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={exportLogs}
-                  className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 text-sm"
-                  disabled={logs.length === 0}
-                >
-                  <FiDownload />
-                  Export
-                </button>
-                <button
-                  onClick={fetchLogs}
-                  className="px-3 py-2 bg-[#209D48] text-white rounded-lg hover:bg-[#67b045] transition-colors flex items-center gap-2 text-sm"
-                  disabled={logsLoading}
-                >
-                  <FiRefreshCw className={logsLoading ? "animate-spin" : ""} />
-                  Refresh
-                </button>
-              </div>
-            </div>
+        {/* Filters */}
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <FiFilter className="text-gray-600" />
+            <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
           </div>
-
-          {/* Filters */}
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <FiFilter className="text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">
-                  Filters:
-                </span>
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category
+              </label>
               <select
                 value={filters.category}
                 onChange={(e) => handleFilterChange("category", e.target.value)}
-                className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-[#209D48] focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 <option value="">All Categories</option>
                 <option value="AUTHENTICATION">Authentication</option>
@@ -443,29 +395,87 @@ const AdminDashboard = () => {
                 <option value="SECURITY_EVENT">Security Events</option>
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Start Date
+              </label>
+              <input
+                type="date"
+                value={filters.startDate}
+                onChange={(e) =>
+                  handleFilterChange("startDate", e.target.value)
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                End Date
+              </label>
+              <input
+                type="date"
+                value={filters.endDate}
+                onChange={(e) => handleFilterChange("endDate", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Limit
+              </label>
+              <select
+                value={filters.limit}
+                onChange={(e) =>
+                  handleFilterChange("limit", parseInt(e.target.value))
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value={50}>50 entries</option>
+                <option value={100}>100 entries</option>
+                <option value={250}>250 entries</option>
+                <option value={500}>500 entries</option>
+              </select>
+            </div>
+          </div>
+          <div className="mt-4">
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+            <div className="flex items-center gap-2 text-red-800">
+              <FiXCircle className="w-5 h-5" />
+              <span className="font-medium">Error Loading Logs</span>
+            </div>
+            <p className="text-red-700 mt-1">{error}</p>
+          </div>
+        )}
+
+        {/* Logs Table */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Security Events ({logs.length} entries)
+            </h2>
           </div>
 
-          {/* Error State */}
-          {logsError && (
-            <div className="px-6 py-4 bg-red-50 border-b border-red-200">
-              <div className="flex items-center gap-2 text-red-800">
-                <FiXCircle />
-                <span className="text-sm font-medium">Error: {logsError}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Logs Table */}
           {logs.length === 0 ? (
             <div className="p-8 text-center">
-              <FiClock className="text-4xl text-gray-400 mx-auto mb-4" />
+              <FiClock className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No Security Events
+                No Logs Found
               </h3>
               <p className="text-gray-600">
-                {logsError
-                  ? "Unable to load logs."
-                  : "No security events found."}
+                {error
+                  ? "Unable to load logs due to an error."
+                  : "No security events match your current filters."}
               </p>
             </div>
           ) : (
@@ -486,7 +496,7 @@ const AdminDashboard = () => {
                       IP Address
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Time
+                      Timestamp
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Description
@@ -501,7 +511,7 @@ const AdminDashboard = () => {
                           {getEventIcon(log.eventType, log.success)}
                           <div>
                             <div className="text-sm font-medium text-gray-900">
-                              {log.eventType.replace(/_/g, " ")}
+                              {log.eventType}
                             </div>
                             {log.success !== undefined && (
                               <div
@@ -515,7 +525,7 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border-l-4 ${getSeverityColor(log.eventType, log.success)}`}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border-l-4 ${getSeverityColor(log.eventType, log.success)}`}
                         >
                           {log.category}
                         </span>
@@ -554,62 +564,13 @@ const AdminDashboard = () => {
               </table>
             </div>
           )}
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-700">
-                  Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                  {Math.min(currentPage * itemsPerPage, totalCount)} of{" "}
-                  {totalCount} entries
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Previous
-                  </button>
-
-                  {getPaginationNumbers().map((page, index) => (
-                    <button
-                      key={index}
-                      onClick={() =>
-                        typeof page === "number" ? handlePageChange(page) : null
-                      }
-                      disabled={page === "..."}
-                      className={`px-3 py-1 border rounded text-sm ${
-                        page === currentPage
-                          ? "bg-[#209D48] text-white border-[#209D48]"
-                          : page === "..."
-                            ? "border-transparent cursor-default"
-                            : "border-gray-300 hover:bg-gray-100"
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Loading indicator */}
-        {logsLoading && (
+        {/* Refresh indicator */}
+        {loading && logs.length > 0 && (
           <div className="fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 border">
             <div className="flex items-center gap-2">
-              <FiRefreshCw className="animate-spin text-[#209D48]" />
+              <FiRefreshCw className="w-4 h-4 animate-spin text-green-600" />
               <span className="text-sm text-gray-600">Refreshing logs...</span>
             </div>
           </div>
@@ -619,4 +580,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default AdminLogs;
