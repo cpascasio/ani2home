@@ -3,6 +3,8 @@ import React from "react";
 import HomePage from "./pages/homepage/HomePage";
 import Login from "./pages/login/Login";
 import Register from "./pages/register/Register";
+import ForgotPassword from "./pages/auth/ForgotPassword"; // 🆕 NEW
+import ResetPassword from "./pages/auth/ResetPassword"; // 🆕 NEW
 import Products from "./pages/products/Products";
 import AboutUs from "./pages/about/About";
 import Seller from "./pages/seller/Seller";
@@ -65,6 +67,25 @@ const routes = [
       </ProtectedRoute>
     ),
     name: "ItemPage",
+  },
+  // 🆕 NEW: Password Reset Routes (Public Access)
+  {
+    path: "/forgot-password",
+    element: (
+      <ProtectedRoute publicAccess={true}>
+        <ForgotPassword />
+      </ProtectedRoute>
+    ),
+    name: "ForgotPassword",
+  },
+  {
+    path: "/reset-password",
+    element: (
+      <ProtectedRoute publicAccess={true}>
+        <ResetPassword />
+      </ProtectedRoute>
+    ),
+    name: "ResetPassword",
   },
 
   // ===== NO-AUTH REQUIRED ROUTES (Only for non-logged in users) =====

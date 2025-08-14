@@ -8,6 +8,15 @@ import { Autocomplete } from "@react-google-maps/api";
 import LocationIcon from "../../assets/location.png"; // Path to the location icon
 import useDynamicFetch from "../../../hooks/useDynamicFetch.js";
 import apiClient from "../../utils/apiClient.js";
+import SecurityQuestionsSetup from "../../components/SecurityQuestionsSetup";
+import PasswordChangeModal from "../../components/PasswordChangeModal.jsx";
+import {
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  updatePassword,
+} from "firebase/auth";
+import { auth } from "../../config/firebase-config"; // Adjust path as needed
+import { useReauth } from "../../hooks/useReauth.jsx";
 
 const MyProfile = () => {
   const userLog = localStorage.getItem("user");
@@ -34,9 +43,355 @@ const MyProfile = () => {
 
   const autocompleteContainerRef = useRef(null);
 
+  const [loginHistory, setLoginHistory] = useState(null);
+  const [securityStatus, setSecurityStatus] = useState(null);
+  const [passwordChangeStatus, setPasswordChangeStatus] = useState(null);
+  const [showLoginHistory, setShowLoginHistory] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+
+  const { ReauthModal, showReauthModal, setShowReauthModal } = useReauth();
+  const [pendingAction, setPendingAction] = useState(null);
+
   // for verification
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
+
+  const [showSecurityQuestionsModal, setShowSecurityQuestionsModal] =
+    useState(false);
+  const [hasSecurityQuestions, setHasSecurityQuestions] = useState(false);
+
+  const handleCreateStore = () => {
+    setPendingAction("createStore");
+    setShowReauthModal(true);
+  };
+
+  const handleDeleteStore = () => {
+    setPendingAction("deleteStore");
+    setShowReauthModal(true);
+  };
+
+  const handleReauthSuccess = async (currentPassword = null) => {
+    try {
+      if (pendingAction === "createStore") {
+        console.log("🏪 Creating store with re-authentication...");
+
+        // Prepare request body based on auth provider
+        const requestBody = {};
+        const authProvider = ReauthModal.getUserAuthProvider?.() || "unknown";
+
+        // Only include password for email/password users
+        if (authProvider === "password" && currentPassword) {
+          requestBody.currentPassword = currentPassword;
+        }
+
+        const response = await apiClient.put(
+          `/users/${user?.userId}/set-store-secure`,
+          requestBody
+        );
+
+        if (response.data.state === "success") {
+          dispatch({
+            type: "UPDATE_USER",
+            payload: { isStore: true },
+          });
+          navigate("/seller");
+          alert("Store created successfully!");
+        } else {
+          console.error("Failed to create store:", response.data.message);
+          alert(
+            response.data.message || "Failed to create store. Please try again."
+          );
+        }
+      } else if (pendingAction === "deleteStore") {
+        console.log("🗑️ Deleting store with re-authentication...");
+
+        // Prepare request body based on auth provider
+        const requestBody = {};
+        const authProvider = ReauthModal.getUserAuthProvider?.() || "unknown";
+
+        // Only include password for email/password users
+        if (authProvider === "password" && currentPassword) {
+          requestBody.currentPassword = currentPassword;
+        }
+
+        const response = await apiClient.delete(
+          `/users/${user?.userId}/delete-store`,
+          {
+            data: requestBody,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.data.state === "success") {
+          dispatch({
+            type: "UPDATE_USER",
+            payload: { isStore: false },
+          });
+          alert("Store deleted successfully!");
+          navigate("/myProfile");
+        } else {
+          console.error("Failed to delete store:", response.data.message);
+          alert(
+            response.data.message || "Failed to delete store. Please try again."
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error performing store operation:", error);
+
+      // Handle different error scenarios
+      if (error.response?.data?.code === "RECENT_AUTH_REQUIRED") {
+        alert(
+          "Please log out and log back in, then try again within 5 minutes."
+        );
+      } else if (error.response?.data?.code === "FRESH_AUTH_REQUIRED") {
+        alert("Please re-authenticate with Google and try again immediately.");
+      } else if (error.response?.data?.code === "CURRENT_PASSWORD_REQUIRED") {
+        alert("Current password is required for this operation.");
+      } else if (error.response?.data?.code === "UNSUPPORTED_AUTH_PROVIDER") {
+        alert(
+          "Your authentication method is not supported for this operation. Please contact support."
+        );
+      } else {
+        alert(
+          error.response?.data?.message ||
+            "An error occurred. Please try again."
+        );
+      }
+    } finally {
+      setPendingAction(null);
+      setShowReauthModal(false);
+    }
+  };
+
+  // 5. Add this component for displaying login history
+  const LoginHistoryModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-gray-800">
+            Login History & Security Status
+          </h2>
+          <button
+            onClick={() => setShowLoginHistory(false)}
+            className="text-gray-500 hover:text-gray-700 text-2xl"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Security Status Summary */}
+          {securityStatus && (
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4">Security Status</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center">
+                  <span
+                    className={`w-3 h-3 rounded-full mr-2 ${securityStatus.mfaEnabled ? "bg-green-500" : "bg-yellow-500"}`}
+                  ></span>
+                  <span className="text-sm">
+                    MFA: {securityStatus.mfaEnabled ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <span
+                    className={`w-3 h-3 rounded-full mr-2 ${securityStatus.hasSecurityQuestions ? "bg-green-500" : "bg-red-500"}`}
+                  ></span>
+                  <span className="text-sm">
+                    Security Questions:{" "}
+                    {securityStatus.hasSecurityQuestions ? "Set" : "Not Set"}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <span
+                    className={`w-3 h-3 rounded-full mr-2 ${securityStatus.accountLocked ? "bg-red-500" : "bg-green-500"}`}
+                  ></span>
+                  <span className="text-sm">
+                    Account:{" "}
+                    {securityStatus.accountLocked ? "Locked" : "Active"}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <span className="w-3 h-3 rounded-full mr-2 bg-blue-500"></span>
+                  <span className="text-sm">
+                    Failed Attempts: {securityStatus.failedLoginAttempts}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Last Login Info */}
+          {loginHistory && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2">
+                Last Login Information
+              </h3>
+              {loginHistory.lastSuccessfulLogin && (
+                <p className="text-sm text-gray-700">
+                  <strong>Last Successful Login:</strong>{" "}
+                  {new Date(loginHistory.lastSuccessfulLogin).toLocaleString()}
+                </p>
+              )}
+              {loginHistory.failedAttemptsSinceLastSuccess > 0 && (
+                <p className="text-sm text-orange-600 mt-1">
+                  <strong>⚠️ Warning:</strong>{" "}
+                  {loginHistory.failedAttemptsSinceLastSuccess} failed login
+                  attempt(s) since your last successful login
+                </p>
+              )}
+              {loginHistory.lastFailedLogin && (
+                <p className="text-sm text-red-600 mt-1">
+                  <strong>Last Failed Attempt:</strong>{" "}
+                  {new Date(loginHistory.lastFailedLogin).toLocaleString()}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Recent Login History */}
+          {loginHistory?.recentLogins && (
+            <div>
+              <h3 className="text-lg font-semibold mb-4">
+                Recent Login Activity
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-2">Date & Time</th>
+                      <th className="text-left p-2">Status</th>
+                      <th className="text-left p-2">Method</th>
+                      <th className="text-left p-2">IP Address</th>
+                      <th className="text-left p-2">Device</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loginHistory.recentLogins.map((login, index) => (
+                      <tr key={index} className="border-b hover:bg-gray-50">
+                        <td className="p-2">
+                          {new Date(login.timestamp).toLocaleString()}
+                        </td>
+                        <td className="p-2">
+                          <span
+                            className={`px-2 py-1 rounded text-xs ${
+                              login.success
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {login.success ? "Success" : "Failed"}
+                          </span>
+                        </td>
+                        <td className="p-2">{login.loginMethod}</td>
+                        <td className="p-2">{login.ipAddress}</td>
+                        <td
+                          className="p-2 truncate max-w-xs"
+                          title={login.userAgent}
+                        >
+                          {login.userAgent?.includes("Chrome")
+                            ? "Chrome"
+                            : login.userAgent?.includes("Firefox")
+                              ? "Firefox"
+                              : login.userAgent?.includes("Safari")
+                                ? "Safari"
+                                : "Unknown"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const fetchLoginHistory = async () => {
+    try {
+      const response = await apiClient.get("/auth/login-history");
+      if (response.data.state === "success") {
+        setLoginHistory(response.data.data);
+        setSecurityStatus(response.data.data.securityStatus);
+        setPasswordChangeStatus(response.data.data.passwordChangeStatus);
+      }
+    } catch (error) {
+      console.error("Error fetching login history:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.userId) {
+      fetchLoginHistory();
+    }
+  }, [user?.userId]);
+
+  // 4. Add this function to handle password change
+  // Update the handlePasswordChange function to return a result:
+  const handlePasswordChange = async (currentPassword, newPassword) => {
+    try {
+      // Step 1: Re-authenticate the user with their current password
+      console.log("🔍 Re-authenticating user with current password...");
+
+      const user = auth.currentUser;
+      if (!user) {
+        return {
+          success: false,
+          message: "User not authenticated",
+        };
+      }
+
+      // Create credential with current password
+      const credential = EmailAuthProvider.credential(
+        user.email,
+        currentPassword
+      );
+
+      try {
+        // Re-authenticate
+        await reauthenticateWithCredential(user, credential);
+        console.log("✅ Current password verified successfully");
+      } catch (reauthError) {
+        console.error("❌ Current password verification failed:", reauthError);
+        return {
+          success: false,
+          message: "Current password is incorrect",
+        };
+      }
+
+      // Step 2: Call your backend to change password (backend will update Firebase Auth)
+      console.log("🔍 Calling backend to change password...");
+
+      const response = await apiClient.post("/auth/change-password", {
+        currentPassword, // Still send it even though backend won't verify it
+        newPassword,
+      });
+
+      if (response.data.state === "success") {
+        // Refresh password change status
+        fetchLoginHistory();
+        return { success: true };
+      } else {
+        return {
+          success: false,
+          message: response.data.message || "Failed to change password",
+        };
+      }
+    } catch (error) {
+      console.error("Password change error:", error);
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "An error occurred while changing password",
+      };
+    }
+  };
 
   // 🆕 FETCH USER DATA FUNCTION USING apiClient
   const fetchUserData = async () => {
@@ -74,6 +429,20 @@ const MyProfile = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+  };
+
+  useEffect(() => {
+    if (userData?.securityQuestions && userData.securityQuestions.length >= 3) {
+      setHasSecurityQuestions(true);
+    } else {
+      setHasSecurityQuestions(false);
+    }
+  }, [userData]);
+
+  // Add this function to handle security questions setup
+  const handleSecurityQuestionsSuccess = () => {
+    setHasSecurityQuestions(true);
+    fetchUserData(); // Refresh user data
   };
 
   // for get verified
@@ -471,6 +840,84 @@ const MyProfile = () => {
         </div>
       </div>
 
+      {/* Security Status Banner */}
+      {loginHistory && loginHistory.failedAttemptsSinceLastSuccess > 0 && (
+        <div className="w-full bg-orange-50 border-l-4 border-orange-400 p-4 mb-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-orange-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-orange-700">
+                <strong>Security Alert:</strong> There{" "}
+                {loginHistory.failedAttemptsSinceLastSuccess === 1
+                  ? "was"
+                  : "were"}{" "}
+                {loginHistory.failedAttemptsSinceLastSuccess} failed login
+                attempt
+                {loginHistory.failedAttemptsSinceLastSuccess !== 1
+                  ? "s"
+                  : ""}{" "}
+                on your account since your last successful login.
+                <button
+                  onClick={() => setShowLoginHistory(true)}
+                  className="ml-2 underline hover:text-orange-900 font-medium"
+                >
+                  View Details
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Last Login Info Banner */}
+      {loginHistory && loginHistory.lastSuccessfulLogin && (
+        <div className="w-full bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-blue-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-700">
+                <strong>Last Login:</strong>{" "}
+                {new Date(loginHistory.lastSuccessfulLogin).toLocaleString()}
+                <button
+                  onClick={() => setShowLoginHistory(true)}
+                  className="ml-2 underline hover:text-blue-900 font-medium"
+                >
+                  View All Activity
+                </button>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Verification Modal */}
       {isVerificationModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -524,6 +971,41 @@ const MyProfile = () => {
               >
                 Verify
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Security Questions Warning Banner */}
+      {!hasSecurityQuestions && userData && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-yellow-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                <strong>Security Recommendation:</strong> Set up security
+                questions to enable password recovery.
+                <button
+                  onClick={() => setShowSecurityQuestionsModal(true)}
+                  className="ml-2 underline hover:text-yellow-900 font-medium"
+                >
+                  Set up now
+                </button>
+              </p>
             </div>
           </div>
         </div>
@@ -1108,98 +1590,83 @@ const MyProfile = () => {
                   Account Settings
                 </h2>
                 <ul className="space-y-4 text-left pl-8 pb-2">
-                  {/* ------------- Change Password ------------ */}
+                  {/* ------------- View Login History ------------ */}
+                  <li>
+                    <button
+                      className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded flex items-center"
+                      onClick={() => setShowLoginHistory(true)}
+                    >
+                      <svg
+                        className="w-4 h-4 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                        />
+                      </svg>
+                      View Login History
+                    </button>
+                  </li>
+
+                  {/* ------------- Change Password (Enhanced) ------------ */}
                   <li>
                     <button
                       className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
-                      onClick={() =>
-                        document.getElementById("modal_ChangePass").showModal()
-                      }
+                      onClick={() => setShowChangePasswordModal(true)}
                     >
                       Change Password
                     </button>
-                    <dialog id="modal_ChangePass" className="modal">
-                      <div className="modal-box w-11/12 max-w-lg p-6 bg-white shadow-lg rounded-md">
-                        <button
-                          className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                          onClick={() =>
-                            document.getElementById("modal_ChangePass").close()
-                          }
-                        >
-                          ✕
-                        </button>
-                        <h3 className="text-lg font-bold text-gray-600 text-left pb-5">
-                          Change Password
-                        </h3>
-                        <form method="dialog" className="space-y-4">
-                          <div className="flex flex-col">
-                            <label
-                              htmlFor="oldPassword"
-                              className="text-sm font-medium text-gray-600"
-                            >
-                              Old Password
-                            </label>
-                            <input
-                              type="password"
-                              id="oldPassword"
-                              name="oldPassword"
-                              className="input input-bordered bg-gray-200 text-gray-800"
-                              required
+                  </li>
+
+                  {/* ------------- Security Questions Setup ------------ */}
+                  <li>
+                    <button
+                      className={`text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded ${
+                        hasSecurityQuestions ? "flex items-center" : ""
+                      }`}
+                      onClick={() => setShowSecurityQuestionsModal(true)}
+                    >
+                      {hasSecurityQuestions ? (
+                        <>
+                          <svg
+                            className="w-4 h-4 mr-2 text-green-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M5 13l4 4L19 7"
                             />
-                          </div>
-                          <div className="flex flex-col">
-                            <label
-                              htmlFor="newPassword"
-                              className="text-sm font-medium text-gray-600"
-                            >
-                              New Password
-                            </label>
-                            <input
-                              type="password"
-                              id="newPassword"
-                              name="newPassword"
-                              className="input input-bordered bg-gray-200 text-gray-800"
-                              required
+                          </svg>
+                          Update Security Questions
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4 mr-2 text-yellow-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
                             />
-                          </div>
-                          <div className="flex flex-col">
-                            <label
-                              htmlFor="confirmPassword"
-                              className="text-sm font-medium text-gray-600"
-                            >
-                              Confirm Password
-                            </label>
-                            <input
-                              type="password"
-                              id="confirmPassword"
-                              name="confirmPassword"
-                              className="input input-bordered bg-gray-200 text-gray-800"
-                              required
-                            />
-                          </div>
-                          <div className="flex justify-end space-x-2">
-                            <button
-                              type="button"
-                              className="btn btn-sm bg-gray-500 rounded text-white hover:bg-red-500 border-none flex items-center justify-center w-auto h-auto"
-                              onClick={() =>
-                                document
-                                  .getElementById("modal_ChangePass")
-                                  .close()
-                              }
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              type="submit"
-                              className="btn btn-sm bg-green-900 rounded text-white hover:bg-blue-500 border-none flex items-center justify-center w-auto h-auto"
-                              onClick={() => console.log("Save logic here")}
-                            >
-                              Save
-                            </button>
-                          </div>
-                        </form>
-                      </div>
-                    </dialog>
+                          </svg>
+                          Set Up Security Questions
+                        </>
+                      )}
+                    </button>
                   </li>
 
                   {/* ------------- Delete Account ------------ */}
@@ -1299,46 +1766,14 @@ const MyProfile = () => {
                     {user?.isStore ? (
                       <button
                         className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
-                        onClick={() =>
-                          document
-                            .getElementById("modal_DeleteShop")
-                            .showModal()
-                        }
+                        onClick={handleDeleteStore}
                       >
                         Delete Shop
                       </button>
                     ) : (
                       <button
                         className="text-gray-600 hover:text-blue-500 hover:font-bold transition duration-800 ease-in-out whitespace-nowrap rounded"
-                        onClick={async () => {
-                          try {
-                            const response = await apiClient.put(
-                              `/users/${user?.userId}/set-store`,
-                              {}
-                            );
-
-                            if (response.data.state === "success") {
-                              dispatch({
-                                type: "UPDATE_USER",
-                                payload: { isStore: true },
-                              });
-                              navigate("/seller");
-                            } else {
-                              console.error(
-                                "Failed to update store status:",
-                                response.data.message
-                              );
-                              alert(
-                                "Failed to create store. Please try again."
-                              );
-                            }
-                          } catch (error) {
-                            console.error("Error creating store:", error);
-                            alert(
-                              "An error occurred while creating your store."
-                            );
-                          }
-                        }}
+                        onClick={handleCreateStore}
                       >
                         Create Store
                       </button>
@@ -1481,7 +1916,38 @@ const MyProfile = () => {
             </div>
           </div>
         </div>
+        {/* Security Questions Modal */}
+        {showSecurityQuestionsModal && (
+          <SecurityQuestionsSetup
+            onClose={() => setShowSecurityQuestionsModal(false)}
+            onSuccess={handleSecurityQuestionsSuccess}
+          />
+        )}
       </div>
+      {/* Login History Modal */}
+      {showLoginHistory && <LoginHistoryModal />}
+      <ReauthModal
+        isOpen={showReauthModal}
+        onClose={() => {
+          setShowReauthModal(false);
+          setPendingAction(null);
+        }}
+        onSuccess={handleReauthSuccess}
+        title={
+          pendingAction === "createStore"
+            ? "Confirm Store Creation"
+            : pendingAction === "deleteStore"
+              ? "Confirm Store Deletion"
+              : "Confirm Your Identity"
+        }
+      />
+
+      <PasswordChangeModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        passwordChangeStatus={passwordChangeStatus}
+        onPasswordChange={handlePasswordChange}
+      />
     </div>
   );
 };
