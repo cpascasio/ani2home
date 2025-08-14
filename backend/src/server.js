@@ -12,6 +12,7 @@ const firestoreDesignRoutes = require("./controllers/extractFirestoreDesign"); /
 const { errorHandler, notFoundHandler } = require("./middleware/errorHandler");
 const adminLogsRouter = require("./controllers/adminLogs");
 const logger = require("./config/logger");
+const passwordResetRoutes = require("./controllers/passwordReset");
 
 // ADD THESE NEW IMPORTS
 const authRoutes = require("./controllers/authRoutes"); // New auth routes
@@ -60,7 +61,7 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // Rate limiter for authentication endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  max: 50, // limit each IP to 5 requests per windowMs
   message: "Too many authentication attempts, please try again later",
   standardHeaders: true,
   legacyHeaders: false,
@@ -85,6 +86,8 @@ apiRouter.use(apiLimiter);
 apiRouter.use("/auth", authLimiter, authRoutes);
 
 // Public webhook endpoints (from payment providers, etc.)
+apiRouter.use("/auth", passwordResetRoutes);
+
 apiRouter.use("/webhooks", webhooksRoutes);
 
 apiRouter.use("/lalamove", lalamoveRoutes);
