@@ -711,4 +711,27 @@ router.get("/validate-store-access", async (req, res) => {
   }
 });
 
+// add near the bottom of this file or in a small audit router
+router.post("/ui-access-attempt", async (req, res) => {
+  console.log("[ui-access-attempt] hit:", req.body);
+
+  const ipAddress =
+    (req.headers["x-forwarded-for"] || "").split(",")[0]?.trim() ||
+    req.ip ||
+    "unknown";
+  const userAgent = req.get("User-Agent") || "unknown";
+  const { target, result } = req.body || {};
+  await SecurityLogger.logAccessControlFailure({
+    ipAddress,
+    userAgent,
+    endpoint: req.originalUrl,
+    method: req.method,
+    userId: null, // or decode from a token cookie if available
+    resource: `${target || "unknown"}_ui`,
+    permission: "route_guard",
+    userPermissions: [],
+  });
+  res.json({ ok: true });
+});
+
 module.exports = router;

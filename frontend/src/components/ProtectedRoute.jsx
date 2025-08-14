@@ -1,5 +1,5 @@
 // frontend/src/components/ProtectedRoute.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useSecureAuth } from "../hooks/useSecureAuth";
 
@@ -25,6 +25,38 @@ const ProtectedRoute = ({
   const [adminValidated, setAdminValidated] = useState(null); // 🆕 NEW: Admin validation state
   const [validating, setValidating] = useState(false);
   const location = useLocation();
+
+  const logUiAttempt = useCallback(
+    async (target, result, reason) => {
+      try {
+        const token = await firebaseUser?.getIdToken?.();
+        const res = await fetch("/api/auth/ui-access-attempt", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            target,
+            result,
+            reason,
+            path: location.pathname,
+          }),
+          credentials: "include",
+        });
+        if (!res.ok) {
+          console.error(
+            "[ui-access-attempt] HTTP",
+            res.status,
+            await res.text()
+          );
+        }
+      } catch (e) {
+        console.error("[ui-access-attempt] failed:", e);
+      }
+    },
+    [firebaseUser, location.pathname]
+  );
 
   // Debug logging
   console.log("ProtectedRoute Debug:", {
@@ -127,6 +159,7 @@ const ProtectedRoute = ({
   if (requireNoAuth) {
     if (isAuthenticated) {
       console.log("User authenticated, redirecting from no-auth page");
+      logUiAttempt("protected", "blocked", "noauth_page_while_authenticated");
       return <Navigate to="/" replace />;
     }
     console.log("No auth required, showing page");
@@ -136,12 +169,18 @@ const ProtectedRoute = ({
   if (requireAuth) {
     if (!isAuthenticated) {
       console.log("User not authenticated, redirecting to login");
+      logUiAttempt(
+        requireAdmin ? "admin" : requireStore ? "seller" : "protected",
+        "blocked",
+        "not_authenticated"
+      );
       return <Navigate to={redirectTo} state={{ from: location }} replace />;
     }
 
     // 🆕 NEW: For admin access, check backend validation
     if (requireAdmin) {
       if (adminValidated === false) {
+        logUiAttempt("admin", "blocked", "admin_denied");
         console.log("Admin access denied, redirecting to unauthorized");
         return (
           <Navigate
@@ -173,6 +212,7 @@ const ProtectedRoute = ({
     if (requireStore) {
       if (storeValidated === false) {
         console.log("Store access denied, redirecting to unauthorized");
+        // logUiAttempt("seller", "blocked", "store_denied");
         return (
           <Navigate
             to="/unauthorized"
