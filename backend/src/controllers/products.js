@@ -1,3 +1,4 @@
+// backend/src/controllers/products.js
 const express = require("express");
 const admin = require("firebase-admin");
 const router = express.Router();
@@ -53,7 +54,9 @@ router.get("/:productId", async (req, res) => {
   }
 });
 
-// route to get products given userId
+// ---------- SPECIFIC GET ROUTES FIRST (avoid shadowing) ----------
+
+// Route to get products given userId
 router.get("/user/:userId", async (req, res) => {
   try {
     const products = [];
@@ -81,7 +84,7 @@ router.get("/user/:userId", async (req, res) => {
     });
 
     console.error("Error getting products:", error);
-    res.status(500).send("Error getting products");
+    return res.status(500).send("Error getting products");
   }
 });
 
@@ -109,7 +112,7 @@ router.get("/product/:productId", async (req, res) => {
     }
 
     const productData = productDoc.data();
-    productData.id = productDoc.id; // Add the document ID to the product data
+    productData.id = productDoc.id;
 
     const sellerDoc = await db
       .collection("users")
@@ -131,7 +134,7 @@ router.get("/product/:productId", async (req, res) => {
     });
 
     console.error("Error getting product:", error);
-    res.status(500).send("Error getting product");
+    return res.status(500).send("Error getting product");
   }
 });
 
@@ -168,9 +171,39 @@ router.get("/seller/:sellerId", async (req, res) => {
     });
 
     console.error("Error getting products:", error);
-    res.status(500).send("Error getting products");
+    return res.status(500).send("Error getting products");
   }
 });
+
+// Route to get products category
+router.get("/category/:categ", async (req, res) => {
+  const { categ } = req.params;
+  try {
+    const products = [];
+    let snapshot;
+
+    if (categ.toLowerCase() === "fruits") {
+      snapshot = await db.collection("products").where("category", "==", "Fruit").get();
+    } else if (categ.toLowerCase() === "vegetables") {
+      snapshot = await db.collection("products").where("category", "==", "Vegetable").get();
+    } else if (categ.toLowerCase() === "artisanal food") {
+      snapshot = await db.collection("products").where("category", "==", "Artisinal Food").get();
+    } else {
+      snapshot = await db.collection("products").get();
+    }
+
+    snapshot.forEach((doc) => {
+      products.push({ id: doc.id, ...doc.data() });
+    });
+
+    return res.json(products);
+  } catch (error) {
+    console.error("Error getting products:", error);
+    return res.status(500).send("Error getting products");
+  }
+});
+
+// ---------- GENERAL GET ROUTES AFTER SPECIFICS ----------
 
 // Route to get all products
 router.get("/", async (req, res) => {
@@ -196,7 +229,7 @@ router.get("/", async (req, res) => {
     });
 
     console.error("Error getting products:", error);
-    res.status(500).send("Error getting products");
+    return res.status(500).send("Error getting products");
   }
 });
 
@@ -206,37 +239,15 @@ router.get("/category/:categ", async (req, res) => {
   console.log("Received category:", categ); // Added for debugging
 
   try {
-    const products = [];
-    let snapshot;
+    const product = await db
+      .collection("products")
+      .doc(req.params.productId)
+      .get();
 
-    if (categ === "fruits" || categ === "Fruits") {
-      snapshot = await db
-        .collection("products")
-        .where("category", "==", "Fruit")
-        .get();
-      console.log("Fetched fruits"); // Added for debugging
-    } else if (categ === "vegetables" || categ === "Vegetables") {
-      snapshot = await db
-        .collection("products")
-        .where("category", "==", "Vegetable")
-        .get();
-      console.log("Fetched vegetables"); // Added for debugging
-    } else if (categ === "artisanal food" || categ === "Artisanal Food") {
-      snapshot = await db
-        .collection("products")
-        .where("category", "==", "Artisinal Food")
-        .get();
-      console.log("Fetched artisinal food"); // Added for debugging
-    } else {
-      snapshot = await db.collection("products").get();
-      console.log("Fetched all products"); // Added for debugging
+    if (!product.exists) {
+      return res.status(404).json({ message: "Product not found" });
     }
-
-    snapshot.forEach((doc) => {
-      products.push({ id: doc.id, ...doc.data() });
-    });
-
-    res.json(products);
+    return res.json(product.data());
   } catch (error) {
     // ✅ ADD SECURITY LOGGING FOR ERRORS
     await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
@@ -254,6 +265,8 @@ router.get("/category/:categ", async (req, res) => {
     res.status(500).send("Error getting products");
   }
 });
+
+// ---------- CREATE / UPDATE / DELETE ----------
 
 // Route to create a new product
 router.post("/create-product", async (req, res) => {
@@ -285,17 +298,21 @@ router.post("/create-product", async (req, res) => {
   }
 
   try {
-    // Check if pictures exist and is an array
+    // Server-controlled fields only after validation
+    value.dateAdded = new Date().toISOString();
+    value.rating = 0;
+    value.totalSales = 0;
+
+    // If pictures are provided and you want to upload base64 -> Cloudinary:
     if (value.pictures) {
       const uploadPromises = value.pictures.map(async (picture) => {
         const result = await cloudinary.uploader.upload(picture, {
           folder: "ani2home",
-          resource_type: "image", // Optional: if you have an upload preset
+          resource_type: "image",
         });
         return result.secure_url;
       });
 
-      // Wait for all uploads to complete
       value.pictures = await Promise.all(uploadPromises);
     }
 
@@ -324,8 +341,8 @@ router.post("/create-product", async (req, res) => {
       },
     };
 
-    logger.info(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.info(logData);
+    await logToFirestore(logData);
 
     // ✅ ADD SECURITY LOGGING FOR SUCCESS
     await SecurityLogger.logSecurityEvent("PRODUCT_CREATED", {
@@ -350,7 +367,7 @@ router.post("/create-product", async (req, res) => {
       message: "Product created successfully",
       product: {
         ...value,
-        productId: newProductRef.id, // Include the document ID
+        productId: newProductRef.id,
       },
     });
   } catch (error) {
@@ -368,15 +385,15 @@ router.post("/create-product", async (req, res) => {
         second: "2-digit",
         hour12: false,
       }).format(new Date()),
-      userId: req.user?.uid || "unknown", // Include the user ID who attempted to create the product
+      userId: req.user?.uid || "unknown",
       action: "create_product",
       resource: "products",
       status: "failed",
       error: error.message,
     };
 
-    logger.error(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.error(logData);
+    await logToFirestore(logData);
 
     // ✅ ADD SECURITY LOGGING FOR ERRORS
     await SecurityLogger.logSecurityEvent("PRODUCT_CREATION_FAILED", {
@@ -446,7 +463,7 @@ router.put("/:productId", async (req, res) => {
         .json({ message: "Product not found", state: "error" });
     }
 
-    // Fetch the old values
+    // Fetch old values
     const oldData = productDoc.data();
 
     // ✅ ADD AUTHORIZATION CHECK: User can only update their own products
@@ -602,7 +619,7 @@ router.put("/:productId", async (req, res) => {
       },
     });
 
-    res.status(500).send("Error updating product");
+    return res.status(500).send("Error updating product");
   }
 });
 
@@ -614,7 +631,6 @@ router.delete("/:productId", async (req, res) => {
     const productRef = db.collection("products").doc(productId);
     const productDoc = await productRef.get();
 
-    // Check if the product exists
     if (!productDoc.exists) {
       // ✅ ADD SECURITY LOGGING FOR NOT FOUND
       await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
@@ -676,12 +692,12 @@ router.delete("/:productId", async (req, res) => {
       status: "success",
       details: {
         message: "Product deleted successfully",
-        productId: productId,
+        productId,
       },
     };
 
-    logger.info(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.info(logData);
+    await logToFirestore(logData);
 
     // ✅ ADD SECURITY LOGGING FOR SUCCESS
     await SecurityLogger.logSecurityEvent("PRODUCT_DELETED", {
@@ -723,8 +739,8 @@ router.delete("/:productId", async (req, res) => {
       error: error.message,
     };
 
-    logger.error(logData); // Log to console/file
-    await logToFirestore(logData); // Log to Firestore
+    logger.error(logData);
+    await logToFirestore(logData);
 
     // ✅ ADD SECURITY LOGGING FOR ERRORS
     await SecurityLogger.logSecurityEvent("PRODUCT_DELETION_FAILED", {

@@ -1,6 +1,6 @@
+// backend/src/models/productModels.js
 const Joi = require("joi");
-
-const now = new Date().toISOString();
+const { id, prefs } = require("./validators/common");
 
 const productSchema = Joi.object({
   // productId: Joi.string().guid({ version: 'uuidv4' }).required(),
@@ -22,24 +22,3 @@ const productSchema = Joi.object({
 });
 
 module.exports = productSchema;
-
-// dateAdded
-// rating
-// totalSales
-
-// modal specifications
-
-// Name
-// Description
-// category (vegetable, fruit)
-// create a dropdown that follows these conditions:
-// if(vegetable) dropdown should have a list of vegetables
-// if(fruit) dropdown should have a list of fruits
-
-// if dropdown has selected empty, create a custom other input field.
-
-// kilo or pieces
-// price per kilo or per piece
-// Stock
-
-// add picture that displays the pictures already added to be
