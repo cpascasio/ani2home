@@ -38,14 +38,14 @@ const Unauthorized = () => {
 
         <div>
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
-            Access Denied
+            Error 403 - Forbidden
           </h2>
-          <p className="mt-2 text-sm text-gray-600">{reason}</p>
-          {fromPath !== "/" && (
+          <p className="mt-2 text-sm text-gray-600">Access Denied: {reason}</p>
+          {/* {fromPath !== "/" && (
             <p className="mt-1 text-xs text-gray-400">
               Attempted to access: {fromPath}
             </p>
-          )}
+          )} */}
         </div>
 
         <div className="space-y-4">
