@@ -2,9 +2,11 @@ const express = require("express");
 const admin = require("firebase-admin");
 const router = express.Router();
 const cloudinary = require("../config/cloudinary");
-const fs = require("fs");
 const productSchema = require("../models/productModels");
+
+// ✅ KEEP ORIGINAL LOGGING AND ADD SECURITY LOGGER
 const { logger, logToFirestore } = require("../config/firebase-config");
+const SecurityLogger = require("../../utils/SecurityLogger");
 
 // Firestore database reference
 const db = admin.firestore();
@@ -16,11 +18,36 @@ router.get("/:productId", async (req, res) => {
       .collection("products")
       .doc(req.params.productId)
       .get();
+
     if (!product.exists) {
+      // ✅ ADD SECURITY LOGGING FOR ERRORS
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: `Product not found: ${req.params.productId}`,
+        severity: "low",
+        metadata: { productId: req.params.productId },
+      });
+
       return res.status(404).json({ message: "Product not found" });
     }
+
     res.json(product.data());
   } catch (error) {
+    // ✅ ADD SECURITY LOGGING FOR ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "medium",
+      description: "Error getting product",
+      metadata: { error: error.message, productId: req.params.productId },
+    });
+
     console.error("Error getting product:", error);
     res.status(500).send("Error getting product");
   }
@@ -34,11 +61,25 @@ router.get("/user/:userId", async (req, res) => {
       .collection("products")
       .where("storeId", "==", req.params.userId)
       .get();
+
     snapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });
+
     res.json(products);
   } catch (error) {
+    // ✅ ADD SECURITY LOGGING FOR ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "medium",
+      description: "Error getting user products",
+      metadata: { error: error.message, targetUserId: req.params.userId },
+    });
+
     console.error("Error getting products:", error);
     res.status(500).send("Error getting products");
   }
@@ -51,7 +92,19 @@ router.get("/product/:productId", async (req, res) => {
       .collection("products")
       .doc(req.params.productId)
       .get();
+
     if (!productDoc.exists) {
+      // ✅ ADD SECURITY LOGGING FOR ERRORS
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: `Product with seller details not found: ${req.params.productId}`,
+        severity: "low",
+        metadata: { productId: req.params.productId },
+      });
+
       return res.status(404).json({ message: "Product not found" });
     }
 
@@ -62,8 +115,21 @@ router.get("/product/:productId", async (req, res) => {
       .collection("users")
       .doc(productData.storeId)
       .get();
+
     res.json({ product: productData, seller: sellerDoc.data() });
   } catch (error) {
+    // ✅ ADD SECURITY LOGGING FOR ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "medium",
+      description: "Error getting product with seller details",
+      metadata: { error: error.message, productId: req.params.productId },
+    });
+
     console.error("Error getting product:", error);
     res.status(500).send("Error getting product");
   }
@@ -77,6 +143,7 @@ router.get("/seller/:sellerId", async (req, res) => {
       .collection("products")
       .where("storeId", "==", req.params.sellerId)
       .get();
+
     snapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });
@@ -85,8 +152,21 @@ router.get("/seller/:sellerId", async (req, res) => {
       .collection("users")
       .doc(req.params.sellerId)
       .get();
+
     res.json({ products, seller: sellerDoc.data() });
   } catch (error) {
+    // ✅ ADD SECURITY LOGGING FOR ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "medium",
+      description: "Error getting seller products",
+      metadata: { error: error.message, sellerId: req.params.sellerId },
+    });
+
     console.error("Error getting products:", error);
     res.status(500).send("Error getting products");
   }
@@ -100,8 +180,21 @@ router.get("/", async (req, res) => {
     snapshot.forEach((doc) => {
       products.push({ id: doc.id, ...doc.data() });
     });
+
     res.json(products);
   } catch (error) {
+    // ✅ ADD SECURITY LOGGING FOR ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "medium",
+      description: "Error getting all products",
+      metadata: { error: error.message },
+    });
+
     console.error("Error getting products:", error);
     res.status(500).send("Error getting products");
   }
@@ -111,6 +204,7 @@ router.get("/", async (req, res) => {
 router.get("/category/:categ", async (req, res) => {
   const { categ } = req.params;
   console.log("Received category:", categ); // Added for debugging
+
   try {
     const products = [];
     let snapshot;
@@ -144,6 +238,18 @@ router.get("/category/:categ", async (req, res) => {
 
     res.json(products);
   } catch (error) {
+    // ✅ ADD SECURITY LOGGING FOR ERRORS
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "medium",
+      description: "Error getting products by category",
+      metadata: { error: error.message, category: categ },
+    });
+
     console.error("Error getting products:", error);
     res.status(500).send("Error getting products");
   }
@@ -151,14 +257,30 @@ router.get("/category/:categ", async (req, res) => {
 
 // Route to create a new product
 router.post("/create-product", async (req, res) => {
-  const { error, value } = productSchema.validate(req.body);
+  const { error, value } = productSchema.validate(req.body, {
+    stripUnknown: true, // ✅ ADD THIS to remove unknown fields like 'id'
+  });
 
   // Add these fields to the value
-  value.dateAdded = new Date().toISOString();
-  value.rating = 0;
-  value.totalSales = 0;
+  if (!error) {
+    value.dateAdded = new Date().toISOString();
+    value.rating = 0;
+    value.totalSales = 0;
+  }
 
   if (error) {
+    // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+    await SecurityLogger.logValidationFailure({
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      fieldName: error.details[0].path.join("."),
+      rule: error.details[0].type,
+      error: error.details[0].message,
+    });
+
     return res.status(400).json({ error: error.details[0].message });
   }
 
@@ -180,7 +302,7 @@ router.post("/create-product", async (req, res) => {
     const newProductRef = db.collection("products").doc();
     await newProductRef.set(value);
 
-    // Log the successful product creation
+    // ✅ KEEP ORIGINAL LOGGING
     const logData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -192,6 +314,7 @@ router.post("/create-product", async (req, res) => {
         second: "2-digit",
         hour12: false,
       }).format(new Date()),
+      userId: req.user?.uid || "unknown",
       action: "create_product",
       resource: `products/${newProductRef.id}`,
       status: "success",
@@ -204,6 +327,25 @@ router.post("/create-product", async (req, res) => {
     logger.info(logData); // Log to console/file
     await logToFirestore(logData); // Log to Firestore
 
+    // ✅ ADD SECURITY LOGGING FOR SUCCESS
+    await SecurityLogger.logSecurityEvent("PRODUCT_CREATED", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Product created successfully",
+      severity: "low",
+      metadata: {
+        productId: newProductRef.id,
+        productName: value.productName,
+        category: value.category,
+        storeId: value.storeId,
+        price: value.price,
+        stock: value.stock,
+      },
+    });
+
     res.status(201).json({
       message: "Product created successfully",
       product: {
@@ -214,7 +356,7 @@ router.post("/create-product", async (req, res) => {
   } catch (error) {
     console.error("Error creating product:", error);
 
-    // Log the error
+    // ✅ KEEP ORIGINAL LOGGING
     const logData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -236,20 +378,49 @@ router.post("/create-product", async (req, res) => {
     logger.error(logData); // Log to console/file
     await logToFirestore(logData); // Log to Firestore
 
+    // ✅ ADD SECURITY LOGGING FOR ERRORS
+    await SecurityLogger.logSecurityEvent("PRODUCT_CREATION_FAILED", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Product creation failed",
+      metadata: {
+        error: error.message,
+        productName: value?.productName,
+        storeId: value?.storeId,
+      },
+    });
+
     res.status(500).send("Error creating product");
   }
 });
 
-// Route to update a product
 // Route to update a product (UPDATED VERSION)
 router.put("/:productId", async (req, res) => {
   const { productId } = req.params;
-  const { error, value } = productSchema.validate(req.body);
+  const { error, value } = productSchema.validate(req.body, {
+    stripUnknown: true, // ✅ ADD THIS to remove unknown fields like 'id'
+  });
 
   console.log("Request body:", value);
   console.log("Product ID from params:", productId);
 
   if (error) {
+    // ✅ ADD SECURITY LOGGING FOR VALIDATION ERRORS
+    await SecurityLogger.logValidationFailure({
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      fieldName: error.details[0].path.join("."),
+      rule: error.details[0].type,
+      error: error.details[0].message,
+    });
+
     return res.status(400).json({ error: error.details[0].message });
   }
 
@@ -258,6 +429,18 @@ router.put("/:productId", async (req, res) => {
     const productDoc = await productRef.get();
 
     if (!productDoc.exists) {
+      // ✅ ADD SECURITY LOGGING FOR NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        userId: req.user?.uid || null,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: `Product not found for update: ${productId}`,
+        severity: "medium",
+        metadata: { productId },
+      });
+
       return res
         .status(404)
         .json({ message: "Product not found", state: "error" });
@@ -265,6 +448,26 @@ router.put("/:productId", async (req, res) => {
 
     // Fetch the old values
     const oldData = productDoc.data();
+
+    // ✅ ADD AUTHORIZATION CHECK: User can only update their own products
+    if (oldData.storeId !== req.user?.uid) {
+      await SecurityLogger.logAccessControlFailure({
+        userId: req.user?.uid || null,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        resource: `products/${productId}`,
+        permission: "product_update",
+        userPermissions: ["product_owner"],
+        endpoint: req.originalUrl,
+        method: req.method,
+      });
+
+      return res.status(403).json({
+        error: true,
+        message: "You can only update your own products",
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     // ✅ HANDLE PICTURE UPLOADS (copied from create route)
     if (
@@ -309,7 +512,7 @@ router.put("/:productId", async (req, res) => {
       }
     }
 
-    // Log the successful product update with changes
+    // ✅ KEEP ORIGINAL LOGGING
     const logData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -335,6 +538,23 @@ router.put("/:productId", async (req, res) => {
     logger.info(logData);
     await logToFirestore(logData);
 
+    // ✅ ADD SECURITY LOGGING FOR SUCCESS
+    await SecurityLogger.logSecurityEvent("PRODUCT_UPDATED", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Product updated successfully",
+      severity: "low",
+      metadata: {
+        productId,
+        productName: value.productName || oldData.productName,
+        changes: Object.keys(changes),
+        changeCount: Object.keys(changes).length,
+      },
+    });
+
     res.status(200).json({
       message: "Product updated successfully",
       product: {
@@ -345,7 +565,7 @@ router.put("/:productId", async (req, res) => {
   } catch (error) {
     console.error("Error updating product:", error);
 
-    // Log the error
+    // ✅ KEEP ORIGINAL LOGGING
     const logData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -367,6 +587,21 @@ router.put("/:productId", async (req, res) => {
     logger.error(logData);
     await logToFirestore(logData);
 
+    // ✅ ADD SECURITY LOGGING FOR ERRORS
+    await SecurityLogger.logSecurityEvent("PRODUCT_UPDATE_FAILED", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Product update failed",
+      metadata: {
+        error: error.message,
+        productId,
+      },
+    });
+
     res.status(500).send("Error updating product");
   }
 });
@@ -381,15 +616,49 @@ router.delete("/:productId", async (req, res) => {
 
     // Check if the product exists
     if (!productDoc.exists) {
+      // ✅ ADD SECURITY LOGGING FOR NOT FOUND
+      await SecurityLogger.logSecurityEvent("RESOURCE_NOT_FOUND", {
+        userId: req.user?.uid || null,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        endpoint: req.originalUrl,
+        method: req.method,
+        description: `Product not found for deletion: ${productId}`,
+        severity: "medium",
+        metadata: { productId },
+      });
+
       return res
         .status(404)
         .json({ message: "Product not found", state: "error" });
     }
 
+    const productData = productDoc.data();
+
+    // ✅ ADD AUTHORIZATION CHECK: User can only delete their own products
+    if (productData.storeId !== req.user?.uid) {
+      await SecurityLogger.logAccessControlFailure({
+        userId: req.user?.uid || null,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+        resource: `products/${productId}`,
+        permission: "product_delete",
+        userPermissions: ["product_owner"],
+        endpoint: req.originalUrl,
+        method: req.method,
+      });
+
+      return res.status(403).json({
+        error: true,
+        message: "You can only delete your own products",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     // Delete the product
     await productRef.delete();
 
-    // Log the successful deletion
+    // ✅ KEEP ORIGINAL LOGGING
     const logData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -401,6 +670,7 @@ router.delete("/:productId", async (req, res) => {
         second: "2-digit",
         hour12: false,
       }).format(new Date()),
+      userId: req.user?.uid || "unknown",
       action: "delete_product",
       resource: `products/${productId}`,
       status: "success",
@@ -413,11 +683,28 @@ router.delete("/:productId", async (req, res) => {
     logger.info(logData); // Log to console/file
     await logToFirestore(logData); // Log to Firestore
 
+    // ✅ ADD SECURITY LOGGING FOR SUCCESS
+    await SecurityLogger.logSecurityEvent("PRODUCT_DELETED", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      description: "Product deleted successfully",
+      severity: "medium", // Deletions are more significant than updates
+      metadata: {
+        productId,
+        productName: productData.productName,
+        category: productData.category,
+        storeId: productData.storeId,
+      },
+    });
+
     res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     console.error("Error deleting product:", error);
 
-    // Log the error
+    // ✅ KEEP ORIGINAL LOGGING
     const logData = {
       timestamp: new Intl.DateTimeFormat("en-PH", {
         timeZone: "Asia/Manila",
@@ -429,7 +716,7 @@ router.delete("/:productId", async (req, res) => {
         second: "2-digit",
         hour12: false,
       }).format(new Date()),
-      userId: req.headers["x-user-id"] || "unknown", // Extract userId from the headers
+      userId: req.user?.uid || "unknown",
       action: "delete_product",
       resource: `products/${productId}`,
       status: "failed",
@@ -438,6 +725,21 @@ router.delete("/:productId", async (req, res) => {
 
     logger.error(logData); // Log to console/file
     await logToFirestore(logData); // Log to Firestore
+
+    // ✅ ADD SECURITY LOGGING FOR ERRORS
+    await SecurityLogger.logSecurityEvent("PRODUCT_DELETION_FAILED", {
+      userId: req.user?.uid || null,
+      ipAddress: req.ip,
+      userAgent: req.get("User-Agent"),
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "high",
+      description: "Product deletion failed",
+      metadata: {
+        error: error.message,
+        productId,
+      },
+    });
 
     res.status(500).send("Error deleting product");
   }
