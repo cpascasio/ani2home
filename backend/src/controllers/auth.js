@@ -4,6 +4,8 @@ const router = express.Router();
 const PasswordManager = require("../utils/passwordUtils");
 const PasswordValidator = require("../validators/passwordValidator");
 const AccountLockoutManager = require("../middleware/accountLockout");
+const admin = require("firebase-admin");
+const db = admin.firestore();
 
 // ✅ ADD BOTH LOGGING SYSTEMS
 const { logger, logToFirestore } = require("../config/firebase-config");
