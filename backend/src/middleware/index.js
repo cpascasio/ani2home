@@ -1,17 +1,21 @@
 const admin = require("../config/firebase-config");
+const authorize = require("./authorize"); // ✅ Import your authorize function
 
 class Middleware {
   async decodeToken(req, res, next) {
     try {
-      const token = req.headers.authorization.split(" ")[1];
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) {
+        return res.status(401).json({ message: "Missing Authorization token" });
+      }
+
       const decoded = await admin.auth().verifyIdToken(token);
-      console.log("GET TOKEN");
-      console.log(decoded);
       if (!decoded) {
         return res
           .status(401)
           .json({ message: "You are not authorized to access this route" });
       }
+
       req.user = decoded;
       next();
     } catch (error) {
@@ -23,4 +27,8 @@ class Middleware {
   }
 }
 
-module.exports = new Middleware();
+// ✅ Export both decodeToken and authorize
+module.exports = {
+  decodeToken: new Middleware().decodeToken,
+  authorize,
+};
