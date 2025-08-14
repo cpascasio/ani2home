@@ -1,4 +1,4 @@
-// backend/src/controllers/adminLogs.js
+// backend/src/controllers/adminLogs.js - Updated to include email in logs
 const express = require("express");
 const SecurityLogger = require("../../utils/SecurityLogger");
 const { admin } = require("../config/firebase-config");
@@ -31,14 +31,15 @@ router.get("/validate-access", async (req, res) => {
   }
 });
 
-// Updated security logs endpoint with pagination support
+// Enhanced security logs endpoint with email enrichment
 router.get("/security-logs", async (req, res) => {
   try {
     const { category, startDate, endDate, limit = 100, page = 1 } = req.query;
 
-    // Log admin access
+    // Log admin access with enhanced metadata
     await SecurityLogger.logSecurityEvent("ADMIN_LOG_ACCESS", {
       userId: req.user.uid,
+      email: req.user.email, // 🆕 Include email
       ipAddress: req.ip,
       userAgent: req.get("User-Agent"),
       description: "Administrator accessed security logs",
@@ -86,16 +87,53 @@ router.get("/security-logs", async (req, res) => {
     // Get the paginated results
     const logsSnapshot = await query.limit(pageSize).offset(offset).get();
 
-    const logs = logsSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      timestamp: doc.data().timestamp.toDate().toISOString(),
-    }));
+    // 🆕 Enhanced log processing with email enrichment
+    const logs = await Promise.all(
+      logsSnapshot.docs.map(async (doc) => {
+        const logData = doc.data();
+        let enrichedLog = {
+          id: doc.id,
+          ...logData,
+          timestamp: logData.timestamp.toDate().toISOString(),
+        };
+
+        // 🆕 If log has userId but no email, try to fetch email from users collection
+        if (logData.userId && !logData.email) {
+          try {
+            const userDoc = await db
+              .collection("users")
+              .doc(logData.userId)
+              .get();
+            if (userDoc.exists) {
+              const userData = userDoc.data();
+              enrichedLog.email = userData.email || null;
+              // 🆕 Also add additional user context if available
+              enrichedLog.userRole = userData.isAdmin
+                ? "admin"
+                : userData.isStore
+                  ? "store"
+                  : "user";
+              enrichedLog.accountStatus = userData.isDisabled
+                ? "disabled"
+                : "active";
+            }
+          } catch (userFetchError) {
+            console.warn(
+              `Failed to fetch user data for ${logData.userId}:`,
+              userFetchError.message
+            );
+            // Continue without email - don't fail the entire request
+          }
+        }
+
+        return enrichedLog;
+      })
+    );
 
     res.json({
       success: true,
       logs,
-      totalCount, // 🆕 This is what the frontend needs!
+      totalCount,
       currentPage: pageNumber,
       totalPages: Math.ceil(totalCount / pageSize),
       pageSize,
@@ -105,6 +143,7 @@ router.get("/security-logs", async (req, res) => {
   } catch (error) {
     await SecurityLogger.logSecurityEvent("ADMIN_LOG_ACCESS_ERROR", {
       userId: req.user?.uid || null,
+      email: req.user?.email || null, // 🆕 Include email
       ipAddress: req.ip,
       userAgent: req.get("User-Agent"),
       severity: "high",
@@ -122,7 +161,7 @@ router.get("/security-logs", async (req, res) => {
   }
 });
 
-// Log statistics endpoint (unchanged)
+// Enhanced log statistics endpoint
 router.get("/log-stats", async (req, res) => {
   try {
     const db = admin.firestore();
@@ -159,6 +198,7 @@ router.get("/log-stats", async (req, res) => {
 
     await SecurityLogger.logSecurityEvent("ADMIN_STATS_ACCESS", {
       userId: req.user.uid,
+      email: req.user.email, // 🆕 Include email
       ipAddress: req.ip,
       userAgent: req.get("User-Agent"),
       description: "Administrator accessed log statistics",
@@ -183,6 +223,7 @@ router.get("/log-stats", async (req, res) => {
   } catch (error) {
     await SecurityLogger.logSecurityEvent("ADMIN_STATS_ACCESS_ERROR", {
       userId: req.user?.uid || null,
+      email: req.user?.email || null, // 🆕 Include email
       ipAddress: req.ip,
       userAgent: req.get("User-Agent"),
       severity: "high",

@@ -169,6 +169,90 @@ router.post("/check-lockout", async (req, res) => {
   }
 });
 
+// Log unauthorized frontend route access
+router.post("/log-unauthorized-access", async (req, res) => {
+  const { attemptedRoute, accessType, userInfo, reason } = req.body;
+  const ipAddress = req.ip;
+  const userAgent = req.get("User-Agent");
+
+  try {
+    // ✅ ADD SECURITY LOGGING FOR FRONTEND ROUTE ACCESS CONTROL FAILURE
+    await SecurityLogger.logAccessControlFailure({
+      userId: userInfo?.uid || null,
+      ipAddress,
+      userAgent,
+      resource: attemptedRoute,
+      permission: `${accessType}_route_access`,
+      userPermissions: getUserPermissions(userInfo),
+      endpoint: attemptedRoute,
+      method: "FRONTEND_ROUTE_ACCESS",
+      metadata: {
+        reason: reason || "Access denied",
+        routeType: accessType,
+        userRole: getUserRole(userInfo),
+        blockedByFrontend: true,
+      },
+    });
+
+    // ✅ ADD AUDIT LOGGING FOR FRONTEND ROUTE ACCESS
+    const logData = {
+      timestamp: new Date(),
+      userId: userInfo?.uid || "anonymous",
+      action: "unauthorized_route_access",
+      attemptedRoute,
+      accessType,
+      ipAddress,
+      userAgent,
+      reason: reason || "Access denied",
+      blockedBy: "frontend",
+    };
+    await logToFirestore(logData);
+
+    res.status(200).json({
+      success: true,
+      message: "Unauthorized access logged",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    // ✅ LOG SYSTEM ERROR
+    await SecurityLogger.logSecurityEvent("APPLICATION_ERROR", {
+      ipAddress,
+      userAgent,
+      endpoint: req.originalUrl,
+      method: req.method,
+      severity: "medium",
+      description: "Error logging unauthorized route access",
+      metadata: { error: error.message },
+    });
+
+    console.error("Error logging unauthorized access:", error);
+    res.status(500).json({
+      error: true,
+      message: "Logging failed",
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
+// Helper function to determine user permissions
+const getUserPermissions = (userInfo) => {
+  if (!userInfo) return ["anonymous"];
+
+  const permissions = ["authenticated"];
+  if (userInfo.isAdmin) permissions.push("admin");
+  if (userInfo.isStore) permissions.push("store");
+
+  return permissions;
+};
+
+// Helper function to determine user role
+const getUserRole = (userInfo) => {
+  if (!userInfo) return "anonymous";
+  if (userInfo.isAdmin) return "admin";
+  if (userInfo.isStore) return "store";
+  return "basic_user";
+};
+
 // GET route to fetch user's login history and security info
 router.get("/login-history", authenticateUser, async (req, res) => {
   const uid = req.user.uid;
